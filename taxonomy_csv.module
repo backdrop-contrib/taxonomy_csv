@@ -44,6 +44,10 @@ function taxonomy_csv_import() {
     '#type' => 'file',
     '#title' => t('CSV file'),
   );
+
+  if ($max_size = _taxonomy_csv_parse_size(ini_get('upload_max_filesize'))) {
+    $form['upload']['#description'] = t('Due to server restrictions, the maximum upload file size is !size. Files that exceed this size will be disregarded without notice.', array('!size' => format_size($max_size)));
+  }
   
   $form['format'] = array(
     '#type' => 'select',
@@ -71,6 +75,28 @@ function taxonomy_csv_import() {
   $form['submit'] = array('#type' => 'submit', '#value' => t('Import'));
   
   return $form;
+}
+
+/**
+ * Parses PHP configuration size values into bytes.
+ *
+ * Edited from an example at http://php.net/manual/en/function.ini-get.php
+ */
+function _taxonomy_csv_parse_size($value) {
+  $value = trim($value);
+  $number = (int)substr($value, 0, -1);
+
+  $suffix = strtoupper(substr($value, -1));
+  switch ($suffix) {
+    case 'G':
+      $number *= 1024;      
+    case 'M':
+      $number *= 1024;
+    case 'K':
+      $number *= 1024;
+  }
+  
+  return $number;
 }
 
 /**
@@ -114,6 +140,9 @@ function taxonomy_csv_import_submit($form_id, $form_values) {
       $term = taxonomy_csv_get_term($line[$c], $vid, $parent);
       $parent = $term->tid;
     }
+    
+    // Keep alive by restarting execution time limit
+    set_time_limit(30);
   }
   fclose($handle);
   
