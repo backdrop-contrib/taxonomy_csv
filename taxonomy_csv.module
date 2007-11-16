@@ -182,7 +182,7 @@ function taxonomy_csv_get_term($name, $vid, $parent = NULL) {
  */
 function taxonomy_csv_find_term($name, $vid, $parent = NULL) {
   if (!is_null($parent)) {
-    $result = db_query("SELECT t.tid, t.* FROM {term_data} t INNER JOIN {term_hierarchy} h WHERE '%s' LIKE LOWER(t.name) AND h.parent = %d LIMIT 1", drupal_strtolower($name), $parent);
+    $result = db_query("SELECT t.tid, t.* FROM {term_data} t INNER JOIN {term_hierarchy} h ON t.tid = h.tid WHERE '%s' LIKE LOWER(t.name) AND h.parent = %d LIMIT 1", drupal_strtolower($name), $parent);
   }
   else {
     $result = db_query("SELECT t.tid, t.* FROM {term_data} t WHERE '%s' LIKE LOWER(t.name) LIMIT 1", drupal_strtolower($name));
