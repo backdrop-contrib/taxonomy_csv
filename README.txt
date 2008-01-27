@@ -10,5 +10,5 @@ this module.
 USAGE
 -----
 
-On your Drupal site, go to Administer > Content management > Categories and
-click on the CSV Import tab. Follow the instructions on the page.
+On your Drupal site, go to Administer > Content management > Taxonomy and
+click on the CSV import tab. Follow the instructions on the page.
