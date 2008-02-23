@@ -271,9 +271,11 @@ function taxonomy_csv_find_term($name, $vid, $parent = NULL) {
     $result = db_query($sql, $args);
     $term = db_fetch_array($result);
     
-    $cache[$key] = $term;
-    if (is_null($parent)) {
-      $cache[$key] = $cache[$key .'_'. $term['parent']] = $term;
+    if ($term) {
+      $cache[$key] = $term;
+      if (is_null($parent)) {
+        $cache[$key .'_'. $term['parent']] = $term;
+      }
     }
   }
   
