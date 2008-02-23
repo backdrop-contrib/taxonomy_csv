@@ -230,7 +230,7 @@ function taxonomy_csv_import_line($line, $options) {
  * Get or create a term with the given name in the given vocabulary and given parent.
  */
 function taxonomy_csv_import_term($term, $update = TRUE) {
-  if ($update && ($existing_term = taxonomy_csv_find_term($term['name'], $term['vid'], $term['parent']))) {
+  if ($update && ($existing_term = taxonomy_csv_find_term($term['name'], $term['vid'], isset($term['parent']) ? $term['parent'] : NULL))) {
     foreach (array('description', 'synonyms') as $key) {
       if (array_key_exists($key, $term))
         $existing_term[$key] = $term[$key];
