@@ -260,8 +260,8 @@ function taxonomy_csv_find_term($name, $vid, $parent = NULL) {
     return $cache[$key];
   }
   else {
-    $sql = "SELECT t.tid, t.*, h.parent FROM {term_data} t INNER JOIN {term_hierarchy} h ON t.tid = h.tid WHERE '%s' LIKE LOWER(t.name) ";
-    $args = array($name);
+    $sql = "SELECT t.tid, t.*, h.parent FROM {term_data} t INNER JOIN {term_hierarchy} h ON t.tid = h.tid WHERE '%s' LIKE LOWER(t.name) AND t.vid = %d ";
+    $args = array($name, $vid);
     if (!is_null($parent)) {
       $sql .= "AND h.parent = %d ";
       $args[] = $parent;
