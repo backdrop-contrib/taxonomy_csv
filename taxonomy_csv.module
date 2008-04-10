@@ -34,6 +34,7 @@ function taxonomy_csv_menu() {
     'title' => 'CSV import',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('taxonomy_csv_import'),
+    'access arguments' => array('administer taxonomy'),
     'weight' => 12,
     'type' => MENU_LOCAL_TASK,
   );
