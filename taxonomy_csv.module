@@ -2,14 +2,12 @@
 // $Id$
 // Copyright (c) 2007-2008 Dennis Stevense, see LICENSE.txt for more information.
 
-define('TAXONOMY_CSV_NORMAL', 0);
-define('TAXONOMY_CSV_EXCEL_WIN', 1);
-define('TAXONOMY_CSV_EXCEL_MAC', 2);
+define('TAXONOMY_CSV_COMMA', 0);
+define('TAXONOMY_CSV_SEMICOLON', 1);
 
 define('TAXONOMY_CSV_IGNORE', 0);
 define('TAXONOMY_CSV_FIELDS', 1);
 define('TAXONOMY_CSV_CHILDREN', 2);
-
 
 /**
  * Implementation of hook_help().
@@ -59,15 +57,14 @@ function taxonomy_csv_import() {
     $form['source']['upload']['#description'] = t('Due to server restrictions, the maximum upload file size is !size. Files that exceed this size will be disregarded without notice.', array('!size' => format_size($max_size)));
   }
   
-  $form['source']['format'] = array(
+  $form['source']['delimiter'] = array(
     '#type' => 'select',
-    '#title' => t('CSV file format'),
+    '#title' => t('CSV file delimiter'),
     '#options' => array(
-      TAXONOMY_CSV_NORMAL => t('Normal'),
-      TAXONOMY_CSV_EXCEL_WIN => t('Microsoft Excel (Windows)'),
-      TAXONOMY_CSV_EXCEL_MAC => t('Microsoft Excel (Mac)')
+      TAXONOMY_CSV_COMMA => t('Comma – default'),
+      TAXONOMY_CSV_SEMICOLON => t('Semicolon – Microsoft Excel'),
     ),
-    '#description' => t('If you created the CSV file using Excel, you need to pick the appropriate format.'),
+    '#description' => t('Choose the delimiter used in the CSV file you want to import.'),
   );
   
   $form['source']['columns'] = array(
@@ -153,19 +150,17 @@ function taxonomy_csv_import_submit($form, &$form_state) {
   
   $file = $form_state['upload_file'];
   
-  switch ($options['format']) {
-    case TAXONOMY_CSV_EXCEL_MAC:
-      ini_set('auto_detect_line_endings', '1');
-      
-    case TAXONOMY_CSV_EXCEL_WIN:
-      $delimiter = ';';
-      break;
-      
-    default:
-      $delimiter = ',';
+  if ($options['delimiter'] == TAXONOMY_CSV_SEMICOLON) {
+    $delimiter = ';';
+  }
+  else {
+    $delimiter = ',';
   }
   
   $options['vocabulary'] = taxonomy_vocabulary_load($options['vid']);
+  
+  // Automatically detect line endings.
+  ini_set('auto_detect_line_endings', '1');
   
   $handle = fopen($file->filepath, 'r');
   $batch = array(
@@ -177,7 +172,10 @@ function taxonomy_csv_import_submit($form, &$form_state) {
     'error_message' => t('An error occured during the import.'),
   );
   while ($line = fgetcsv($handle, 4096, $delimiter)) {
-    $batch['operations'][] = array('taxonomy_csv_import_line', array($line, $options));
+    if (empty($line) || (count($line) == 1 && $line[0] == NULL)) continue;
+    
+    // Encode the line in base64 to prevent batch errors for weird encodings.
+    $batch['operations'][] = array('taxonomy_csv_import_line', array(array_map('base64_encode', $line), $options));
   }
   fclose($handle);
   
@@ -192,6 +190,12 @@ function taxonomy_csv_import_finished($success, $results, $operations) {
 }
 
 function taxonomy_csv_import_line($line, $options) {
+  // Decode the line.
+  $line = array_map('base64_decode', $line);
+  
+  // Convert line to UTF-8.
+  $line = array_map('_taxonomy_csv_import_line_to_utf8', $line);
+
   if ($options['columns'] == TAXONOMY_CSV_CHILDREN) {
     $parent = 0;
     for ($c = 0; $c < count($line); $c++) {
@@ -225,6 +229,17 @@ function taxonomy_csv_import_line($line, $options) {
     
     taxonomy_csv_import_term($term, $options['update']);
   }
+}
+
+/**
+ * Helper function to convert each line item to UTF-8.
+ */
+function _taxonomy_csv_import_line_to_utf8($value) {
+  $enc = mb_detect_encoding($value, "UTF-8, ISO-8859-1, ISO-8859-15", TRUE);
+  if ($enc != "UTF-8") {
+    $value = drupal_convert_to_utf8($value, $enc);
+  }
+  return $value;
 }
 
 /**
