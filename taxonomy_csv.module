@@ -169,7 +169,7 @@ function taxonomy_csv_import_submit($form, &$form_state) {
     'title' => t('Importing terms from CSV file'),
     'init_message' => t('Starting import...'),
     'progress_message' => t('Imported @current out of @total lines.'),
-    'error_message' => t('An error occured during the import.'),
+    'error_message' => t('An error occurred during the import.'),
   );
   while ($line = fgetcsv($handle, 4096, $delimiter)) {
     if (empty($line) || (count($line) == 1 && $line[0] == NULL)) continue;
