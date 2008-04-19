@@ -171,8 +171,15 @@ function taxonomy_csv_import_submit($form, &$form_state) {
     'progress_message' => t('Imported @current out of @total lines.'),
     'error_message' => t('An error occurred during the import.'),
   );
+  $first = TRUE;
   while ($line = fgetcsv($handle, 4096, $delimiter)) {
     if (empty($line) || (count($line) == 1 && $line[0] == NULL)) continue;
+    
+    // Skip UTF-8 byte order mark.
+    if ($first) {
+      if (strncmp($line[0], "\xEF\xBB\xBF", 3) === 0) $line[0] = substr($line[0], 3);
+      $first = FALSE;
+    }
     
     // Encode the line in base64 to prevent batch errors for weird encodings.
     $batch['operations'][] = array('taxonomy_csv_import_line', array(array_map('base64_encode', $line), $options));
