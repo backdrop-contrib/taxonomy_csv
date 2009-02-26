@@ -1,0 +1,16 @@
+<?php
+// $Id$
+
+/**
+ * @file taxonomy_csv.install
+ * Taxonomy_csv install hook.
+ *
+ * No need of uninstall hook, because module adds nothing except terms.
+ */
+
+/**
+ * Implementation of hook_install().
+ */
+function taxonomy_csv_install() {
+  drupal_set_message(st('Taxonomy_csv has been installed. You can now import taxonomies or list of terms under !link_import. More information is available under !link_help.', array('!link_import' => l(st('Administer > Content management > Taxonomy > CSV import',  'admin/content/taxonomy/csv')), '!link_help' => l(st('Administer > Help > Taxonomy CSV import', 'admin/help/taxonomy_csv')))));
+}

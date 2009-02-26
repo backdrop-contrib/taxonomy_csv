@@ -1,5 +1,6 @@
 ; $Id$
 name = "Taxonomy CSV import"
-description = "Allows you to import taxonomy terms from a CSV file."
+description = "Allows quick import of complete taxonomies or simple lists of terms with a CSV file."
 core = 6.x
 dependencies[] = taxonomy
+package = 'Taxonomy'

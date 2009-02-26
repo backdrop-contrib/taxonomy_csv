@@ -1,0 +1,66 @@
+/* $Id$ */
+
+
+                         TAXONOMY CSV IMPORT 
+                         ===================
+
+
+== T O D O ==
+  =========
+
+(no particular order)
+
+o = TODO
+- = Skipped/postponed
+X = DONE
+ nnn = introduced
+=====================
+
+UI
+  o    display result of import
+  o    display errors in original file
+  o    create vocabulary
+  o    dynamic examples (related to the choice of the source option)
+  o    import by a text area
+  X62b add link to use module after installation
+  o    remind previous values for csv delimiter and utf-8 import
+  o    do a uninstall hook if remind previous values is done
+  o    advertise for remove when there is only one column and update is chosen.
+
+Functions
+  o    import of structured alphabetic terms list
+  o    option to import sub-relations and not only relations to first term
+  o    import of ancestors and not children (useful?)
+  o    use of parent of previous line for children without root 0
+  o    parent merge (polyhierarchy)
+  X62b distinction between description and synonyms
+  o    multiple files import
+  o    sensitive or not to uppercase / lowercase
+  o    import of iso 2788 as in taxonomy_xml (but KISS approach)
+  o    integrate or reference to taxonomy_manager
+  o    remove selected terms
+
+Code / security
+  o    remove query and use only Drupal core ones and php filters (useful?)
+  o    see if there is Drupal functions to import only synonyms or related etc.
+  o    manage and inform on input error
+  o    factorize code
+  o    redo a cache
+  o    clean the input line at the beginning of process and never after
+  o    use taxonomy_parser?
+  o    change the type of vocabulary (flat, monohierarchy, polyhierarchy)
+  o    add hook_perm
+  o    add hook_info
+  o    replace _taxonomy_csv_parse_size by a Drupal function
+  o    no order to import vocabulary files
+
+Documentation
+  o    make it simpler
+  o    more examples
+  o    image view and presentation text for project page
+  o    translations
+
+Drupal version
+  o    Drupal 7: all. Use terms as objects: simpler with parents, related, etc.
+  o    Drupal 5: update / backport
+  o    Drupal 4: update / backport
