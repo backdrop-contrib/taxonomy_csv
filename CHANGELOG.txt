@@ -1,7 +1,7 @@
 /* $Id$ */
 
 
-                         TAXONOMY CSV IMPORT 
+                         TAXONOMY CSV IMPORT
                          ===================
 
 
@@ -12,6 +12,6 @@ Taxonomy csv x.x-x.x, xxxx-xx-xx
 --------------------------------
 
 
-Taxonomy csv 6.x-2.0-beta 2009-02-25
-------------------------------------
-#100 by Daniel Berthereau (Daniel_KM): Rewrited module.
+Taxonomy csv 6.x-2.0 2009-02-27
+-------------------------------
+By Daniel Berthereau: Rewrited module. Cleaned release.
