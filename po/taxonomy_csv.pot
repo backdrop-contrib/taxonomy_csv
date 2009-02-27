@@ -1,0 +1,297 @@
+# $Id$
+#
+# LANGUAGE translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  taxonomy_csv.module: 6.x-2.0
+#  taxonomy_csv.info: 6.x-2.0
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2009-02-27 11:00+0100\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: taxonomy_csv.module:43
+msgid "Use this form to import a taxonomy or a list of terms into a vocabulary from a simple !link file."
+msgstr ""
+
+#: taxonomy_csv.module:43
+msgid "CSV"
+msgstr ""
+
+#: taxonomy_csv.module:44
+msgid "<strong>Warning:</strong> If you want to update an existing vocabulary, make sure you have a backup before you proceed so you can roll back, if necessary."
+msgstr ""
+
+#: taxonomy_csv.module:48
+msgid "This module allows you to <a href=\"!import-url\">import taxonomies or simple lists of terms</a> into a vocabulary from a <a href=\"http://en.wikipedia.org/wiki/Comma-separated_values\" title=\"Wikipedia definition\">CSV</a> file."
+msgstr ""
+
+#: taxonomy_csv.module:49
+msgid "If you are unsure how to create a CSV file, you might want to use <a href=\"http://www.openoffice.org\" title=\"OpenOffice.org\">OpenOffice Calc</a> or another spreadsheet application to export your data into a CSV file."
+msgstr ""
+
+#: taxonomy_csv.module:50
+msgid "You can choose how source will be imported and what existing terms will become."
+msgstr ""
+
+#: taxonomy_csv.module:51;119
+msgid "Source"
+msgstr ""
+
+#: taxonomy_csv.module:52
+msgid "Source can be configured with the first field set. The term name will be imported from the first column. You can specify how additional columns should be imported:"
+msgstr ""
+
+#: taxonomy_csv.module:53;135
+msgid "Ignore"
+msgstr ""
+
+#: taxonomy_csv.module:53
+msgid "This has the same effect has having a single column."
+msgstr ""
+
+#: taxonomy_csv.module:54;136
+msgid "Child term names"
+msgstr ""
+
+#: taxonomy_csv.module:54
+msgid "The second column will be imported as the name of a child term of the term defined by the first column. The third column will be imported as a child of the second column, and so on. For example, you might have a line <code>Animal,Mammal,Dog</code>."
+msgstr ""
+
+#: taxonomy_csv.module:55
+msgid "Be careful: when a child is added or updated, line should contain all its ancestors. So a second line may be <code>Animal,Mammal,Human</code>, but <strong>not</strong> <code>Mammal,Human</code>, because in this second case, <code>Mammal</code> is imported as a first level term and not as a <code>Animal</code> term child as in previous line."
+msgstr ""
+
+#: taxonomy_csv.module:56;137
+msgid "Related terms"
+msgstr ""
+
+#: taxonomy_csv.module:56
+msgid "The second and next columns will be imported as related terms of the first column term. For example, a line may be: <code>Thesaurus,Taxonomy,Ontology</code>."
+msgstr ""
+
+#: taxonomy_csv.module:57;138
+msgid "Synonyms terms"
+msgstr ""
+
+#: taxonomy_csv.module:57
+msgid "The second and next columns will be imported as synonyms terms of the first column term. For example, a line may be: <code>\"United Kingdom\",\"UK\",\"U.K.\"</code>."
+msgstr ""
+
+#: taxonomy_csv.module:58
+msgid "Term description"
+msgstr ""
+
+#: taxonomy_csv.module:58
+msgid "The second column will be imported as the term description of the first column term."
+msgstr ""
+
+#: taxonomy_csv.module:59;140
+msgid "Term weights"
+msgstr ""
+
+#: taxonomy_csv.module:59
+msgid "The second column will be imported as weight of the term defined by first column."
+msgstr ""
+
+#: taxonomy_csv.module:60;174
+msgid "Destination"
+msgstr ""
+
+#: taxonomy_csv.module:61
+msgid "Destination can be configured with the second field set. You can specify what will become existing terms. Three choices are possible:"
+msgstr ""
+
+#: taxonomy_csv.module:62
+msgid "Update terms and merge existing"
+msgstr ""
+
+#: taxonomy_csv.module:62
+msgid "Update current terms when name matches with imported ones and merge existing descriptions, parents, synonyms and related terms with new ones. Duplicates are removed. This choice is recommended if you want to keep a vocabulary and if you have descriptions, parents, synonyms and related terms you don't want to lose."
+msgstr ""
+
+#: taxonomy_csv.module:63
+msgid "Update terms and replace existing"
+msgstr ""
+
+#: taxonomy_csv.module:63
+msgid "Update current terms if name matches, but remove existing descriptions, parents, synonyms and related terms. Choose this option if you are want to create a clean new vocabulary without losing existing terms."
+msgstr ""
+
+#: taxonomy_csv.module:64
+msgid "Be careful: if there is no description, parent, synonym or related term, i.e. the line contains only a term in the first column, this removes the existing."
+msgstr ""
+
+#: taxonomy_csv.module:65;195
+msgid "Ignore current terms and create new ones"
+msgstr ""
+
+#: taxonomy_csv.module:65
+msgid "Let current terms as they are and create totally new terms."
+msgstr ""
+
+#: taxonomy_csv.module:65
+msgid "Warning: This can create duplicate terms. It is recommended to use this option only if you are sure that imported taxonomy contains only new terms or if your vocabulary allows multiple parents."
+msgstr ""
+
+#: taxonomy_csv.module:66
+msgid "When you want to import child term names as well as descriptions, synonyms, related terms and term weights, you should begin with the file containing the hierarchical structure of parent and child. So first import child term names with the <em>Child term names</em> option. Second, upload the other files with the adequate option and one of the <em>Update terms...</em> option."
+msgstr ""
+
+#: taxonomy_csv.module:67
+msgid "Be careful: if 1) source choice is <strong>not</strong> <em>\"Ignore\"</em> additional columns, 2) file or a line in the file has only one column and 3) you choose <em>\"Update and replace\"</em>, the import process will be a remove process of matching items (first column terms are always kept or imported)."
+msgstr ""
+
+#: taxonomy_csv.module:68
+msgid "It is recommended to protect terms with quotation marks (<strong><code>\"</code></strong>), specialy if they contain non-ASCII letters or if imported items, in particular descriptions, contain the chosen delimiter: <code>\"term 1\",\"term 2\",\"term 3\"</code>."
+msgstr ""
+
+#: taxonomy_csv.module:69
+msgid "Delimiters (comma \"<strong><code>,</code></strong>\" or semicolon \"<strong><code>;</code></strong>\") between terms can be chosen in Advanced settings."
+msgstr ""
+
+#: taxonomy_csv.module:70
+msgid "Another Drupal module allows CSV import too, despite its name: <a href=\"http://drupal.org/project/taxonomy_xml\" title=\"taxonomy XML\">taxonomy XML</a>. Its approach is different: it uses one file complient to thesauri standard ISO 2788, i.e. a three columns csv file: <code>first term, type of link, second term</code>, or, for specialists, <code>subject, predicate, object</code>. So choose the module best matching your needs."
+msgstr ""
+
+#: taxonomy_csv.module:105
+msgid "<strong>None vocabulary found!</strong>"
+msgstr ""
+
+#: taxonomy_csv.module:110
+msgid "None vocabulary has been found. You need one in order to import your terms into. So you need to !add-new-vocab before to use this module."
+msgstr ""
+
+#: taxonomy_csv.module:110;182
+msgid "add a new vocabulary"
+msgstr ""
+
+#: taxonomy_csv.module:124
+msgid "CSV file"
+msgstr ""
+
+#: taxonomy_csv.module:128
+msgid "Due to server restrictions, the maximum upload file size is !size. Files that exceed this size will be disregarded without notice."
+msgstr ""
+
+#: taxonomy_csv.module:133
+msgid "Additional columns"
+msgstr ""
+
+#: taxonomy_csv.module:139
+msgid "Term descriptions"
+msgstr ""
+
+#: taxonomy_csv.module:144
+msgid "The first column is always imported as the term name. This option determines how additional columns will be imported. Children (structure of vocabulary) should be imported first when multiple files are imported."
+msgstr ""
+
+#: taxonomy_csv.module:149
+msgid "Advanced settings"
+msgstr ""
+
+#: taxonomy_csv.module:156
+msgid "CSV file delimiter"
+msgstr ""
+
+#: taxonomy_csv.module:158
+msgid "Comma \" <strong><code>,</code></strong> \""
+msgstr ""
+
+#: taxonomy_csv.module:159
+msgid "Semicolon \" <strong><code>;</code></strong> \""
+msgstr ""
+
+#: taxonomy_csv.module:162
+msgid "Choose the delimiter used in the CSV file you want to import."
+msgstr ""
+
+#: taxonomy_csv.module:167
+msgid "Disable file conversion because the csv file is already UTF-8 encoded"
+msgstr ""
+
+#: taxonomy_csv.module:169
+msgid "This checkbox disables the conversion of the CSV file to UTF-8, what can be a cause of problems with some rare server configurations. Be sure your file is UTF-8 encoded when using this option."
+msgstr ""
+
+#: taxonomy_csv.module:179
+msgid "Vocabulary"
+msgstr ""
+
+#: taxonomy_csv.module:182
+msgid "The vocabulary you want to import the file into. You might want to !add-new-vocab."
+msgstr ""
+
+#: taxonomy_csv.module:191
+msgid "Existing terms"
+msgstr ""
+
+#: taxonomy_csv.module:193
+msgid "Update terms and merge existing items"
+msgstr ""
+
+#: taxonomy_csv.module:194
+msgid "Update terms and replace existing items"
+msgstr ""
+
+#: taxonomy_csv.module:199
+msgid "<p>Whether existing terms with the same name should be updated or ignored.</p>\n      <p>For example, if existing related terms of term <code>\"Drupal\"</code> are: <code>\"Free\"</code> and <code>\"Open source\"</code> and an imported line in the csv file is <code>\"Drupal\",\"knowledge management\"</code>, then:\n      <dt><dd><em>\"Update and merge\"</em> choice make related terms of <code>\"Drupal\"</code> are now <code>\"Free\"</code>, <code>\"Open source\"</code> and <code>\"knowledge management\"</code>;</dd>\n      <dd><em>\"Update and replace\"</em> choice make related term of <code>\"Drupal\"</code> is now only <code>\"knowledge management\"</code>;</dd>\n      <dd><em>\"Ignore and create\"</em> choice make two <code>\"Drupal\"</code> terms, one with existing related and other items and another one with only the imported related term <code>\"knowledge management\"</code>.</dd></dt></p>"
+msgstr ""
+
+#: taxonomy_csv.module:208
+msgid "Import"
+msgstr ""
+
+#: taxonomy_csv.module:256
+msgid "Please upload a file."
+msgstr ""
+
+#: taxonomy_csv.module:284
+msgid "Importing terms from CSV file"
+msgstr ""
+
+#: taxonomy_csv.module:285
+msgid "Starting import..."
+msgstr ""
+
+#: taxonomy_csv.module:286
+msgid "Imported @current out of @total lines."
+msgstr ""
+
+#: taxonomy_csv.module:287
+msgid "An error occurred during the import."
+msgstr ""
+
+#: taxonomy_csv.module:313
+msgid "The CSV file has been imported."
+msgstr ""
+
+#: taxonomy_csv.module:82
+msgid "CSV import"
+msgstr ""
+
+#: taxonomy_csv.module:0
+msgid "taxonomy_csv"
+msgstr ""
+
+#: taxonomy_csv.info:0
+msgid "Taxonomy CSV import"
+msgstr ""
+
+#: taxonomy_csv.info:0
+msgid "Allow quick import of complete taxonomies or simple lists of terms with a CSV file."
+msgstr ""
+
+#: taxonomy_csv.info:0
+msgid "Taxonomy"
+msgstr ""
+

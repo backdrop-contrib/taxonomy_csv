@@ -5,7 +5,7 @@
  * @file taxonomy_csv.install
  * Taxonomy_csv install hook.
  *
- * No need of uninstall hook, because module adds nothing except terms.
+ * No need of uninstall hook because module adds nothing except terms.
  */
 
 /**
