@@ -20,7 +20,7 @@ None.
     directory in your Drupal installation (recommended: sites/all/modules).
 
  2) Go to Administer > Site building > Modules and enable the
-    Taxonomy CSV import module in the Taxonomy section. You should enable the
+    Taxonomy CSV import module in the "Taxonomy" section. You should enable the
     Taxonomy core module too.
 
 

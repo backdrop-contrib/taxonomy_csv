@@ -21,9 +21,9 @@ So when you want to quick import a non-standardized vocabulary, for example an
 old thesaurus or a simple list of children, synonyms, related terms,
 descriptions or weights of a set of terms, Taxonomy CSV is simpler to use.
 
-Use at your risk. Currently, it does not tell you what it's gonna do before
-it's doing it, so make sure you have a backup so you can roll back if
-necessary.
+Use at your risk. Even if many informations are displayed, taxonomy_csv module
+does not tell you what it's gonna do before it's doing it, so make sure you have
+a backup so you can roll back if necessary.
 
 
 For a full description of the module, visit the project page:

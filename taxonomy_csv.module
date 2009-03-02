@@ -11,28 +11,28 @@
  */
 
 /**
- * @file taxonomy_csv.module
+ * @file
  * Quick import of taxonomies or lists of terms with a csv file.
  *
  * Automatically imports a list of terms, children, related, synonyms,
  * descriptions and/or weights into a vocabulary with a simple csv file.
  */
 
-define('TAXONOMY_CSV_IGNORE',         0);
-define('TAXONOMY_CSV_CHILDREN',       1);
-define('TAXONOMY_CSV_RELATIONS',      2);
-define('TAXONOMY_CSV_SYNONYMS',       3);
-define('TAXONOMY_CSV_DESCRIPTIONS',   4);
-define('TAXONOMY_CSV_WEIGHTS',        5);
+define('TAXONOMY_CSV_IMPORT_IGNORE',           0);
+define('TAXONOMY_CSV_IMPORT_CHILDREN',         1);
+define('TAXONOMY_CSV_IMPORT_RELATIONS',        2);
+define('TAXONOMY_CSV_IMPORT_SYNONYMS',         3);
+define('TAXONOMY_CSV_IMPORT_DESCRIPTIONS',     4);
+define('TAXONOMY_CSV_IMPORT_WEIGHTS',          5);
 
-define('TAXONOMY_CSV_COMMA',          0);
-define('TAXONOMY_CSV_SEMICOLON',      1);
+define('TAXONOMY_CSV_DELIMITER_COMMA',         0);
+define('TAXONOMY_CSV_DELIMITER_SEMICOLON',     1);
 
 define('TAXONOMY_CSV_DISABLE_CONVERT_TO_UTF8', FALSE);
 
-define('TAXONOMY_CSV_IGNORE',         0);
-define('TAXONOMY_CSV_UPDATE_REPLACE', 1);
-define('TAXONOMY_CSV_UPDATE_MERGE',   2);
+define('TAXONOMY_CSV_EXISTING_IGNORE',         0);
+define('TAXONOMY_CSV_EXISTING_UPDATE_REPLACE', 1);
+define('TAXONOMY_CSV_EXISTING_UPDATE_MERGE',   2);
 
 /**
  * Implementation of hook_help().
@@ -132,14 +132,14 @@ function taxonomy_csv_import() {
       '#type' => 'radios',
       '#title' => t('Additional columns'),
       '#options' => array(
-        TAXONOMY_CSV_IGNORE => t('Ignore'),
-        TAXONOMY_CSV_CHILDREN => t('Child term names'),
-        TAXONOMY_CSV_RELATIONS => t('Related terms'),
-        TAXONOMY_CSV_SYNONYMS => t('Synonyms terms'),
-        TAXONOMY_CSV_DESCRIPTIONS => t('Term descriptions'),
-        TAXONOMY_CSV_WEIGHTS => t('Term weights'),
+        TAXONOMY_CSV_IMPORT_IGNORE => t('Ignore'),
+        TAXONOMY_CSV_IMPORT_CHILDREN => t('Child term names'),
+        TAXONOMY_CSV_IMPORT_RELATIONS => t('Related terms'),
+        TAXONOMY_CSV_IMPORT_SYNONYMS => t('Synonyms terms'),
+        TAXONOMY_CSV_IMPORT_DESCRIPTIONS => t('Term descriptions'),
+        TAXONOMY_CSV_IMPORT_WEIGHTS => t('Term weights'),
       ),
-      '#default_value' => TAXONOMY_CSV_IGNORE,
+      '#default_value' => TAXONOMY_CSV_IMPORT_IGNORE,
       '#required' => TRUE,
       '#description' => t('The first column is always imported as the term name. This option determines how additional columns will be imported. Children (structure of vocabulary) should be imported first when multiple files are imported.'),
     );
@@ -155,10 +155,10 @@ function taxonomy_csv_import() {
       '#type' => 'radios',
       '#title' => t('CSV file delimiter'),
       '#options' => array(
-        TAXONOMY_CSV_COMMA => t('Comma " <strong><code>,</code></strong> "'),
-        TAXONOMY_CSV_SEMICOLON => t('Semicolon " <strong><code>;</code></strong> "'),
+        TAXONOMY_CSV_DELIMITER_COMMA => t('Comma " <strong><code>,</code></strong> "'),
+        TAXONOMY_CSV_DELIMITER_SEMICOLON => t('Semicolon " <strong><code>;</code></strong> "'),
       ),
-      '#default_value' => TAXONOMY_CSV_COMMA,
+      '#default_value' => TAXONOMY_CSV_DELIMITER_COMMA,
       '#description' => t('Choose the delimiter used in the CSV file you want to import.'),
     );
 
@@ -190,11 +190,11 @@ function taxonomy_csv_import() {
       '#type' => 'radios',
       '#title' => t('Existing terms'),
       '#options' => array(
-        TAXONOMY_CSV_UPDATE_MERGE => t('Update terms and merge existing items'),
-        TAXONOMY_CSV_UPDATE_REPLACE => t('Update terms and replace existing items'),
-        TAXONOMY_CSV_IGNORE => t('Ignore current terms and create new ones'),
+        TAXONOMY_CSV_EXISTING_UPDATE_MERGE => t('Update terms and merge existing items'),
+        TAXONOMY_CSV_EXISTING_UPDATE_REPLACE => t('Update terms and replace existing items'),
+        TAXONOMY_CSV_EXISTING_IGNORE => t('Ignore current terms and create new ones'),
       ),
-      '#default_value' => TAXONOMY_CSV_UPDATE_REPLACE,
+      '#default_value' => TAXONOMY_CSV_EXISTING_UPDATE_REPLACE,
       '#required' => TRUE,
       '#description' => t('<p>Whether existing terms with the same name should be updated or ignored.</p>
       <p>For example, if existing related terms of term <code>"Drupal"</code> are: <code>"Free"</code> and <code>"Open source"</code> and an imported line in the csv file is <code>"Drupal","knowledge management"</code>, then:
@@ -265,7 +265,7 @@ function taxonomy_csv_import_submit($form, &$form_state) {
 
   $file = $form_state['upload_file'];
 
-  if ($options['delimiter'] == TAXONOMY_CSV_SEMICOLON) {
+  if ($options['delimiter'] == TAXONOMY_CSV_DELIMITER_SEMICOLON) {
     $delimiter = ';';
   }
   else {
@@ -335,7 +335,7 @@ function taxonomy_csv_import_line($line, $options) {
 
   // Code is currently not factorized.
   switch ($options['columns']) {
-    case TAXONOMY_CSV_CHILDREN:
+    case TAXONOMY_CSV_IMPORT_CHILDREN:
       //first column: root ancestor.
       $parent = 0;
       for ($c = 0; $c < count($line); $c++) {
@@ -350,18 +350,18 @@ function taxonomy_csv_import_line($line, $options) {
           );
 
           // Currently, keep previous import system for children, so no merge.
-          if ($option['update'] == TAXONOMY_CSV_UPDATE_MERGE) {
-            $option['update'] = TAXONOMY_CSV_UPDATE_REPLACE;
+          if ($option['update'] == TAXONOMY_CSV_EXISTING_UPDATE_MERGE) {
+            $option['update'] = TAXONOMY_CSV_EXISTING_UPDATE_REPLACE;
           }
 
           // Parent terms (so all terms but the last on this line) are always updated because they are successive parents of a child.
-          $term = taxonomy_csv_import_term($term, (($options['update'] == TAXONOMY_CSV_IGNORE) and ($c < count($line) - 1)) ? TAXONOMY_CSV_UPDATE_REPLACE : $options['update']);
+          $term = taxonomy_csv_import_term($term, (($options['update'] == TAXONOMY_CSV_EXISTING_IGNORE) and ($c < count($line) - 1)) ? TAXONOMY_CSV_EXISTING_UPDATE_REPLACE : $options['update']);
           $parent = $term['tid'];
         }
       }
       break;
 
-    case TAXONOMY_CSV_RELATIONS:
+    case TAXONOMY_CSV_IMPORT_RELATIONS:
       if (!empty($line[0])) {
         $term = array(
           'name' => $line[0],
@@ -384,7 +384,7 @@ function taxonomy_csv_import_line($line, $options) {
       }
       break;
 
-    case TAXONOMY_CSV_SYNONYMS:
+    case TAXONOMY_CSV_IMPORT_SYNONYMS:
       if (!empty($line[0])) {
         $term = array(
           'name' => $line[0],
@@ -396,7 +396,7 @@ function taxonomy_csv_import_line($line, $options) {
       }
       break;
 
-    case TAXONOMY_CSV_DESCRIPTIONS:
+    case TAXONOMY_CSV_IMPORT_DESCRIPTIONS:
       if (!empty($line[0])) {
         $term = array(
           'name' => $line[0],
@@ -408,7 +408,7 @@ function taxonomy_csv_import_line($line, $options) {
       }
       break;
 
-    case TAXONOMY_CSV_WEIGHTS:
+    case TAXONOMY_CSV_IMPORT_WEIGHTS:
       if (!empty($line[0])) {
         $term = array(
           'name' => $line[0],
@@ -420,7 +420,7 @@ function taxonomy_csv_import_line($line, $options) {
       }
       break;
 
-    case TAXONOMY_CSV_IGNORE:
+    case TAXONOMY_CSV_IMPORT_IGNORE:
       if (!empty($line[0])) {
         $term = array(
           'name' => $line[0],
@@ -466,13 +466,13 @@ function _taxonomy_csv_import_line_to_utf8($value) {
  * @return $term
  *   Imported term array. Empty array if no imported term.
  */
-function taxonomy_csv_import_term($term, $update = TAXONOMY_CSV_UPDATE_REPLACE) {
+function taxonomy_csv_import_term($term, $update = TAXONOMY_CSV_EXISTING_UPDATE_REPLACE) {
   if (!empty($term)) {
-    if ($update != TAXONOMY_CSV_IGNORE) {
+    if ($update != TAXONOMY_CSV_EXISTING_IGNORE) {
       if ($existing_term = taxonomy_csv_find_term($term['name'], $term['vid'], isset($term['parent'][0]) ? $term['parent'][0] : NULL)) {
         switch ($update) {
           // Code currently not factorized.
-          case TAXONOMY_CSV_UPDATE_MERGE:
+          case TAXONOMY_CSV_EXISTING_UPDATE_MERGE:
             if (isset($term['relations'])) {
               $existing_term['relations'] = array_unique(array_merge($existing_term['relations'], $term['relations']));
             }
@@ -491,7 +491,7 @@ function taxonomy_csv_import_term($term, $update = TAXONOMY_CSV_UPDATE_REPLACE) 
             }
             break;
 
-          case TAXONOMY_CSV_UPDATE_REPLACE:
+          case TAXONOMY_CSV_EXISTING_UPDATE_REPLACE:
             foreach (array('relations', 'synonyms', 'description', 'weight') as $key) {
               if (array_key_exists($key, $term)) {
                 $existing_term[$key] = $term[$key];

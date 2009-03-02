@@ -10,29 +10,33 @@
 
 (no particular order)
 
-o = TODO
-- = Skipped/postponed
-x = DONE
- nnn = introduced
+  o     = TODO
+  -     = Skipped/postponed
+  x     = DONE
+    nnn = Introduced
 =====================
 
-UI
-  o     display result of import
-  o     display errors in original file
-  o     create vocabulary
+User interface
+  X 622 display result of import
+  X 622 notice warnings and errors of import file
+  o     choose level of message
+  o     cumulate message and use Drupal's message
+  X 622 auto create vocabulary
   o     dynamic examples (related to the choice of the source option)
   o     import by a text area
   X 620 add link to use module after installation
   o     remind previous values for csv delimiter and utf-8 import
   o     do a uninstall hook if remind previous values is done
   o     advertise for remove when there is only one column and update is chosen.
-  -     reset button
+  -     reset button (unuseful)
+  o     text area to modify line when warning
 
 Functions
   o     import of structured alphabetic terms list
   o     option to import sub-relations and not only relations to first term
   o     import of ancestors and not children (useful?)
-  o     use of parent of previous line for children without root 0
+  X 622 use of parents of previous line for children without ancestors
+          ("one term array structure import")
   o     parent merge (polyhierarchy)
   X 620 distinction between description and synonyms
   o     multiple files import
@@ -40,20 +44,24 @@ Functions
   o     import of iso 2788 as in taxonomy_xml (but KISS approach)
   o     integrate or reference to taxonomy_manager
   o     remove selected terms
+  o     test before import
 
 Code / security
   o     remove query and use only Drupal core ones and php filters (useful?)
   o     see if there is Drupal functions to import only synonyms or related etc.
-  o     manage and inform on input error
-  o     factorize code
+  X 622 manage and inform on input error
+  o     factorize code and use more php functions
   o     redo a cache
-  o     clean the input line at the beginning of process and never after
+  X 622 clean the input line at the beginning of process and never after
   o     use taxonomy_parser?
   o     change the type of vocabulary (flat, monohierarchy, polyhierarchy)
   o     add hook_perm
   o     add hook_info
   o     replace _taxonomy_csv_parse_size by a Drupal function
   o     no order to import vocabulary files
+  o     use Drupal management of errors
+  o     change function name to internal, except some
+  o     vocabulary check
 
 Documentation
   o     make it simpler

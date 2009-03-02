@@ -3,15 +3,15 @@
 # French translation of Drupal (general)
 # Copyright YEAR NAME <EMAIL@ADDRESS>
 # Generated from files:
-#  taxonomy_csv.module: 6.x-2.0
-#  taxonomy_csv.info: 6.x-2.0
+#  taxonomy_csv.module,v 2.1.2.1 2009/02/28 10:05:46 danielkm
+#  taxonomy_csv.info,v 2.1.2.1 2009/02/28 10:05:46 danielkm
 #
 # Daniel Berthereau <Daniel.fr@Berthereau.net>, 2009.
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
-"POT-Creation-Date: 2009-02-27 11:01+0100\n"
-"PO-Revision-Date: 2009-02-27 11:04+0100\n"
+"POT-Creation-Date: 2009-03-02 15:21+0100\n"
+"PO-Revision-Date: 2009-03-02 15:24+0100\n"
 "Last-Translator: Daniel Berthereau <Daniel.fr@Berthereau.net>\n"
 "Language-Team: French <kde-i18n-doc@lists.kde.org>\n"
 "MIME-Version: 1.0\n"
@@ -207,7 +207,11 @@ msgstr ""
 
 #: taxonomy_csv.module:65
 msgid "Warning: This can create duplicate terms. It is recommended to use this option only if you are sure that imported taxonomy contains only new terms or if your vocabulary allows multiple parents."
-msgstr "Attention : cela peut créer des doublons. Cette option est conseillée seulement si vous êtes sûr que la taxinomie importée contient seulement des termes nouveaux ou si votre vocabulaire autorise les parents multiples."
+msgstr ""
+"Attention : cela peut créer des doublons. Cette option est "
+"conseillée seulement si vous êtes sûr que la taxinomie importée "
+"contient seulement des termes nouveaux ou si votre vocabulaire "
+"autorise les parents multiples."
 
 #: taxonomy_csv.module:66
 msgid "When you want to import child term names as well as descriptions, synonyms, related terms and term weights, you should begin with the file containing the hierarchical structure of parent and child. So first import child term names with the <em>Child term names</em> option. Second, upload the other files with the adequate option and one of the <em>Update terms...</em> option."
@@ -223,7 +227,14 @@ msgstr ""
 
 #: taxonomy_csv.module:67
 msgid "Be careful: if 1) source choice is <strong>not</strong> <em>\"Ignore\"</em> additional columns, 2) file or a line in the file has only one column and 3) you choose <em>\"Update and replace\"</em>, the import process will be a remove process of matching items (first column terms are always kept or imported)."
-msgstr "Attention : si 1) le choix de la source <strong>n'est pas</strong> <em>\"Ignorer\"</em> les colonnes supplémentaires, 2) le fichier ou une ligne dans le fichier contient seulement une colonne et 3) vous choisissez <em>\"Mettre à jour et remplacer\"</em>, le processus d'importation deviendra un processus de suppression des éléments correspondants (les termes de la première colonne sont toujours conservés ou importés)."
+msgstr ""
+"Attention : si 1) le choix de la source <strong>n'est pas</strong> "
+"<em>\"Ignorer\"</em> les colonnes supplémentaires, 2) le fichier ou "
+"une ligne dans le fichier contient seulement une colonne et 3) vous "
+"choisissez <em>\"Mettre à jour et remplacer\"</em>, le processus "
+"d'importation deviendra un processus de suppression des éléments "
+"correspondants (les termes de la première colonne sont toujours "
+"conservés ou importés)."
 
 #: taxonomy_csv.module:68
 msgid "It is recommended to protect terms with quotation marks (<strong><code>\"</code></strong>), specialy if they contain non-ASCII letters or if imported items, in particular descriptions, contain the chosen delimiter: <code>\"term 1\",\"term 2\",\"term 3\"</code>."
@@ -290,7 +301,11 @@ msgstr "Descriptions des termes"
 
 #: taxonomy_csv.module:144
 msgid "The first column is always imported as the term name. This option determines how additional columns will be imported. Children (structure of vocabulary) should be imported first when multiple files are imported."
-msgstr "La première colonne est toujours importée en tant que nom du terme. Cette option précise comment seront importés les colonnes suivantes. Les termes enfants (structure du vocabulaire) doivent être importés en premier lorsque plusieurs fichiers sont importés."
+msgstr ""
+"La première colonne est toujours importée en tant que nom du terme. "
+"Cette option précise comment seront importés les colonnes suivantes. "
+"Les termes enfants (structure du vocabulaire) doivent être importés "
+"en premier lorsque plusieurs fichiers sont importés."
 
 #: taxonomy_csv.module:149
 msgid "Advanced settings"
@@ -353,8 +368,24 @@ msgstr "Mettre les termes à jour et remplacer les éléments existants"
 #: taxonomy_csv.module:199
 msgid "<p>Whether existing terms with the same name should be updated or ignored.</p>\n      <p>For example, if existing related terms of term <code>\"Drupal\"</code> are: <code>\"Free\"</code> and <code>\"Open source\"</code> and an imported line in the csv file is <code>\"Drupal\",\"knowledge management\"</code>, then:\n      <dt><dd><em>\"Update and merge\"</em> choice make related terms of <code>\"Drupal\"</code> are now <code>\"Free\"</code>, <code>\"Open source\"</code> and <code>\"knowledge management\"</code>;</dd>\n      <dd><em>\"Update and replace\"</em> choice make related term of <code>\"Drupal\"</code> is now only <code>\"knowledge management\"</code>;</dd>\n      <dd><em>\"Ignore and create\"</em> choice make two <code>\"Drupal\"</code> terms, one with existing related and other items and another one with only the imported related term <code>\"knowledge management\"</code>.</dd></dt></p>"
 msgstr ""
-"<p>Indique si les termes existants avec le même nom doivent être mis à jour ou ignorés.</p>\n      <p>Par exemple, si les termes connexes du terme existant <code>\"Drupal\"</code> sont : <code>\"Libre\"</code> et <code>\"Open source\"</code> et si une ligne importée dans le fichier csv est <code>\"Drupal\",\gestion des connaissances\"</code>, alors :\n      <dt><dd>l'option <em>\"Mettre à jour et fusionner\"</em> implique que les termes connexes de <code>\"Drupal\"</code> seront dorénavant <code>\"Libre\"</code>, <code>\"Open source\"</code> et <code>\"gestion des connaissances\"</code>;</dd>\n      <dd>l'option <em>\"Mettre à jour et remplacer\"</em> implique que le terme connexe de <code>\"Drupal\"</code> est désormais seulement  <code>\"gestion des connaissances\"</code>;</dd>\n      <dd>l'option <em>\"Ignorer et créer\"</em> implique qu'il y aura désormais deux termes <code>\"Drupal\"</code>, "
-"l'un avec les termes connexes et les autres éléments existants, l'autre avec seulement le terme connexe <code>\"gestion des connaissances\"</code>.</dd></dt></p>"
+"<p>Indique si les termes existants avec le même nom doivent être mis "
+"à jour ou ignorés.</p>\n"
+"      <p>Par exemple, si les termes connexes du terme existant "
+"<code>\"Drupal\"</code> sont : <code>\"Libre\"</code> et <code>\"Open "
+"source\"</code> et si une ligne importée dans le fichier csv est "
+"<code>\"Drupal\",gestion des connaissances\"</code>, alors :\n"
+"      <dt><dd>l'option <em>\"Mettre à jour et fusionner\"</em> "
+"implique que les termes connexes de <code>\"Drupal\"</code> seront "
+"dorénavant <code>\"Libre\"</code>, <code>\"Open source\"</code> et "
+"<code>\"gestion des connaissances\"</code>;</dd>\n"
+"      <dd>l'option <em>\"Mettre à jour et remplacer\"</em> implique "
+"que le terme connexe de <code>\"Drupal\"</code> est désormais "
+"seulement  <code>\"gestion des connaissances\"</code>;</dd>\n"
+"      <dd>l'option <em>\"Ignorer et créer\"</em> implique qu'il y "
+"aura désormais deux termes <code>\"Drupal\"</code>, l'un avec les "
+"termes connexes et les autres éléments existants, l'autre avec "
+"seulement le terme connexe <code>\"gestion des "
+"connaissances\"</code>.</dd></dt></p>"
 
 #: taxonomy_csv.module:208
 msgid "Import"
@@ -397,10 +428,10 @@ msgid "Taxonomy CSV import"
 msgstr "Importation de taxinomie par CSV"
 
 #: taxonomy_csv.info:0
-msgid "Allow quick import of complete taxonomies or simple lists of terms with a CSV file."
+msgid "Allow quick import of complete taxonomies or simple lists of terms and properties with a CSV file."
 msgstr ""
 "Permet l'importation rapide de taxinomies complètes ou de simples "
-"listes de termes à partir d'un fichier CSV."
+"listes de termes et de leurs propriétés à partir d'un fichier CSV."
 
 #: taxonomy_csv.info:0
 msgid "Taxonomy"

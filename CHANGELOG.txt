@@ -12,6 +12,19 @@ Taxonomy csv x.x-x.x, xxxx-xx-xx
 --------------------------------
 
 
+Taxonomy csv 6.x-2.2 2009-03-02
+-------------------------------
+By Daniel Berthereau: Added one term structure array import.
+By Daniel Berthereau: Added warning and error notices during import.
+By Daniel Berthereau: Added auto create vocabulary.
+By Daniel Berthereau: Fixed translate in install hook.
+
+
+Taxonomy csv 6.x-2.1 2009-02-28
+-------------------------------
+By Daniel Berthereau: Fixed package release.
+By Daniel Berthereau: Fixed define.
+
 Taxonomy csv 6.x-2.0 2009-02-27
 -------------------------------
 By Daniel Berthereau: Rewrited module. Cleaned release.
