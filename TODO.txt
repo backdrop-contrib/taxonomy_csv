@@ -12,24 +12,26 @@
 
   o     = TODO
   -     = Skipped/postponed
-  x     = DONE
+  X     = DONE
     nnn = Introduced
 =====================
 
 User interface
   X 622 display result of import
+  X 622 display imported terms
   X 622 notice warnings and errors of import file
-  o     choose level of message
-  o     cumulate message and use Drupal's message
+  X 622 choose level of message
+  X     cumulate message and use Drupal's message
   X 622 auto create vocabulary
+  o     test on an existing vocabulary (duplicating it)
   o     dynamic examples (related to the choice of the source option)
-  o     import by a text area
-  X 620 add link to use module after installation
-  o     remind previous values for csv delimiter and utf-8 import
-  o     do a uninstall hook if remind previous values is done
-  o     advertise for remove when there is only one column and update is chosen.
-  -     reset button (unuseful)
+  o     import by a text area. See taxonomy_batch_operations
   o     text area to modify line when warning
+  X 620 add link to use module after installation
+  o     remind previous options values
+  o     do a uninstall hook if remind previous options values is done
+  o 622 warn remove when there is only one column and update is chosen
+  -     reset button (unuseful)
 
 Functions
   o     import of structured alphabetic terms list
@@ -41,10 +43,11 @@ Functions
   X 620 distinction between description and synonyms
   o     multiple files import
   o     sensitive or not to uppercase / lowercase
-  o     import of iso 2788 as in taxonomy_xml (but KISS approach)
+  o     import of iso 2788 as in taxonomy_xml (but KISS by line approach)
   o     integrate or reference to taxonomy_manager
-  o     remove selected terms
+  o     remove csv terms
   o     test before import
+  o     remove ignore existing terms choice?
 
 Code / security
   o     remove query and use only Drupal core ones and php filters (useful?)
@@ -54,14 +57,17 @@ Code / security
   o     redo a cache
   X 622 clean the input line at the beginning of process and never after
   o     use taxonomy_parser?
-  o     change the type of vocabulary (flat, monohierarchy, polyhierarchy)
+  o 622 change the type of vocabulary (flat, monohierarchy, polyhierarchy)
   o     add hook_perm
   o     add hook_info
   o     replace _taxonomy_csv_parse_size by a Drupal function
-  o     no order to import vocabulary files
-  o     use Drupal management of errors
-  o     change function name to internal, except some
-  o     vocabulary check
+  o     no order to import files
+  o     use Drupal management of errors (mysql log)
+  o 622 change function name to internal, except some
+  o     vocabulary check (after and before)
+  o     vocabulary relations check
+  o     time out control
+  o     fix: keep multiple parents when children import
 
 Documentation
   o     make it simpler
