@@ -24,18 +24,20 @@ User interface
   X     cumulate message and use Drupal's message
   X 622 auto create vocabulary
   o     test on an existing vocabulary (duplicating it)
-  o     dynamic examples (related to the choice of the source option)
+  o     dynamic options and examples (existing items should match source type)
   o     import by a text area. See taxonomy_batch_operations
   o     text area to modify line when warning
   X 620 add link to use module after installation
   o     remind previous options values
   o     do a uninstall hook if remind previous options values is done
   o 622 warn remove when there is only one column and update is chosen
-  -     reset button (unuseful)
+  -     reset button (useless)
+  o     inform about changes during import (ex: relations set then unset)
 
 Functions
   o     import of structured alphabetic terms list
-  o     option to import sub-relations and not only relations to first term
+  o 623 option to import sub-relations and not only relations to first term
+  o 623 option to make relations to terms of all vocabularies.
   o     import of ancestors and not children (useful?)
   X 622 use of parents of previous line for children without ancestors
           ("one term array structure import")
@@ -45,16 +47,16 @@ Functions
   o     sensitive or not to uppercase / lowercase
   o     import of iso 2788 as in taxonomy_xml (but KISS by line approach)
   o     integrate or reference to taxonomy_manager
-  o     remove csv terms
-  o     test before import
-  o     remove ignore existing terms choice?
+  o     remove csv terms import choice
+  o     test before import (autocreate a vocabulary)
+  o     remove ignore existing terms choice (see dynamic options above)
 
 Code / security
   o     remove query and use only Drupal core ones and php filters (useful?)
   o     see if there is Drupal functions to import only synonyms or related etc.
   X 622 manage and inform on input error
   o     factorize code and use more php functions
-  o     redo a cache
+  o 622 redo a cache
   X 622 clean the input line at the beginning of process and never after
   o     use taxonomy_parser?
   o 622 change the type of vocabulary (flat, monohierarchy, polyhierarchy)
@@ -68,6 +70,10 @@ Code / security
   o     vocabulary relations check
   o     time out control
   o     fix: keep multiple parents when children import
+  o 622 fix: when ignore existing items, search in imported terms cache before.
+  o     remove useless define
+  o     use a global messages variable to avoid multiple copy
+  o     relations with other vocabularies
 
 Documentation
   o     make it simpler
@@ -78,4 +84,4 @@ Documentation
 Drupal version
   o     Drupal 7: all. Use terms as objects: simpler with parents, related, etc.
   o     Drupal 5: update / backport
-  o     Drupal 4: update / backport
+  -     Drupal 4: update / backport
