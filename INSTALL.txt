@@ -20,12 +20,30 @@ None.
     directory in your Drupal installation (recommended: sites/all/modules).
 
  2) Go to Administer > Site building > Modules and enable the
-    Taxonomy CSV import module in the "Taxonomy" section. You should enable the
-    Taxonomy core module too.
+    "Taxonomy CSV import" module in the "Taxonomy" section.
+    Drupal "Taxonomy" core module is automatically enabled.
 
 
--- USAGE AND CONFIGURATION --
-  -------------------------
+-- UNINSTALLATION --
+  ----------------
+* As Taxonomy csv save user last used options, you can clean Drupal with the
+  "uninstall" option.
+
+  1) Go to Administer > Site building > Modules > Uninstall,
+     then check "taxonomy csv import" and click Uninstall button.
+
+  2) Remove the taxonomy_csv directory in the directory where you install it.
+
+
+-- CONFIGURATION --
+  ---------------
+
+* Go to Administer > User management > Roles,
+  then check "administer taxonomy by csv" permission to user with taxonomy role.
+
+
+-- USAGE --
+  -------
 
 * Go to Administer > Content management > Taxonomy
   and click on the "CSV import" tab. Follow the instructions on that page.

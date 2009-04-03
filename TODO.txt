@@ -21,65 +21,87 @@ User interface
   X 622 display imported terms
   X 622 notice warnings and errors of import file
   X 622 choose level of message
-  X     cumulate message and use Drupal's message
+  X     cumulate important messages with use Drupal's log
   X 622 auto create vocabulary
-  o     test on an existing vocabulary (duplicating it)
-  o     dynamic options and examples (existing items should match source type)
-  o     import by a text area. See taxonomy_batch_operations
+  X 630 test on an existing vocabulary (duplicating it)
+  X 630 dynamic options and examples (existing items should match source type)
+  X 630 import by a text area. See taxonomy_batch_operations
   o     text area to modify line when warning
   X 620 add link to use module after installation
-  o     remind previous options values
-  o     do a uninstall hook if remind previous options values is done
-  o 622 warn remove when there is only one column and update is chosen
+  X 630 remind previous options values
+  X 630 do a uninstall hook if remind previous options values is done
+  X 622 warn remove when there is only one column and update is chosen
   -     reset button (useless)
+  X 630 recommended default values button
   o     inform about changes during import (ex: relations set then unset)
+  o     two steps import (validate and display warnings then process)
+  o     option to choose one or two steps
+  o     two step wizard for non-ahah users
+  X 630 notice exceed file size
+  o     option to import in original vocabulary after import in a duplicate
+  o     disable utf8 option if textarea import
+  o     no warning on last empty lines
 
 Functions
-  o     import of structured alphabetic terms list
-  o 623 option to import sub-relations and not only relations to first term
-  o 623 option to make relations to terms of all vocabularies.
-  o     import of ancestors and not children (useful?)
+  o     import of structured alphabetic terms list (thesaurus)
+  o     import of iso 2788 as in taxonomy_xml (but KISS by line approach)
+  X 623 option to import sub-relations and not only relations to first term
+  X 623 option to make relations to terms of all vocabularies.
+  o     import of ancestors structure and not children (change name)
+  o     import of first level parents
+  o     import of first level children
   X 622 use of parents of previous line for children without ancestors
-          ("one term array structure import")
+          ("one term by line structure import")
   o     parent merge (polyhierarchy)
   X 620 distinction between description and synonyms
   o     multiple files import
-  o     sensitive or not to uppercase / lowercase
-  o     import of iso 2788 as in taxonomy_xml (but KISS by line approach)
+  -     sensitive or not to uppercase/lowercase (not in D6: see taxonomy.module)
   o     integrate or reference to taxonomy_manager
   o     remove csv terms import choice
   o     test before import (autocreate a vocabulary)
   o     remove ignore existing terms choice (see dynamic options above)
+  -     import related in other vocabulary before current vocabulary (not in D6)
+  o     auto detect good source content and vocabulary with a previous line key
+  o     with auto detect, import mutliple type with one file
+  o     convert and export vocabulary to xml (in particular to compare with xml)
 
 Code / security
   o     remove query and use only Drupal core ones and php filters (useful?)
   o     see if there is Drupal functions to import only synonyms or related etc.
   X 622 manage and inform on input error
-  o     factorize code and use more php functions
-  o 622 redo a cache
+  o     factorize code and use more php functions (callback for import type...)
+  X 622 redo a cache
   X 622 clean the input line at the beginning of process and never after
   o     use taxonomy_parser?
-  o 622 change the type of vocabulary (flat, monohierarchy, polyhierarchy)
-  o     add hook_perm
+  X 622 change the type of vocabulary (flat, monohierarchy, polyhierarchy)
+  X 630 add hook_perm
   o     add hook_info
-  o     replace _taxonomy_csv_parse_size by a Drupal function
+  X 630 replace _taxonomy_csv_parse_size by a Drupal function
   o     no order to import files
   o     use Drupal management of errors (mysql log)
-  o 622 change function name to internal, except some
+  X 622 change function name to internal, except some
   o     vocabulary check (after and before)
-  o     vocabulary relations check
+  o     vocabulary relations integrety check and attribute
   o     time out control
   o     fix: keep multiple parents when children import
-  o 622 fix: when ignore existing items, search in imported terms cache before.
+  X 622 fix: when ignore existing items, search in imported terms cache before
   o     remove useless define
-  o     use a global messages variable to avoid multiple copy
-  o     relations with other vocabularies
+  o     use a global messages variable or sandbox to avoid multiple copy
+  -     relations with other vocabularies (not officially supported in Drupal 6)
+  o     extract all helps of forms to help.html in order to remove duplicates
+  o     simplify batch set (all $options aren't needed)
+  o     remove base64 temporary and work only with utf8
+  o     use a smarter regexp delimiter than fgetcsv or explode
+  o     fix: UI: when a file is set, avoid upload warning when options change
+  o     Change Warning empty line by a simple notice
+  o     Modularize code to simplify include of new schemes
 
 Documentation
   o     make it simpler
   o     more examples
-  x 620 image view and presentation text for project page
-  x 620 translations
+  o     merge advanced help and dynamic examples
+  X 620 image view and presentation text for project page
+  X 620 translations
 
 Drupal version
   o     Drupal 7: all. Use terms as objects: simpler with parents, related, etc.

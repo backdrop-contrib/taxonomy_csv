@@ -12,6 +12,24 @@ Taxonomy csv x.x-x.x, xxxx-xx-xx
 --------------------------------
 
 
+Taxonomy csv 6.x-3.0, 2009-04-03
+-------------------------------
+By Daniel Berthereau: Redesigned UI with dynamic options and examples (AHAH).
+By Daniel Berthereau: Added import by a text area.
+By Daniel Berthereau: Added hook_perm "administer taxonomy by csv".
+By Daniel Berthereau: Added memorize user settings.
+By Daniel Berthereau: Added test on a duplicate of an existing vocabulary.
+By Daniel Berthereau: Added tabulation delimiter option.
+By Daniel Berthereau: Added import terms as flat vocabulary.
+By Daniel Berthereau: Renamed "children import" to "structure import".
+By Daniel Berthereau: Disabled option relations to all vocabularies (not in D6).
+By Daniel Berthereau: Extracted advanced help to alone file.
+By Daniel Berthereau: Simplified stats import code.
+
+Taxonomy csv 6.x-2.4, 2009-03-10
+-------------------------------
+By Daniel Berthereau: Released 6.x.2.4.
+
 Taxonomy csv 6.x-2.3, 2009-03-09
 -------------------------------
 By Daniel Berthereau: Added subrelations import.
@@ -24,7 +42,7 @@ Taxonomy csv 6.x-2.2, 2009-03-06
 By Daniel Berthereau: Restructured module to display warning informations.
 By Daniel Berthereau: Added options to display import result.
 By Daniel Berthereau: Added options to choose log level.
-By Daniel Berthereau: Added one term structure array import.
+By Daniel Berthereau: Added one term by line structure import.
 By Daniel Berthereau: Added auto create vocabulary.
 By Daniel Berthereau: Added vocabulary level check.
 By Daniel Berthereau: Extended help about one term structure array import.

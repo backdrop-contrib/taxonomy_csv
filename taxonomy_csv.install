@@ -4,13 +4,36 @@
 /**
  * @file
  * Taxonomy_csv install hook.
- *
- * No need of uninstall hook because module adds nothing except terms.
  */
 
 /**
  * Implementation of hook_install().
  */
 function taxonomy_csv_install() {
-  drupal_set_message(st('Taxonomy_csv has been installed. You can now import taxonomies or list of terms under <a href="!link_import">Administer > Content management > Taxonomy > CSV import</a>. More information is available under <a href="!link_help">Administer > Help > Taxonomy CSV import</a>.', array('!link_import' => url('admin/content/taxonomy/csv'), '!link_help' => url('admin/help/taxonomy_csv'))));
+  drupal_set_message(st('Taxonomy_csv has been installed. You can now import taxonomies, structures or lists of terms under <a href="!link_import">Administer > Content management > Taxonomy > CSV import</a>. More information is available under <a href="!link_help">Administer > Help > Taxonomy CSV import</a>.', array('!link_import' => url('admin/content/taxonomy/csv'), '!link_help' => url('admin/help/taxonomy_csv'))));
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function taxonomy_csv_uninstall() {
+  // Remove user preferences.
+  foreach (array(
+      'source_content',
+      'source_choice',
+      'source_delimiter',
+      'source_delimiter_custom_field',
+      'source_disable_convert_to_utf8',
+      'destination_target',
+      'destination_vocabulary_id',
+      'import_existing_items',
+      'import_create_subrelations',
+      'import_all_vocabularies',
+      'result_display_type',
+      'result_display_level',
+    ) as $option) {
+    variable_del("taxonomy_csv_$option");
+  }
+
+  drupal_set_message(st('Taxonomy csv import: All user preferences has been removed. Thanks for using this module!<br />Your comments are welcomed on <a href="!link">Taxonomy csv import</a>.', array('!link' => url('http://drupal.org/project/taxonomy_csv'))));
 }
