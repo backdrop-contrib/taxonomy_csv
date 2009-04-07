@@ -1,0 +1,176 @@
+<!-- $Id$ -->
+<p>Ce module vous permet d'<a href="../content/taxonomy/csv">importer des taxinomies, des structures ou de simples listes de termes</a> dans un vocabulaire à partir d'un fichier <a href="http://fr.wikipedia.org/wiki/Comma-separated_values" title="Définition Wikipedia">CSV</a> ou d'un texte copié-collé.</p>
+<p>Si vous ne savez pas comment créer un fichier CSV, vous pouvez utiliser <a href="http://www.openoffice.org" title="OpenOffice.org">OpenOffice Calc</a> ou un autre tableur pour exporter vos données dans un fichier CSV.</p>
+<p>Quatre éléments doivent être paramêtrés sont nécessaires pour importer les termes.</p>
+<br />
+
+<h3>1. Que voulez-vous importer (contenu de la source) ?</h3>
+  <p>La source peut être configurée avec le premier groupe d'options. La première colonne indique toujours le nom du terme importé. Vous pouvez indiquer comment les colonnes suivantes doivent être importées.</p>
+  <dl>
+    <dt>Termes seuls</dt>
+    <dd>
+      Les termes sont importés comme de simples termes. Les colonnes suivantes sont ignorées. Exemple :<br />
+      <ul>
+        <li><code>Diamant</code></li>
+        <li><code>Or</code></li>
+        <li><code>Bois</code></li>
+      </ul>
+    </dd>
+    <dt>Termes (vocabulaire plat)</dt>
+    <dd>
+      Cette option permet d'importer un ensemble de termes de manière à créer un vocabulaire plat. Tous les éléments du fichier seront importés en tant que termes. Exemple :<br />
+      <ul>
+        <li><code>Vétements, Arbres, Maisons</code></li>
+        <li><code>Paris, Drupal</code></li>
+      </ul>
+    </dd>
+    <dt>Structure hiérarchique ou en tableau d'un terme par ligne</dt>
+    <dd>
+      Cette option permet de créer la structure d'un vocabulaire (arborescence). Votre fichier peut être écrit selon deux schémas.<br >
+      Dans le premier schéma, vous devez indiquer tous les ancêtres de chaque terme. La deuxième colonne sera importée comme un enfant du terme de la première colonne. La troisième colonne sera importée comme un enfant du terme de la deuxième colonne et ainsi de suite. Les lignes peuvent avoir n'importe quel ordre. Exemple:<br />
+      <ul>
+        <li><code>Animal,Mammifère,Baleine</code></li>
+        <li><code>Animal,Mammifère,Singe</code></li>
+      </ul>
+      Attention : lorsqu'un enfant est ajouté ou mis à jour, la ligne doit contenir tous ses ancêtres. Ainsi, une troisième ligne pourrait être :
+      <ul>
+        <li><code>Animal,Mammifère,Humain</code></li>
+      </ul>
+      mais <strong>pas</strong> :
+      <ul>
+        <li><code>Mammifère,Humain</code></li>
+      </ul>
+      car dans ce cas, < <code>Mammifère</code> > serait importé comme terme de premier niveau et non comme un enfant du terme < <code>Animal</code> > comme dans la ligne précédente.<br />
+      <br />
+      Dans le schéma "structure en tableau d'un terme par ligne", vous pouvez importer les termes sans répéter tous les ancêtres si la ligne précédente les contient. Ce mode est très pratique pour importer une structure depuis un tableur. Il permet également de construire facilement une structure et de télécharger un fichier plus léger. Votre hiérarchie peut être présentée de la façon suivante :<br />
+      <code><table border="1">
+        <tr><td>Monde</td><td></td><td></td><td></td></tr>
+        <tr><td></td><td>Asie</td><td></td><td></td></tr>
+        <tr><td></td><td></td><td>Japon</td><td></td></tr>
+        <tr><td></td><td></td><td></td><td>Tokyo</td></tr>
+        <tr><td></td><td></td><td>Corée</td><td></td></tr>
+        <tr><td></td><td></td><td></td><td>Séoul</td></tr>
+      </table></code>
+      <br />
+      Ainsi, les premières lignes de votre fichier csv seraient :
+      <ul>
+        <li><code>Monde</code></li>
+        <li><code>,Europe</code></li>
+        <li><code>,,France</code></li>
+        <li><code>,,,Paris</code></li>
+      </ul>
+      < <code>Paris</code> > sera automatiquement ajouté comme enfant du terme < <code>France</code> >.
+      <p>Les lignes peuvent être partielles. Ainsi, une cinquième ligne pourrait être :</p>
+      <ul>
+        <li><code>,,Suisse,Bern</code></li>
+      </ul>
+      < <code>Suisse</code> > serait alors ajouté comme enfant d'< <code>Europe</code> > et bien sûr < <code>Bern</code> > comme enfant de < <code>Suisse</code> >.
+      <p>De la même façon, les lignes 1 à 4 ci-dessus peuvent être simplifié en :</p>
+      <ul>
+        <li><code>Monde,Europe,France,Paris</code></li>
+      </ul>
+      Les lignes complètes, avec un seul terme ou partielles peuvent être mélangées, mais l'ordre est pris en compte deux lignes par deux. Dans cet exemple, si les quatrième et cinquième lignes sont interverties, < <code>Paris</code> > deviendrait un enfant de < <code>Suisse</code> >.
+    </dd>
+    <dt>Termes liés (termes connexes)</dt>
+    <dd>
+      Cette option permet de créer des liens entre les termes comme les "voir aussi" dans une encyclopédie. La deuxième colonne et les suivantes seront importées en tant que termes connexes du terme de la première colonne. Par exemple, une ligne pourrait être:<br />
+      <ul>
+        <li><code>Baobab, Madagascar, Fantôme</code></li>
+      </ul>
+      Ainsi, < <code>Baobab</code> > renverra à < <code>Madagascar</code> > et à < <code>Fantôme</code> >. Une option permet de créer également les sous-relations, en l'occurrence entre < <code>Madagascar</code> > et < <code>Fantôme</code> > (voir ci-dessous).
+    </dd>
+    <dt>Description du terme</dt>
+    <dd>
+      La seconde colonne sera importée comme description du terme défini dans la première colonne.Example:<br/>
+      <ul>
+        <li><code>"Baobab","Un arbre africain"</code></li>
+      </ul>
+    </dd>
+    <dt>Poids des termes</dt>
+    <dd>
+      La seconde colonne sera importée comme poids du terme défini dans la première colonne. Example:<br/>
+      <ul>
+        <li><code>Baobab, 3</code></li>
+      </ul>
+    </dd>
+    <dt>Termes synonymes</dt>
+    <dd>
+      La deuxième colonne et les suivantes seront importées comme termes synonymes du terme de la première colonne. Example:<br />
+      <ul>
+        <li><code>"Royaume Uni","Grande-Bretagne","Angleterre"</code></li>
+      </ul>
+    </dd>
+  </dl>
+  <br />
+
+<h3>2. Où se trouvent les termes à importer ?</h3>
+  <p>Vous pouvez importez les termes à partir d'un fichier ou avec une zone de texte. Sélectionnez simplement votre choix.</p>
+  <p>Si l'importation échoue par l'un des deux moyens, généralement en raison de problèmes de format ou des restrictions du serveur, vous pouvez essayer l'autre moyen puisque le processus de téléchargement est différent.</p>
+  <p>Les paramêtres avancés permettent de choisir le séparateur de champ et le format du fichier (voir ci-dessous).</p>
+  <br />
+
+<h3>3. Où importer les termes (vocabulaire cible) ?</h3>
+  <p>Vous pouvez importer vos termes dans un vocabulaire existant ou en créer un nouveau. Vous pouvez également importer vos termes dans une copie d'un vocabulaire existant.</p>
+  <p>Quand vous voulez importer une nouvelle liste dans une taxinomie existante, il est recommandé de procéder en trois étapes de façon à garantir la qualité de l'importation.</p>
+  <ul>
+    <li>D'abord, vérifier le fichier d'importation en choisissant l'option < <em>Autocréer un nouveau vocabulaire</em> >. Répéter cette étape tant qu'il y a des avertissements et des messages.</li>
+    <li>Ensuite, vérifier la fusion entre les nouveaux termes et les termes existants avec l'option < <em>Dupliquer un vocabulaire existant</em> >. Ce choix crée une copie de votre vocabulaire cible et y importe les termes. Les attachements aux nœuds ne sont pas copiés.</li>
+    <li>Enfin, vous pouvez importer votre fichier dans le bon vocabulaire avec l'option < <em>Importer dans un vocabulaire existant</em> >. Cela permet de conserver les liens entre les termes et les nœuds.</li>
+  </ul>
+  <p>Si vous voulez seulement créer un nouveau vocabulaire, le premier choix est suffisant, à moins que vous avez plusieurs fichiers pour un vocabulaire.</p>
+  <br />
+
+<h3>4. Comment importer les termes ?</h3>
+  <p>La destination peut être configurée avec le second groupe d'options. Vous pouvez définir ce que deviendront les termes existants. Jusqu'à quatre choix sont possibles selon le contenu de la source :</p>
+  <dl>
+    <dt>Mettre les termes à jour et fusionner avec l'existant</dt>
+    <dd>
+      Met à jour les termes existants lorsque le nom correspond avec celui des termes importés et fusionne les descriptions, parents, synonymes et termes connexes existants. Les doublons sont supprimés. Ce choix est conseillé si vous voulez conserver un vocabulaire et si vous avez des descriptions, des parents, des synonymes et des termes connexes que vous ne voulez pas perdre.
+    </dd>
+    <dt>Mettre les termes à jour et remplacer l'existant</dt>
+    <dd>
+      Met à jour les termes existants si le nom correspond à celui des termes importés, mais remplace les descriptions, les parents, les termes synonymes et connexes existants. Choisissez cette option si vous voulez créer proprement un nouveau vocabulaire sans perdre les termes existants.
+      <br />
+      Attention : s'il n'y a pas de description, parent, synonyme ou terme connexe, c'est-à-dire si la ligne contient seulement un terme dans la première colonne, cela supprimera l'existant.
+    </dd>
+    <dt>Ignorer les termes existants et en créer de nouveaux</dt>
+    <dd>
+      Conserve les termes existants tels qu'ils sont et crée un nouveau terme pour le terme de la première colonne.
+      <br />
+      Attention : cela peut créer des doublons. Cette option est conseillée seulement si vous êtes sûr que la taxinomie importée contient seulement des termes nouveaux ou si votre vocabulaire autorise les parents multiples.
+    </dd>
+    <dt>Ignorer tous les termes et en créer de nouveaux</dt>
+    <dd>
+      Crée un nouveau terme pour chaque terme de la ligne.
+    </dd>
+  </dl>
+  <br />
+
+<h3>Paramêtres avancés et conseils</h3>
+  <ul>
+    <li>
+      Il est conseillé de protéger les termes par des guillemets (<strong><code>"</code></strong>), notamment s'ils contiennent des caractères non-ASCII ou si les éléments importés, en particulier les descriptions, contiennent le séparateur choisi. Exemple:<br />
+      <ul>
+        <li><code>"terme 1","Ce champ contient une virgule, mais il sera correctement importé."</code></li>
+      </ul>
+    </li>
+    <li>
+      Le séparateur (virgule "<strong><code>,</code></strong>", point-virgule "<strong><code>;</code></strong>" ou tabulation) entre les termes peut être choisi dans les paramètres avancés du deuxième ensemble. Le séparateur peut également être personnalisé et contenir plusieurs caractères. Exemple avec le délimiteur < <strong><code>¤</code></strong> > :<br />
+      <ul>
+        <li><code>terme 1¤Ce champ contient des virgules, un point-virgule (;), des guillemets (") et une tabulation, mais il est correctement importé.</code></li>
+      </ul>
+    </li>
+    <li>
+      Il est conseillé d'utiliser la zone de texte ou un fichier encodé au format utf8 pour éviter les problèmes avec les termes non-ASCII.
+    </li>
+    <li>
+      Si votre serveur ne supporte pas la conversion en utf8, une option permet de la désactiver dans le deuxième groupe d'options.
+    </li>
+    <li>
+      Si vous voulez importer à la fois des termes enfants, des descriptions, des poids, des termes synonymes et connexes et une structure hiérarchique, vous devez commencer par le fichier contenant la structure hiérarchique des parents et des enfants. Ainsi, vous devez  Ainsi, vous devez d'abord importer le fichier des termes enfants en choisissant l'option <em>Noms des termes enfants</em>. Ensuite, vous pouvez importer les autres fichiers en choisissant l'option adéquate et l'une ou l'autre option <em>Mettre à jour...</em>
+    </li>
+    <li>
+      Attention : si 1) le choix de la source <strong>n'est pas</strong> <em>"Ignorer"</em> les colonnes supplémentaires, 2) le fichier ou une ligne dans le fichier contient seulement une colonne et 3) vous choisissez <em>"Mettre à jour et remplacer"</em>, le processus d'importation deviendra un processus de suppression des éléments correspondants (les termes de la première colonne sont toujours conservés ou importés).
+    </li>
+  </ul>
+<p>Un autre module Drupal permet également l'mportation d'une taxinomie par le biais d'un fichier CSV, malgré son nom : <a href="http://drupal.org/project/taxonomy_xml" title="taxonomy XML">taxonomy XML</a>. Son approche est différente. Il utilise un fichier unique conforme à la norme ISO 2788 sur les thésaurus, en l'occurrence un fichier CSV à trois colonnes : <code>premier terme, type de lien, second terme</code>, ou, pour les specialistes, <code>sujet, prédicat, objet</code>. Pour Drupal 4.7 et Drupal 5, <a href="http://drupal.org/project/taxonomy_batch_operations" title="taxonomy batch operations">taxonomy batch operations</a> peut également être utilisé. Vous pouvez donc choisir le module correspondant le mieux à vos besoins.</p>

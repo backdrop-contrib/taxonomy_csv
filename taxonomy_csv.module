@@ -59,7 +59,7 @@
 // To add a new csv scheme, need:
 // - a define without space,
 // - an item in $list_source_content_types,
-// - a existing items form (_taxonomy_csv_form_SCHEME_form()),
+// - an existing items form (_taxonomy_csv_form_SCHEME_form()),
 // - eventually a specific options form (_taxonomy_csv_form_SCHEME_specific_form()),
 // - a case in _taxonomy_csv_check_items(),
 // - a case in _taxonomy_csv_process_items(),
@@ -233,8 +233,8 @@ function taxonomy_csv_form() {
 
   $list_import_options = array(
     TAXONOMY_CSV_EXISTING_UPDATE         => t('Update existing term'),
-    TAXONOMY_CSV_EXISTING_UPDATE_MERGE   => t('Merge existing term and items if exist else create'),
-    TAXONOMY_CSV_EXISTING_UPDATE_REPLACE => t('Replace existing term and items if exist else create'),
+    TAXONOMY_CSV_EXISTING_UPDATE_MERGE   => t('Update (merge) existing term and items if exist else create'),
+    TAXONOMY_CSV_EXISTING_UPDATE_REPLACE => t('Update (replace) existing term and items if exist else create'),
     TAXONOMY_CSV_EXISTING_IGNORE_CREATE  => t('Ignore existing term and create a new term'),
     TAXONOMY_CSV_EXISTING_IGNORE_ALL     => t('Ignore existing term and create a new term for each term on the line'),
     TAXONOMY_CSV_EXISTING_IGNORE         => t('Duplicate existing term'),
@@ -409,7 +409,7 @@ function taxonomy_csv_form() {
     '#required' => TRUE,
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
-    '#description' => t('You can indicate what will become an existing term when the imported one gets the same name.'),
+    '#description' => t('You can set what will become an existing term when the imported one gets the same name. Some choices may be currently disabled.'),
   );
 
   if ($_COOKIE['has_js']) {
@@ -530,10 +530,10 @@ function _taxonomy_csv_form_source_file_form() {
   $form['source_file'] = array(
     '#type' => 'file',
     '#title' => t('CSV file'),
-    '#description' => ($max_size = parse_size(ini_get('upload_max_filesize'))) ? t('Due to server restrictions, the <strong>maximum upload file size is !max_size</strong>. Files that exceed this size will be disregarded without notice.', array('!max_size' => format_size($max_size))) : '',
+    '#description' => ($max_size = parse_size(ini_get('upload_max_filesize'))) ? t('Due to server restrictions, the <strong>maximum upload file size is !max_size</strong>. Files that exceed this size will be disregarded.', array('!max_size' => format_size($max_size))) : '',
   );
 
-  $form['source_file']['#description'] .= '<br />'. t("* To fix: currently, a upload warning box appears each time you change settings. To avoid it, set file name at last and don't answer Cancel.");
+  $form['source_file']['#description'] .= '<br />'. t("* To fix: currently, on some browsers, a upload warning box may appear each time you change settings. To avoid it, set file name at last and don't answer Cancel.");
   return $form;
 }
 
@@ -601,8 +601,8 @@ function _taxonomy_csv_form_import_base_form($import_options) {
   ///TODO: To be removed.
   $list_import_options = array(
     TAXONOMY_CSV_EXISTING_UPDATE         => t('Update existing term'),
-    TAXONOMY_CSV_EXISTING_UPDATE_MERGE   => t('Merge existing term and items if exist else create'),
-    TAXONOMY_CSV_EXISTING_UPDATE_REPLACE => t('Replace existing term and items if exist else create'),
+    TAXONOMY_CSV_EXISTING_UPDATE_MERGE   => t('Update (merge) existing term and items if exist else create'),
+    TAXONOMY_CSV_EXISTING_UPDATE_REPLACE => t('Update (replace) existing term and items if exist else create'),
     TAXONOMY_CSV_EXISTING_IGNORE_CREATE  => t('Ignore existing term and create a new term'),
     TAXONOMY_CSV_EXISTING_IGNORE_ALL     => t('Ignore existing term and create a new term for each term on the line'),
     TAXONOMY_CSV_EXISTING_IGNORE         => t('Duplicate existing term'),
@@ -828,6 +828,9 @@ function _taxonomy_csv_form_import_existing_items_form($form_element, &$form_sta
   foreach ($form_element['#options'] as $key => $value) {
     $form_element[$key]['#access'] = (array_key_exists($key, $i['import_existing_items']['#options']));
   }
+  foreach ($i['import_existing_items'] as $key => $value) {
+    $form_element[$key] = $value;
+  }
 
   return $form_element;
 }
@@ -956,7 +959,7 @@ function _taxonomy_csv_form_ahah_finish_js($form, $callback_source, $form_path =
     $output = theme('status_messages') . drupal_render($form_element);
   }
   else {
-    form_set_error('form_token', t('Validation error. Please return to !taxocsv_page. If this error persists, please contact the site administrator.', array('!taxocsv_page' => url('admin/content/taxonomy/csv'))));
+    form_set_error('form_token', t('Validation error. Please return to <a href="!taxocsv_page">CSV import</a> page. If this error persists, please contact the site administrator.', array('!taxocsv_page' => url('admin/content/taxonomy/csv'))));
     $output = theme('status_messages');
   }
   // Return ahah element.
@@ -989,7 +992,7 @@ function taxonomy_csv_form_validate($form, &$form_state) {
       $form_state['upload_file'] = file_save_upload('source_file');
 
       if (!$form_state['upload_file']) {
-        form_set_error('source_file', t("You choose to import a taxonomy by a file, but you don't set its name."));
+        form_set_error('source_file', t("You choose to import a taxonomy by a file, but you don't set its name or its size is greater than the server's limit of !max_size.", array('!max_size' => format_size(parse_size(ini_get('upload_max_filesize'))))));
       }
       else if (!$form_state['upload_file']->filesize) {
         form_set_error('source_file', t('Size of your file is null.'));
@@ -1051,7 +1054,7 @@ function taxonomy_csv_form_submit($form, &$form_state) {
     $options['filename'] = '';
   }
 
-  // User choose to auto create or duplicate a vocabulary
+  // User choose to auto create or duplicate a vocabulary.
   switch ($options['destination_target']) {
     case 'autocreate':
       // If textarea import, 'filename' is empty.
@@ -1121,6 +1124,10 @@ function taxonomy_csv_form_submit($form, &$form_state) {
             $first = FALSE;
           }
         }
+        // Avoids some errors.
+        if (!is_array($line) || (count($line) == 0) || empty($line) || ((count($line) == 1) && (($line[0] == NULL)))) {
+          $line = array();
+        }
         // Encode the line in base64 to prevent batch errors for weird encodings.
         $batch['operations'][] = array('taxonomy_csv_import_line', array(array_map('base64_encode', $line), $options));
 
@@ -1169,9 +1176,6 @@ function taxonomy_csv_import_finished($success, $results, $operations) {
 
   if ($options['source_choice'] == 'source_file') {
     drupal_set_message(t('File "%file" uploaded.', array('%file' => $options['filename'])));
-    if ($options['filesize'] > ($max_size = parse_size(ini_get('upload_max_filesize')))) {
-      drupal_set_message(t('Due to server restrictions, part of file exceeding !max_size has been disregarded.', array('!max_size' => format_size($max_size))), 'error');
-    }
   }
 
   switch ($options['result_display_type']) {
@@ -1268,6 +1272,7 @@ function _taxonomy_csv_autocreate_vocabulary($vocabulary_name = '') {
       'nodes'       => array(),
     );
 
+    ///TODO: Check result.
     $result = taxonomy_save_vocabulary($vocabulary);
 
     return array(
@@ -1301,7 +1306,9 @@ function _taxonomy_csv_duplicate_vocabulary($vocabulary_id) {
       'nodes'       => array(),
     );
 
+    ///TODO: Check result.
     $result = taxonomy_save_vocabulary($duplicated_vocabulary);
+
 
     $duplicated_vocabulary['vid'] = _taxonomy_csv_get_vocabulary_id($duplicated_vocabulary['name']);
 
