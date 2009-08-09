@@ -1,9 +1,18 @@
 <!-- $Id$ -->
-<p>Ce module vous permet d'<a href="../content/taxonomy/csv">importer des taxinomies, des structures ou de simples listes de termes</a> dans un vocabulaire à partir d'un fichier <a href="http://fr.wikipedia.org/wiki/Comma-separated_values" title="Définition Wikipedia">CSV</a> ou d'un texte copié-collé.</p>
+<p>Ce module vous permet d'<a href="?q=admin/content/taxonomy/csv">importer des taxinomies, des structures ou de simples listes de termes</a> dans un vocabulaire à partir d'un fichier <a href="http://fr.wikipedia.org/wiki/Comma-separated_values" title="Définition Wikipedia">CSV</a> ou d'un texte copié-collé.</p>
 <p>Si vous ne savez pas comment créer un fichier CSV, vous pouvez utiliser <a href="http://www.openoffice.org" title="OpenOffice.org">OpenOffice Calc</a> ou un autre tableur pour exporter vos données dans un fichier CSV.</p>
-<p>Quatre éléments doivent être paramêtrés sont nécessaires pour importer les termes.</p>
+<br />
+<p>Pour importer des termes, l'utilisateur doit avoir les <a href="?q=admin/user/permissions#module-taxonomy_csv" title="configurer les permissions de taxonomy_csv">droits d'accès</a> suivants :<br />
+  <ul>
+    <li>Module system / accéder aux pages d'administration ;</li>
+    <li>Module taxonomy / administrer la classification ;</li>
+    <li>Module taxonomy_csv / Gérer les taxinomies par csv.</li>
+  </ul>
+</p>
 <br />
 
+<p>Quatre éléments doivent être paramètrés pour importer les termes.</p>
+<br />
 <h3>1. Que voulez-vous importer (contenu de la source) ?</h3>
   <p>La source peut être configurée avec le premier groupe d'options. La première colonne indique toujours le nom du terme importé. Vous pouvez indiquer comment les colonnes suivantes doivent être importées.</p>
   <dl>
@@ -65,7 +74,7 @@
         <li><code>,,Suisse,Bern</code></li>
       </ul>
       < <code>Suisse</code> > serait alors ajouté comme enfant d'< <code>Europe</code> > et bien sûr < <code>Bern</code> > comme enfant de < <code>Suisse</code> >.
-      <p>De la même façon, les lignes 1 à 4 ci-dessus peuvent être simplifié en :</p>
+      <p>De la même façon, les lignes 1 à 4 ci-dessus peuvent être simplifiées en :</p>
       <ul>
         <li><code>Monde,Europe,France,Paris</code></li>
       </ul>
@@ -73,7 +82,7 @@
     </dd>
     <dt>Termes liés (termes connexes)</dt>
     <dd>
-      Cette option permet de créer des liens entre les termes comme les "voir aussi" dans une encyclopédie. La deuxième colonne et les suivantes seront importées en tant que termes connexes du terme de la première colonne. Par exemple, une ligne pourrait être:<br />
+      Cette option permet de créer des liens entre les termes comme les "voir aussi" dans une encyclopédie. La deuxième colonne et les suivantes seront importées en tant que termes connexes du terme de la première colonne. Par exemple, une ligne pourrait être :<br />
       <ul>
         <li><code>Baobab, Madagascar, Fantôme</code></li>
       </ul>
@@ -81,21 +90,21 @@
     </dd>
     <dt>Description du terme</dt>
     <dd>
-      La seconde colonne sera importée comme description du terme défini dans la première colonne.Example:<br/>
+      La seconde colonne sera importée comme description du terme défini dans la première colonne.Exemple :<br/>
       <ul>
         <li><code>"Baobab","Un arbre africain"</code></li>
       </ul>
     </dd>
     <dt>Poids des termes</dt>
     <dd>
-      La seconde colonne sera importée comme poids du terme défini dans la première colonne. Example:<br/>
+      La seconde colonne sera importée comme poids du terme défini dans la première colonne. Exemple :<br/>
       <ul>
         <li><code>Baobab, 3</code></li>
       </ul>
     </dd>
     <dt>Termes synonymes</dt>
     <dd>
-      La deuxième colonne et les suivantes seront importées comme termes synonymes du terme de la première colonne. Example:<br />
+      La deuxième colonne et les suivantes seront importées comme termes synonymes du terme de la première colonne. Exemple :<br />
       <ul>
         <li><code>"Royaume Uni","Grande-Bretagne","Angleterre"</code></li>
       </ul>
@@ -106,7 +115,7 @@
 <h3>2. Où se trouvent les termes à importer ?</h3>
   <p>Vous pouvez importez les termes à partir d'un fichier ou avec une zone de texte. Sélectionnez simplement votre choix.</p>
   <p>Si l'importation échoue par l'un des deux moyens, généralement en raison de problèmes de format ou des restrictions du serveur, vous pouvez essayer l'autre moyen puisque le processus de téléchargement est différent.</p>
-  <p>Les paramêtres avancés permettent de choisir le séparateur de champ et le format du fichier (voir ci-dessous).</p>
+  <p>Les paramètres avancés permettent de choisir le séparateur de champ et le format du fichier (voir ci-dessous).</p>
   <br />
 
 <h3>3. Où importer les termes (vocabulaire cible) ?</h3>
@@ -146,19 +155,20 @@
   </dl>
   <br />
 
-<h3>Paramêtres avancés et conseils</h3>
+<h3>Paramètres avancés et conseils</h3>
   <ul>
     <li>
-      Il est conseillé de protéger les termes par des guillemets (<strong><code>"</code></strong>), notamment s'ils contiennent des caractères non-ASCII ou si les éléments importés, en particulier les descriptions, contiennent le séparateur choisi. Exemple:<br />
-      <ul>
-        <li><code>"terme 1","Ce champ contient une virgule, mais il sera correctement importé."</code></li>
-      </ul>
-    </li>
-    <li>
-      Le séparateur (virgule "<strong><code>,</code></strong>", point-virgule "<strong><code>;</code></strong>" ou tabulation) entre les termes peut être choisi dans les paramètres avancés du deuxième ensemble. Le séparateur peut également être personnalisé et contenir plusieurs caractères. Exemple avec le délimiteur < <strong><code>¤</code></strong> > :<br />
+      Le séparateur (virgule "<strong><code>,</code></strong>" par défaut, point-virgule "<strong><code>;</code></strong>" ou tabulation) entre les termes peut être choisi dans les paramètres avancés du deuxième groupe d'options. Le séparateur peut également être personnalisé. Il peut avoir plusieurs caractères, mais seulement pour l'importation par la zone de texte. Exemple avec le séparateur < <strong><code>¤</code></strong> > :<br />
       <ul>
         <li><code>terme 1¤Ce champ contient des virgules, un point-virgule (;), des guillemets (") et une tabulation, mais il est correctement importé.</code></li>
       </ul>
+    </li>
+    <li>
+      Il est conseillé de protéger les termes par des caractères de délimitation tels que les guillemets (<strong><code>"</code></strong>), notamment s'ils contiennent des caractères non-ASCII ou si les éléments importés, en particulier les descriptions, contiennent le séparateur choisi. Exemple:<br />
+      <ul>
+        <li><code>"terme 1","Ce champ contient une virgule, mais il sera correctement importé."</code></li>
+      </ul>
+      Vous pouvez choisir un caractère de délimitation personalisé dans les paramètres avancés du deuxième groupe d'options. Il peut avoir plusieurs caractères, mais seulement pour l'importation par la zone de texte.
     </li>
     <li>
       Il est conseillé d'utiliser la zone de texte ou un fichier encodé au format utf8 pour éviter les problèmes avec les termes non-ASCII.
@@ -167,10 +177,16 @@
       Si votre serveur ne supporte pas la conversion en utf8, une option permet de la désactiver dans le deuxième groupe d'options.
     </li>
     <li>
-      Si vous voulez importer à la fois des termes enfants, des descriptions, des poids, des termes synonymes et connexes et une structure hiérarchique, vous devez commencer par le fichier contenant la structure hiérarchique des parents et des enfants. Ainsi, vous devez  Ainsi, vous devez d'abord importer le fichier des termes enfants en choisissant l'option <em>Noms des termes enfants</em>. Ensuite, vous pouvez importer les autres fichiers en choisissant l'option adéquate et l'une ou l'autre option <em>Mettre à jour...</em>
+      Si vous voulez importer une taxinomie importante et que vous ne pouvez pas modifier les temps et mémoire maximum autorisés, vous pouvez activer l'option <code>Importation en plusieurs étapes</code> dans le cinquième groupe d'options. Cette option divise automatiquement la taxinomie par le nombre de lignes indiquées (100 par défaut). Vous devrez alors simplement cliquer sur un bouton pour importer chaque ensemble de lignes.
+    </li>
+    <li>
+      Attention: la fonction "Lister les termes" par défaut de Drupal peut engendrer des erreurs de mémoire avec les taxinomies de taille importante. Dans ce cas, il est préférable d'utiliser un autre gestionnaire de taxinomies tel que <a href="http://drupal.org/project/taxonomy_manager" title="Module Taxonomy manager">Taxonomy manager</a>.
+    </li>
+    <li>
+      Si vous voulez importer à la fois des termes enfants, des descriptions, des poids, des termes synonymes et connexes et une structure hiérarchique, vous devez commencer par le fichier contenant la structure hiérarchique des parents et des enfants. Ainsi, vous devez d'abord importer le fichier des termes enfants en choisissant l'option <em>Noms des termes enfants</em>. Ensuite, vous pouvez importer les autres fichiers en choisissant l'option adéquate et l'une ou l'autre option <em>Mettre à jour...</em>
     </li>
     <li>
       Attention : si 1) le choix de la source <strong>n'est pas</strong> <em>"Ignorer"</em> les colonnes supplémentaires, 2) le fichier ou une ligne dans le fichier contient seulement une colonne et 3) vous choisissez <em>"Mettre à jour et remplacer"</em>, le processus d'importation deviendra un processus de suppression des éléments correspondants (les termes de la première colonne sont toujours conservés ou importés).
     </li>
   </ul>
-<p>Un autre module Drupal permet également l'mportation d'une taxinomie par le biais d'un fichier CSV, malgré son nom : <a href="http://drupal.org/project/taxonomy_xml" title="taxonomy XML">taxonomy XML</a>. Son approche est différente. Il utilise un fichier unique conforme à la norme ISO 2788 sur les thésaurus, en l'occurrence un fichier CSV à trois colonnes : <code>premier terme, type de lien, second terme</code>, ou, pour les specialistes, <code>sujet, prédicat, objet</code>. Pour Drupal 4.7 et Drupal 5, <a href="http://drupal.org/project/taxonomy_batch_operations" title="taxonomy batch operations">taxonomy batch operations</a> peut également être utilisé. Vous pouvez donc choisir le module correspondant le mieux à vos besoins.</p>
+<p>Un autre module Drupal permet également l'mportation d'une taxinomie par le biais d'un fichier CSV, malgré son nom : <a href="http://drupal.org/project/taxonomy_xml" title="Module Taxonomy XML">taxonomy XML</a>. Son approche est différente. Il utilise un fichier unique conforme à la norme ISO 2788 sur les thésaurus, en l'occurrence un fichier CSV à trois colonnes : <code>premier terme, type de lien, second terme</code>, ou, pour les specialistes, <code>sujet, prédicat, objet</code>. Pour Drupal 4.7 et Drupal 5, <a href="http://drupal.org/project/taxonomy_batch_operations" title="Module Taxonomy batch operations">taxonomy batch operations</a> peut également être utilisé. Vous pouvez donc choisir le module correspondant le mieux à vos besoins.</p>

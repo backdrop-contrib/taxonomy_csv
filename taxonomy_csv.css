@@ -1,0 +1,25 @@
+/* $Id$ */
+
+/**
+ * Allows to hide unchosen sub-options and to show chosen sub-options.
+ */
+/* Hide */
+#source.filtered #edit-textarea-wrapper,
+#source.filtered #edit-local-file-wrapper,
+#source.filtered #edit-source-delimiter-custom-wrapper,
+#source.filtered #edit-source-enclosure-custom-wrapper,
+#destination.filtered #edit-destination-vocabulary-id-wrapper,
+#autodivide.filtered #edit-autodivide-lines-wrapper{
+  display:none;
+}
+
+/* Show */
+#source.textarea #edit-textarea-wrapper,
+#source.local_file #edit-local-file-wrapper,
+#source.custom_delimiter #edit-source-delimiter-custom-wrapper,
+#source.custom_enclosure #edit-source-enclosure-custom-wrapper,
+#destination.duplicate #edit-destination-vocabulary-id-wrapper,
+#destination.existing #edit-destination-vocabulary-id-wrapper,
+#autodivide.checked #edit-autodivide-lines-wrapper{
+  display:block;
+}

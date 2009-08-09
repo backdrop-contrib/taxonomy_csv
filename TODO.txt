@@ -21,7 +21,7 @@ User interface
   X 622 display imported terms
   X 622 notice warnings and errors of import file
   X 622 choose level of message
-  X     cumulate important messages with use Drupal's log
+  o     cumulate important messages with use Drupal's log
   X 622 auto create vocabulary
   X 630 test on an existing vocabulary (duplicating it)
   X 630 dynamic options and examples (existing items should match source type)
@@ -36,18 +36,21 @@ User interface
   o     inform about changes during import (ex: relations set then unset)
   o     two steps import (validate and display warnings then process)
   o     option to choose one or two steps
-  o     two step wizard for non-ahah users
+  o     five step wizard for non-ahah users
   X 630 notice exceed file size
   o     option to import in original vocabulary after import in a duplicate
-  o     disable utf8 option if textarea import
   o     no warning on last empty lines
+  o     ahah ui for specific parameters
+  o     disable utf8 option if textarea import
+  x 640 add a csv enclosure option (so >= php 4.3)
+  o     use Drupal themes
 
 Functions
   o     import of structured alphabetic terms list (thesaurus)
   o     import of iso 2788 as in taxonomy_xml (but KISS by line approach)
   X 623 option to import sub-relations and not only relations to first term
   X 623 option to make relations to terms of all vocabularies.
-  o     import of ancestors structure and not children (change name)
+  x 630 import of ancestors structure and not children (change name)
   o     import of first level parents
   o     import of first level children
   X 622 use of parents of previous line for children without ancestors
@@ -56,14 +59,17 @@ Functions
   X 620 distinction between description and synonyms
   o     multiple files import
   -     sensitive or not to uppercase/lowercase (not in D6: see taxonomy.module)
-  o     integrate or reference to taxonomy_manager
+  o     integrate or reference to Taxonomy manager module
   o     remove csv terms import choice
-  o     test before import (autocreate a vocabulary)
+  o     test before import (autocreate a vocabulary) (see UI)
   o     remove ignore existing terms choice (see dynamic options above)
   -     import related in other vocabulary before current vocabulary (not in D6)
   o     auto detect good source content and vocabulary with a previous line key
   o     with auto detect, import mutliple type with one file
   o     convert and export vocabulary to xml (in particular to compare with xml)
+  x 640 multistep import: autodivide big taxonomy to avoid server memory error
+  o     import by term identifiant (tid)
+  o     import from url
 
 Code / security
   o     remove query and use only Drupal core ones and php filters (useful?)
@@ -82,19 +88,23 @@ Code / security
   X 622 change function name to internal, except some
   o     vocabulary check (after and before)
   o     vocabulary relations integrety check and attribute
-  o     time out control
+  -     time out control (useless with batchset mechanism)
   o     fix: keep multiple parents when children import
   X 622 fix: when ignore existing items, search in imported terms cache before
+  o     fix: result statistic import (sometime, imported terms number is wrong)
   o     remove useless define
   o     use a global messages variable or sandbox to avoid multiple copy
   -     relations with other vocabularies (not officially supported in Drupal 6)
   o     extract all helps of forms to help.html in order to remove duplicates
-  o     simplify batch set (all $options aren't needed)
+  x 640 simplify batch set (all $options aren't needed)
+  o     use $form_state['storage'] for batch operations?
   o     remove base64 temporary and work only with utf8
-  o     use a smarter regexp delimiter than fgetcsv or explode
-  o     fix: UI: when a file is set, avoid upload warning when options change
-  o     Change Warning empty line by a simple notice
-  o     Modularize code to simplify include of new schemes
+  -     use a smarter regexp delimiter than fgetcsv or explode
+  o     fix: when a file is set, avoid UI bug when first option changes
+  o 630 change Warning empty line by a simple notice
+  o     modularize code to simplify addition of new schemes
+  o     fix: make multistep import compatible with one term by line import
+  o     allow cancel multistep when import in an existing vocabulary
 
 Documentation
   o     make it simpler

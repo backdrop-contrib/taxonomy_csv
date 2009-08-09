@@ -8,7 +8,7 @@
 -- REQUIREMENTS --
   --------------
 
-None.
+* Drupal default taxonomy module.
 
 
 -- INSTALLATION --
@@ -48,4 +48,4 @@ None.
 * Go to Administer > Content management > Taxonomy
   and click on the "CSV import" tab. Follow the instructions on that page.
 
-* More information in README.txt and Advanced help (Help> Taxonomy CSV import).
+* More information in README.txt and Advanced help (Help > Taxonomy CSV import).

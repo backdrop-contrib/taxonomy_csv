@@ -1,9 +1,18 @@
 <!-- $Id$ -->
-<p>This module allows you to <a href="../content/taxonomy/csv">import taxonomies, structure or simple lists of terms</a> into a vocabulary from a <a href="http://en.wikipedia.org/wiki/Comma-separated_values" title="Wikipedia definition">CSV</a> file or a copy-and-paste text.</p>
+<p>This module allows you to <a href="?q=admin/content/taxonomy/csv">import taxonomies, structures or simple lists of terms</a> into a vocabulary from a <a href="http://en.wikipedia.org/wiki/Comma-separated_values" title="Wikipedia definition">CSV</a> file or a copy-and-paste text.</p>
 <p>If you are unsure how to create a CSV file, you might want to use <a href="http://www.openoffice.org" title="OpenOffice.org">OpenOffice Calc</a> or another spreadsheet application to export your data into a CSV file.</p>
-<p>Four items need to be set in order to import your terms.</p>
+<br />
+<p>To import terms, user need these <a href="?q=admin/user/permissions#module-taxonomy_csv" title="configure taxonomy_csv permissions">permissions</a>:<br />
+  <ul>
+    <li>System modules / access administration pages;</li>
+    <li>Taxonomy module / administer taxonomy;</li>
+    <li>Taxonomy_csv module / administer taxonomy by csv.</li>
+  </ul>
+</p>
 <br />
 
+<p>Four items need to be set in order to import your terms.</p>
+<br />
 <h3>1. What to import (content of the source)?</h3>
   <p>Source can be configured with the first field set. The first column always contains the term name. You can specify what you want to import and how additional columns should be imported.</p>
   <dl>
@@ -150,16 +159,17 @@
 <h3>Advanced settings and hints</h3>
   <ul>
     <li>
-      It is recommended to protect terms with quotation marks (<strong><code>"</code></strong>), specialy if they contain non-ASCII letters or if imported items, in particular descriptions, contain the chosen delimiter. Example:<br />
-      <ul>
-        <li><code>"term 1","This field has a comma, but it will be correctly imported."</code></li>
-      </ul>
-    </li>
-    <li>
-      Delimiters (comma "<strong><code>,</code></strong>", semicolon "<strong><code>;</code></strong>" or tabulation) between terms can be chosen in Advanced settings in the second fieldset. You can choose a custom delimiter too. Delimiters can have multiple characters. Example with delimiter < <strong><code>¤</code></strong> >:<br />
+      Delimiters (comma "<strong><code>,</code></strong>" by default, semicolon "<strong><code>;</code></strong>" or tabulation) between terms can be chosen in Advanced settings in the second fieldset. You can choose a custom delimiter too. Delimiter can have multiple characters only with text area import. Example with delimiter < <strong><code>¤</code></strong> >:<br />
       <ul>
         <li><code>term 1¤This field has commas, a semicolon (;), a quotation mark (") and a tabulation, but it will be correctly imported.</code></li>
       </ul>
+    </li>
+    <li>
+      It is recommended to protect terms with enclosure characters as quotation marks (<strong><code>"</code></strong>), specialy if they contain non-ASCII letters or if imported items, in particular descriptions, contain the chosen delimiter. Example:<br />
+      <ul>
+        <li><code>"term 1","This field has a comma, but it will be correctly imported."</code></li>
+      </ul>
+      You can choose a custom enclosure character in Advanced settings in the second fieldset. Enclosure can have multiple characters only with text area import.
     </li>
     <li>
       It's recommended to use text area import or utf8 encoded file in order to avoid problems with non-ASCII terms.
@@ -168,11 +178,17 @@
       If your server doesn't support utf8 conversion, an option allows to disable it in the second fieldset.
     </li>
     <li>
+      If you want to import big taxonomy and you can't increase maximum allowed time and memory on the server, you can activate <code>Multistep autodivide import</code> in the fifth fieldset. This option autodivides your taxonomy by the specified number of lines (100 by default). You only need to click a button to import each set of lines.
+    </li>
+    <li>
+      Warning: with default Drupal "List terms" function, a memory error can occurs with big taxonomies. So use another manager as <a href="http://drupal.org/project/taxonomy_manager" title="Taxonomy manager module">Taxonomy manager</a>.
+    </li>
+    <li>
       When you want to import child term names as well as descriptions, synonyms, related terms, term weights and a hierarchical structure, you should begin with the file containing the hierarchical structure. So first import child term names with the < <em>Structure</em> > option. Second, upload the other files with the adequate option and one of the <em>Update terms...</em> option.
     </li>
     <li>
       Be careful: if 1) source choice is <strong>not</strong> <em>"Ignore"</em> additional columns, 2) file or a line in the file has only one column and 3) you choose <em>"Update and replace"</em>, the import process will be a remove process of matching items (first column terms are always kept or imported).
     </li>
   </ul>
-<p>Another Drupal module allows CSV import too, despite its name: <a href="http://drupal.org/project/taxonomy_xml" title="taxonomy XML">taxonomy XML</a>. Its approach is different: it uses one file complient to thesauri standard ISO 2788, i.e. a three columns csv file: <code>first term, type of link, second term</code>, or, for specialists, <code>subject, predicate, object</code>. For Drupal 4.7 and Drupal 5, <a href="http://drupal.org/project/taxonomy_batch_operations" title="taxonomy batch operations">taxonomy batch operations</a> is available too. So choose the module best matching your needs.</p>
+<p>Another Drupal module allows CSV import too, despite its name: <a href="http://drupal.org/project/taxonomy_xml" title="Taxonomy XML module">taxonomy XML</a>. Its approach is different: it uses one file complient to thesauri standard ISO 2788, i.e. a three columns csv file: <code>first term, type of link, second term</code>, or, for specialists, <code>subject, predicate, object</code>. For Drupal 4.7 and Drupal 5, <a href="http://drupal.org/project/taxonomy_batch_operations" title="Taxonomy batch operations module">taxonomy batch operations</a> is available too. So choose the module best matching your needs.</p>
 <br />

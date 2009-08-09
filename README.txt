@@ -20,7 +20,8 @@ standardized taxonomies and vocabularies importation. Despite its name, it can
 import csv files too, but only if they are ISO 2788 formated.
 
 Taxonomy batch operations (http://drupal.org/project/taxonomy_batch_operations)
-has only Drupal 4.7 and Drupal 5 versions.
+has only Drupal 4.7 and Drupal 5 versions. Drupal 6 version exists too, but it's
+an unofficial one.
 
 So when you want to quick import a non-standardized vocabulary, for example an
 old thesaurus or a simple list of children, synonyms, related terms,
@@ -50,13 +51,14 @@ to check your csv file before import in a true vocabulary.
 -- TROUBLESHOOTING --
   -----------------
 
-* See online issues.
+See online issues:
+  http://drupal.org/project/issues/taxonomy_csv
 
 
 -- FAQ --
   -----
 
-* See online infos.
+See Advanced help in Help > Taxonomy CSV import.
 
 
 -- CONTACT --

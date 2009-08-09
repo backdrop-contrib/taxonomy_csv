@@ -11,6 +11,16 @@
 Taxonomy csv x.x-x.x, xxxx-xx-xx
 --------------------------------
 
+Taxonomy csv 6.x-4.0, 2009-08-09
+-------------------------------
+By Daniel Berthereau: Added multistep import for big files (avoid memory error).
+By Daniel Berthereau: Added term enclosure option.
+By Daniel Berthereau: Reviewed user interface code for lisibility (js & css).
+By Daniel Berthereau: Reviewed batch code in order to decrease memory usage.
+
+Taxonomy csv 6.x-3.1, 2009-04-08
+-------------------------------
+#427076 by Daniel Berthereau: Fixed Microsoft Windows pass-by-reference error.
 
 Taxonomy csv 6.x-3.0, 2009-04-03
 -------------------------------
