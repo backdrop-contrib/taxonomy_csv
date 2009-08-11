@@ -96,7 +96,7 @@ define('TAXONOMY_CSV_WATCHDOG_DEBUG',              7); // Internal only.
 define('TAXONOMY_CSV_WATCHDOG_NONE',               9); // Internal only.
 
 /**
- * Implementation of hook_help().
+ * Implements hook_help().
  */
 function taxonomy_csv_help($path, $arg) {
   global $language;
@@ -114,14 +114,14 @@ function taxonomy_csv_help($path, $arg) {
 }
 
 /**
- * Implementation of hook_perm().
+ * Implements hook_perm().
  */
 function taxonomy_csv_perm() {
   return array('administer taxonomy by csv');
 }
 
 /**
- * Implementation of hook_menu().
+ * Implements hook_menu().
  *
  * @note See hook_menu for a description of return values.
  */
@@ -203,7 +203,7 @@ function taxonomy_csv_form_main($form_state) {
     'source_delimiter_custom'        => '',
     'source_enclosure'               => 'none',
     'source_enclosure_custom'        => '',
-    'source_disable_convert_to_utf8' => FALSE,
+    'source_convert_to_utf8'         => TRUE,
     'destination_target'             => 'autocreate',
     'destination_vocabulary_id'      => 'choose_vocabulary', // Not used for security reason (avoid import mistake).
     'import_existing_items'          => TAXONOMY_CSV_EXISTING_UPDATE,
@@ -287,6 +287,11 @@ function taxonomy_csv_form_main($form_state) {
     );
   }
 
+  // Advertise if Pathauto module is activated. Issue http://drupal.org/node/540916.
+  if (module_exists('pathauto')) {
+    drupal_set_message(t("<strong>Warning</strong>: Pathauto module is activated.<br />This module slows down taxonomy import process and only few terms can be imported. It's advised to disabled it manually in !module_section. This module doesn't remove your settings when you disable it - and not uninstall it -.<br />After import process, you can reactivate Pathauto and eventually bulk generate aliases for newly imported terms.", array('!module_section' => l(t("module section"), 'admin/build/modules'))), 'error');
+  }
+
   $form['import_type'] = array(
     '#type'        => 'fieldset',
     '#title'       => t('1. What do you want to import?'),
@@ -350,7 +355,7 @@ function taxonomy_csv_form_main($form_state) {
     '#collapsed'   => (
       ($list_previous_values['source_delimiter'] == $list_recommended_values['source_delimiter'])
       && ($list_previous_values['source_enclosure'] == $list_recommended_values['source_enclosure'])
-      && ($list_previous_values['source_disable_convert_to_utf8'] == $list_recommended_values['source_disable_convert_to_utf8'])),
+      && ($list_previous_values['source_convert_to_utf8'] == $list_recommended_values['source_convert_to_utf8'])),
   );
 
   $form['source']['source_advanced']['source_delimiter'] = array(
@@ -389,26 +394,35 @@ function taxonomy_csv_form_main($form_state) {
     '#title' => t('UTF-8 conversion'),
   );
 
-  $form['source']['source_advanced']['source_disable_convert_to_utf8'] = array(
+  $form['source']['source_advanced']['source_convert_to_utf8'] = array(
     '#type'          => 'checkbox',
-    '#title'         => t('Disable file conversion because the csv file is already UTF-8 encoded'),
-    '#default_value' => $list_previous_values['source_disable_convert_to_utf8'],
-    '#description'   => t('This checkbox disables the conversion of the CSV file to UTF-8, what can be a cause of problems with some rare server configurations. Be sure your file is UTF-8 encoded when using this option. This option is not used with a textarea import.'),
+    '#title'         => t('Enable file conversion to UTF-8'),
+    '#description'   => t('This checkbox allows to convert your CSV file to UTF-8 if needed. To disable it can resolve problems with some rare server configurations. Be sure your file is UTF-8 encoded when disabling this option. This option is not used with a textarea import.'),
   );
+  if (function_exists('mb_detect_encoding')) {
+    $form['source']['source_advanced']['source_convert_to_utf8']['#default_value'] = $list_previous_values['source_convert_to_utf8'];
+  }
+  else {
+    $form['source']['source_advanced']['source_convert_to_utf8']['#default_value'] = FALSE;
+    $form['source']['source_advanced']['source_convert_to_utf8']['#disabled'] = TRUE;
+    $form['source']['source_advanced']['source_convert_to_utf8']['#description'] .= '<br />'. t('This checkbox is currently disabled, because iconv, GNU recode or mbstring for PHP are not installed on your server.');
+  }
 
   $form['destination'] = array(
     '#type'        => 'fieldset',
     '#title'       => t('3. Where to import into?'),
     '#collapsible' => TRUE,
     '#collapsed'   => FALSE,
-    '#description' => t("Terms can be imported into a new vocabulary or in an existing one. You can choose to duplicate an existing vocabulary too in order to check import."),
+    '#description' => t('Terms can be imported into a new vocabulary or in an existing one. You can choose to duplicate an existing vocabulary too in order to check import. You might want to !add-new-vocab.', array(
+      '!add-new-vocab' => l(t('add a new vocabulary'), 'admin/content/taxonomy/add/vocabulary', array('query' => drupal_get_destination())),
+    )),
     '#attributes'  => array('id' => 'destination'),
   );
 
   $list_vocabularies = taxonomy_get_vocabularies();
 
   if (count($list_vocabularies) == 0) {
-    $form['destination']['#description'] .= '<br />'. t("As there isn't any vocabulary, terms will be imported in a new automatically created vocabulary. You might want to !add-new-vocab.", array('!add-new-vocab' => l(t('add a new vocabulary'), 'admin/content/taxonomy/add/vocabulary', array('query' => drupal_get_destination()))));
+    $form['destination']['#description'] .= '<br />'. t("As there isn't any vocabulary, terms will be imported in a new automatically created vocabulary.");
 
     $form['destination']['destination_target'] = array(
       '#type'  => 'value',
@@ -438,7 +452,7 @@ function taxonomy_csv_form_main($form_state) {
         'choose_vocabulary' => t('[Choose an existing vocabulary]')
       ),
       '#default_value' => 'choose_vocabulary',
-      '#description'   => t('The vocabulary you want to import the file into. You might want to !add-new-vocab.', array('!add-new-vocab' => l(t('add a new vocabulary'), 'admin/content/taxonomy/add/vocabulary', array('query' => drupal_get_destination())))),
+      '#description'   => t('The vocabulary you want to import the file into.'),
     );
     foreach ($list_vocabularies as $vid => $vocabulary) {
       $form['destination']['destination_vocabulary_id']['#options'][$vid] = $vocabulary->name;
@@ -782,7 +796,7 @@ function _taxonomy_csv_form_relations_specific_form() {
   );
 
   $form['relations_all_vocabularies'] = array(
-    '#type'          => 'checkbox',
+    '#type'          => 'value',
     '#title'         => t('Make relations with existing terms of all vocabularies (disabled before Drupal 7)'),
     '#default_value' => variable_get('taxonomy_csv_relations_all_vocabularies', FALSE),
     '#description'   => t("This checkbox allows to create relations with existing terms in other vocabularies if they don't exist in selected vocabulary."),
@@ -909,8 +923,9 @@ function _taxonomy_csv_form_ahah_finish_js($form, $callback_source, $form_path =
  */
 function taxonomy_csv_form_main_validate($form, &$form_state) {
   // Needed here and not only in form_main in order to use in case of error.
-  drupal_add_js(drupal_get_path('module', 'taxonomy_csv') .'/taxonomy_csv.js');
-  drupal_add_css(drupal_get_path('module', 'taxonomy_csv') .'/taxonomy_csv.css');
+  $taxonomy_csv_path = drupal_get_path('module', 'taxonomy_csv');
+  drupal_add_js("$taxonomy_csv_path/taxonomy_csv.js");
+  drupal_add_css("$taxonomy_csv_path/taxonomy_csv.css");
 
   // Multistep page: no value to verify.
   if ($form_state['clicked_button']['#id'] != 'edit-import-submit') {
@@ -995,7 +1010,7 @@ function taxonomy_csv_form_main_submit($form, &$form_state) {
       'source_delimiter_custom',
       'source_enclosure',
       'source_enclosure_custom',
-      'source_disable_convert_to_utf8',
+      'source_convert_to_utf8',
       'destination_target',
       'destination_vocabulary_id',
       'import_existing_items',
@@ -1038,12 +1053,12 @@ function taxonomy_csv_form_main_submit($form, &$form_state) {
   switch ($options['destination_target']) {
     case 'autocreate':
       // If textarea import, 'filename' is empty.
-      $new_vocabulary = _taxonomy_csv_autocreate_vocabulary($options['filename']);
+      $new_vocabulary = taxonomy_csv_vocabulary_create($options['filename']);
       $options['destination_vocabulary_id'] = $new_vocabulary['vid'];
       break;
 
     case 'duplicate':
-      $new_vocabulary = _taxonomy_csv_duplicate_vocabulary($options['destination_vocabulary_id']);
+      $new_vocabulary = taxonomy_csv_vocabulary_duplicate($options['destination_vocabulary_id']);
       $options['destination_vocabulary_id'] = $new_vocabulary['vid'];
       break;
   }
@@ -1198,7 +1213,7 @@ function taxonomy_csv_form_multistep_submit(&$form_state) {
   // Calculate first line of eventual next step.
   $form_state['storage']['options']['multistep']['next_step_line'] = $form_state['storage']['options']['multistep']['current_line'] + $form_state['storage']['options']['autodivide_lines'];
 
-    // Prepares process batch (will be automatically processed when returns).
+  // Prepares process batch (will be automatically processed when returns).
   batch_set(taxonomy_csv_batch_import_prepare($form_state));
 
   // Inform on process.
@@ -1247,8 +1262,11 @@ function _taxonomy_csv_form_multistep_cancel($form, &$form_state) {
   }
   else {
     if (taxonomy_del_vocabulary($form_state['storage']['options']['vocabulary']->vid) == SAVED_DELETED) {
-      $message = ($form_state['storage']['options']['destination_target'] == 'autocreate') ? t('Created vocabulary') : t('Duplicated vocabulary');
-      $message .= ' '. t('"%vocabulary_name" has been deleted.', array('%vocabulary_name' => $form_state['storage']['options']['vocabulary']->name));
+      $message = ($form_state['storage']['options']['destination_target'] == 'autocreate') ?
+        t('Created vocabulary "%vocabulary_name" has been deleted.', array(
+          '%vocabulary_name' => $form_state['storage']['options']['vocabulary']->name)) :
+        t('Duplicated vocabulary "%vocabulary_name" has been deleted.', array(
+          '%vocabulary_name' => $form_state['storage']['options']['vocabulary']->name));
       $status = 'status';
     }
     else {
@@ -1303,7 +1321,7 @@ function taxonomy_csv_batch_import_prepare(&$form_state) {
     'relations_create_subrelations',
     'relations_all_vocabularies',
     'source_choice',
-    'source_disable_convert_to_utf8',
+    'source_convert_to_utf8',
   )));
 
   $full_import = (!isset($form_state['storage']['options']['multistep']['current_line']));
@@ -1505,34 +1523,21 @@ function _taxonomy_csv_message_chosen_options($options) {
  */
 function _taxonomy_csv_message_vocabulary_destination($vocabulary, $destination_target) {
   // Destination vocabulary.
-  switch ($destination_target) {
-    case 'autocreate':
-      $message = t('New vocabulary "%vocabulary_name" has been created.', array(
-        '%vocabulary_name' => $vocabulary->name,
-      ));
-      break;
+  $list_message = array(
+    'autocreate' => t('New vocabulary "%vocabulary_name" has been created.', array('%vocabulary_name' => $vocabulary->name)),
+    'duplicate'  => t('Duplicate vocabulary "%vocabulary_name" has been created.', array('%vocabulary_name' => $vocabulary->name)),
+    'existing'   => t('Terms are imported into existing vocabulary "%vocabulary_name".', array('%vocabulary_name' => $vocabulary->name)),
+  );
 
-    case 'duplicate':
-      $message = t('Duplicate vocabulary "%vocabulary_name" has been created.', array(
-        '%vocabulary_name' => $vocabulary->name,
-      ));
-      break;
-
-    case 'existing':
-      $message = t('Terms are imported into existing vocabulary "%vocabulary_name".', array(
-        '%vocabulary_name' => $vocabulary->name,
-      ));
-      break;
-  }
-  $message .= '<br />';
-
-  return $message;
+  return $list_message[$destination_target] .'<br />';
 }
 
 /**
  * Return informations about result vocabulary.
  */
 function _taxonomy_csv_message_vocabulary_result($vocabulary, $destination_target, $new_hierarchy) {
+  $message = '';
+
   // Level of vocabulary.
   $hierarchy_text = array(
     0 => t('no parent (flat)'),
@@ -1551,11 +1556,11 @@ function _taxonomy_csv_message_vocabulary_result($vocabulary, $destination_targe
   )) .'<br />';
 
   // Direct links to edit vocabulary and view terms.
-  $message .= t('Properties can be edited at <a href="!vocabulary_edit_link">Administer > Content > Taxonomy > Edit</a>.', array(
-    '!vocabulary_edit_link' => url('admin/content/taxonomy/edit/vocabulary/'. $vocabulary->vid))
-  ) .'<br />';
-  $message .= t('You can view terms at <a href="!vocabulary_list">Administer > Content > Taxonomy</a>.', array(
-      '!vocabulary_list' => url('admin/content/taxonomy/'. $vocabulary->vid),
+  $message .= t('Properties can be edited at <a href="!vocabulary_edit_link">Administer > Content management > Taxonomy > edit vocabulary</a>.', array(
+    '!vocabulary_edit_link' => url("admin/content/taxonomy/edit/vocabulary/$vocabulary->vid"),
+  )) .'<br />';
+  $message .= t('You can view terms at <a href="!vocabulary_list">Administer > Content management > Taxonomy > list terms</a>.', array(
+    '!vocabulary_list' => url("admin/content/taxonomy/$vocabulary->vid"),
   )) .'<br />';
   $message .= t('Warning: with default Drupal "List terms" function, a memory error can occurs with big taxonomies. So use another manager as <a href="!link" title="Taxonomy manager module">Taxonomy manager</a>.', array('!link' => url('http://drupal.org/project/taxonomy_manager')));
 
@@ -1571,33 +1576,35 @@ function _taxonomy_csv_message_vocabulary_result($vocabulary, $destination_targe
  *   Array of created / created and updated / updated / error arrays of terms.
  */
 function _taxonomy_csv_stats_imported_terms($imported_terms) {
-  $stats_imported_terms = array(
-    'created'             => array(),
-    'created and updated' => array(),
-    'updated existing'    => array(),
-    'error'               => array(),
-  );
+  if (is_array($imported_terms)) {
+    $stats_imported_terms = array(
+      'created'             => array(),
+      'created and updated' => array(),
+      'updated existing'    => array(),
+      'error'               => array(),
+    );
 
-  foreach ($imported_terms as $key => $term) {
-    if (!isset($term['status'])) {
-      $term['status'] = 'error'; // Unknown status.
+    foreach ($imported_terms as $key => $term) {
+      if (!isset($term['status'])) {
+        $term['status'] = 'error'; // Unknown status.
+      }
+      $stats_imported_terms[$term['status']][] = $term['name'];
     }
-    $stats_imported_terms[$term['status']][] = $term['name'];
-  }
 
-  foreach (array(
-      'created'             => t('Total created terms'),
-      'created and updated' => t('Total created and updated terms'),
-      'updated existing'    => t('Total updated existing terms'),
-      'error'               => t('Total processed import errors'),
-    ) as $imported => $imported_text) {
-    $processed_message_text = $imported_text .' : '. count($stats_imported_terms[$imported]) .'<br />';
-    if (count($stats_imported_terms[$imported]) > 0) {
-      $processed_message_text .= '"'. implode('", "', $stats_imported_terms[$imported]) .'".';
+    foreach (array(
+        'created'             => t('Total created terms'),
+        'created and updated' => t('Total created and updated terms'),
+        'updated existing'    => t('Total updated existing terms'),
+        'error'               => t('Total processed import errors'),
+      ) as $imported => $imported_text) {
+      $processed_message_text = "$imported_text : ". count($stats_imported_terms[$imported]) .'<br />';
+      if (count($stats_imported_terms[$imported]) > 0) {
+        $processed_message_text .= '"'. implode('", "', $stats_imported_terms[$imported]) .'".';
+      }
+      drupal_set_message($processed_message_text, (($imported == 'error') && (count($stats_imported_terms[$imported]) > 0)) ? 'error' : 'status');
     }
-    drupal_set_message($processed_message_text, (($imported == 'error') && (count($stats_imported_terms[$imported]) > 0)) ? 'error' : 'status');
+    return $stats_imported_terms;
   }
-  return $stats_imported_terms;
 }
 
 // #######################################
@@ -1607,7 +1614,7 @@ function _taxonomy_csv_stats_imported_terms($imported_terms) {
 /**
  * Create vocabulary by its name and return an array with its vid and its name.
  */
-function _taxonomy_csv_autocreate_vocabulary($vocabulary_name = '') {
+function taxonomy_csv_vocabulary_create($vocabulary_name = '') {
   if (is_string($vocabulary_name) || ($vocabulary_name == '')) {
     $new_vocabulary_name = _taxonomy_csv_create_vocabulary_name($vocabulary_name);
 
@@ -1626,8 +1633,7 @@ function _taxonomy_csv_autocreate_vocabulary($vocabulary_name = '') {
       'nodes'       => array(),
     );
 
-    ///TODO: Check result.
-    $result = taxonomy_save_vocabulary($vocabulary);
+    taxonomy_save_vocabulary($vocabulary);
 
     return array(
       'vid' => _taxonomy_csv_get_vocabulary_id($vocabulary['name']),
@@ -1640,14 +1646,17 @@ function _taxonomy_csv_autocreate_vocabulary($vocabulary_name = '') {
  * Duplicate a vocabulary by its vid and return an array with vid and name.
  * If not exist, create an empty vocabulary.
  */
-function _taxonomy_csv_duplicate_vocabulary($vocabulary_id) {
+function taxonomy_csv_vocabulary_duplicate($vocabulary_id) {
   if ($vocabulary = taxonomy_csv_get_vocabulary($vocabulary_id)) {
     $original_vocabulary = taxonomy_vocabulary_load($vocabulary_id);
 
+    // Creates an unused name. Check if name begins with 'Copy of #name' in order to serialize name.
+    $name = t('Copy of <!vocabulary_name>', array('!vocabulary_name' => $vocabulary['name']));
+    $name = _taxonomy_csv_create_vocabulary_name((strpos($vocabulary['name'], $name) === FALSE) ? $name : $vocabulary['name']);
+
     // Duplicate original vocabulary, except relations and hierarchy, updated after import.
     $duplicated_vocabulary = array(
-      // Check if name begins with 'Copy of #name' in order to serialize name.
-      'name'        => _taxonomy_csv_create_vocabulary_name((strpos($vocabulary['name'], ($name = t('Copy of <!vocabulary_name>', array('!vocabulary_name' => $vocabulary['name'])))) === FALSE) ? $name : $vocabulary['name']),
+      'name'         => $name,
       'description' => $original_vocabulary->description,
       'help'        => $original_vocabulary->help,
       'relations'   => TRUE,
@@ -1660,9 +1669,7 @@ function _taxonomy_csv_duplicate_vocabulary($vocabulary_id) {
       'nodes'       => array(),
     );
 
-    ///TODO: Check result.
-    $result = taxonomy_save_vocabulary($duplicated_vocabulary);
-
+    taxonomy_save_vocabulary($duplicated_vocabulary);
 
     $duplicated_vocabulary['vid'] = _taxonomy_csv_get_vocabulary_id($duplicated_vocabulary['name']);
 
@@ -1708,7 +1715,7 @@ function _taxonomy_csv_duplicate_vocabulary($vocabulary_id) {
     );
   }
   else {
-    return _taxonomy_csv_autocreate_vocabulary();
+    return taxonomy_csv_vocabulary_create();
   }
 }
 
@@ -1718,14 +1725,17 @@ function _taxonomy_csv_duplicate_vocabulary($vocabulary_id) {
 function _taxonomy_csv_create_vocabulary_name($vocabulary_name = '') {
   $vocabulary_check_name = (drupal_strlen($name = eregi_replace('.csv', '', trim(basename($vocabulary_name)))) > 0) ? $name : t('Auto created vocabulary');
 
+  // Limits to 250 characters.
+  $vocabulary_check_name = drupal_substr($vocabulary_check_name, 0, 250);
+
   // Invent a not used vocabulary name.
   if (!_taxonomy_csv_get_vocabulary_id($vocabulary_check_name)) {
     $new_vocabulary_name = $vocabulary_check_name;
   }
   else {
-    for ($i = 2; _taxonomy_csv_get_vocabulary_id($vocabulary_check_name .' '. $i); $i++) {
+    for ($i = 2; _taxonomy_csv_get_vocabulary_id("$vocabulary_check_name $i"); $i++) {
     }
-    $new_vocabulary_name = $vocabulary_check_name .' '. $i;
+    $new_vocabulary_name = "$vocabulary_check_name $i";
   }
 
   return $new_vocabulary_name;
@@ -1734,7 +1744,7 @@ function _taxonomy_csv_create_vocabulary_name($vocabulary_name = '') {
 /**
  * Static check and update hierarchy flag of a given vocabulary.
  *
- * Drupal update hierarchy function works only dynamicaly.
+ * Drupal update hierarchy function works only dynamically.
  *
  * @param $vid
  *   The vocabulary id to update.
@@ -1758,6 +1768,7 @@ function taxonomy_csv_check_vocabulary_hierarchy($vid) {
         $hierarchy = 1;
       }
     }
+    // Update hierarchy if necessary.
     if ($hierarchy != $vocabulary['hierarchy']) {
       $vocabulary['hierarchy'] = $hierarchy;
       $result = taxonomy_save_vocabulary($vocabulary);
@@ -1817,7 +1828,7 @@ function _taxonomy_csv_batch_remember_options($options, &$context) {
  *     source_content, import_existing_items,
  *     destination_vocabulary_id,
  *     relations_create_subrelations, relations_all_vocabularies
- *     source_choice, source_disable_convert_to_utf8,
+ *     source_choice, source_convert_to_utf8,
  * @param $line_number
  *   Line number for collecting results.
  * @param &$context
@@ -1839,7 +1850,7 @@ function taxonomy_csv_import_line($line, $options, $line_number, &$context) {
     $line = _taxonomy_csv_clean_line(
       $line,
       $options['source_choice'],
-      $options['source_disable_convert_to_utf8'],
+      $options['source_convert_to_utf8'],
       $line_messages);
 
     if ((_taxonomy_csv_worst_message_level($line_messages, 'messages') > TAXONOMY_CSV_WATCHDOG_WARNING) && ($line_messages[0] != 591)) { // Check empty line too.
@@ -1891,13 +1902,13 @@ function taxonomy_csv_import_line($line, $options, $line_number, &$context) {
  *   Array of strings base64 encoded if file source or array of strings if textarea source.
  * @param $source_choice
  *   String code 'local_file' or 'textarea' matching the import way.
- * @param $disable_convert_to_utf8
- *   Optional. Disable or not (default) convertion to utf8 in case of file import.
+ * @param $source_convert_to_utf8
+ *   Optional. Enable (default) or not conversion to utf8 in case of file import.
  * @param &$messages
  *   By reference array of messages.
  * @return cleaned imported line array.
  */
-function _taxonomy_csv_clean_line($line, $source_choice, $disable_convert_to_utf8 = FALSE, &$messages) {
+function _taxonomy_csv_clean_line($line, $source_choice, $source_convert_to_utf8 = TRUE, &$messages) {
   $cleaned_line = array();
 
   // Example: string "Term 1".
@@ -1917,9 +1928,9 @@ function _taxonomy_csv_clean_line($line, $source_choice, $disable_convert_to_utf
         ///TODO: To be replaced: Use of others functions. cf. unicode.inc.
         // Convert each item of the line to UTF-8. Support multiple encodings on same line.
         // No convert but check if already utf-8: corrects bug http://drupal.org/node/364832.
-        if (!$disable_convert_to_utf8) {
-          foreach ($line as $key => $item) {
-            if (function_exists('mb_detect_encoding')) {
+        if ($source_convert_to_utf8) {
+          if (function_exists('mb_detect_encoding')) {
+            foreach ($line as $key => $item) {
               $enc = mb_detect_encoding($item, 'UTF-8, ISO-8859-1, ISO-8859-15', TRUE);
               if ($enc != 'UTF-8') {
                 if (FALSE === $cleaned_line[$key] = drupal_convert_to_utf8($item, $enc)) {
@@ -1927,9 +1938,9 @@ function _taxonomy_csv_clean_line($line, $source_choice, $disable_convert_to_utf
                 }
               }
             }
-            else {
-              $messages[] = 220; // Error convert.
-            }
+          }
+          else {
+            $messages[] = 220; // Error convert.
           }
         }
         else {
@@ -1950,7 +1961,7 @@ function _taxonomy_csv_clean_line($line, $source_choice, $disable_convert_to_utf
     // Check empty line: useful for some non-Ascii lines.
     $line = array_map('trim', $cleaned_line);
 
-    // Find a simpler php test.
+    /// TODO: Find a simpler php test.
     // Example: " , , ".
     $test_line = array_unique($line);
     if (count($test_line) == 1 && in_array('', $test_line)) {
@@ -2195,7 +2206,7 @@ function taxonomy_csv_import_line_items($line, $options, $previous_imported_line
 
       case TAXONOMY_CSV_SOURCE_CONTENT_RELATIONS:
         // Each related term should exist before first column term can be related to it (need of its tid). Next, process relations and eventually subrelations
-        // So, with a line array (A,B,C,D,E...), create A, BA, CA(B), DA(BC), EA(BCD)... as it's the fatest way to create one or all relations even if items not exists.
+        // So, with a line array (A,B,C,D,E...), creates A, BA, CA(B), DA(BC), EA(BCD)... as it's the fatest way to create one or all relations even if items not exists.
         // As use of name is only for first column, need to keep previous tids matching names in $previous_relations ([name] <=> [tid]).
         $previous_relations = array();
         foreach ($line as $key => $term) {
@@ -2254,15 +2265,15 @@ function taxonomy_csv_import_line_items($line, $options, $previous_imported_line
  *
  * @param $term
  *   A term array to import. Term is an array containing: (
- *     'name' => term name string,
+ *     'name'        => term name string,
  *   and eventually, matching submit options:
- *     'tid' => term id,
- *     'vid' => the vocabulary id where to import,
- *     'parent' => array of first level parent tids,
- *     'relations' => array of related tids,
- *     'synonyms' => array of synonyms terms names strings,
+ *     'tid'         => term id,
+ *     'vid'         => the vocabulary id where to import,
+ *     'parent'      => array of first level parent tids,
+ *     'relations'   => array of related tids,
+ *     'synonyms'    => array of synonyms terms names strings,
  *     'description' => description string,
- *     'weight' => weight integer,
+ *     'weight'      => weight integer,
  *   )
  *   Eventual parent[0] matches the current parent where to import.
  * @param $import_existing_items
@@ -2544,15 +2555,15 @@ function taxonomy_csv_find_term($name, $vid = NULL, $parent_tid = NULL) {
  *
  * @param $term
  *   A term array to save by reference. Term is an array containing: (
- *     'name' => term name string,
- *     'vid' => the vocabulary id,
+ *     'name'        => term name string,
+ *     'vid'         => the vocabulary id,
  *   and eventually:
- *     'tid' => term id,
- *     'parent' => array of first level parent tids,
- *     'relations' => array of related tids,
- *     'synonyms' => array of synonyms terms names strings,
+ *     'tid'         => term id,
+ *     'parent'      => array of first level parent tids,
+ *     'relations'   => array of related tids,
+ *     'synonyms'    => array of synonyms terms names strings,
  *     'description' => description string,
- *     'weight' => weight integer,
+ *     'weight'      => weight integer,
  *   )
  *   Eventual parent[0] matches the current parent where to import.
  * @return
@@ -2789,7 +2800,7 @@ function _taxonomy_csv_result_display_text($message_code) {
   $watchdog_messages = array(
     // Level. Type of import. Serial.
     200 => t('ERROR'),
-    220 => t("Your file can't be converted to utf-8. Please install iconv, GNU recode or mbstring for PHP or convert your file to utf-8 and choose 'Disable utf-8 conversion' option. Import stopped."),
+    220 => t("Your file can't be converted to utf-8. Please install iconv, GNU recode or mbstring for PHP or convert your file to utf-8 and disable 'Enable utf-8 conversion' option. Import stopped."),
     221 => t('Despite your option, your file is not recognize as an UTF-8 encoded one. Convert it before submit it. Import stopped.'),
     290 => t('No line to import. Please first check your file and file uploading, else reinstall module from a fresh release or submit an issue.'),
     291 => t('No term to import. Please first check your file and file uploading, else reinstall module from a fresh release or submit an issue.'),
@@ -2838,5 +2849,5 @@ function _taxonomy_csv_result_display_text($message_code) {
 
     return $message_title . $watchdog_messages[(isset($watchdog_messages[$message_code])) ? $message_code : 798];
   }
-  return $watchdog_messages[799] .' : '. $message_code;
+  return "$watchdog_messages[799] : $message_code";
 }

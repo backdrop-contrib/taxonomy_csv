@@ -11,6 +11,15 @@
 Taxonomy csv x.x-x.x, xxxx-xx-xx
 --------------------------------
 
+Taxonomy csv 7.x-4.1, 2009-08-11
+Taxonomy csv 6.x-4.1, 2009-08-11
+-------------------------------
+#540916 by Daniel Berthereau: Added warning to disable Pathauto before import.
+
+Taxonomy csv 7.x-4.0, 2009-08-10
+-------------------------------
+By Daniel Berthereau: Converted Taxonomy csv 6.x module to 7.x.
+
 Taxonomy csv 6.x-4.0, 2009-08-09
 -------------------------------
 By Daniel Berthereau: Added multistep import for big files (avoid memory error).

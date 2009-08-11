@@ -3,18 +3,18 @@
 
 /**
  * @file
- * Taxonomy_csv install hook.
+ * Taxonomy_csv install and uninstall hook.
  */
 
 /**
- * Implementation of hook_install().
+ * Implements hook_install().
  */
 function taxonomy_csv_install() {
   drupal_set_message(st('Taxonomy_csv has been installed. You can now import taxonomies, structures or lists of terms under <a href="!link_import">Administer > Content management > Taxonomy > CSV import</a>. More information is available under <a href="!link_help">Administer > Help > Taxonomy CSV import</a>.', array('!link_import' => url('admin/content/taxonomy/csv'), '!link_help' => url('admin/help/taxonomy_csv'))));
 }
 
 /**
- * Implementation of hook_uninstall().
+ * Implements hook_uninstall().
  */
 function taxonomy_csv_uninstall() {
   // Remove user preferences.
@@ -25,7 +25,7 @@ function taxonomy_csv_uninstall() {
       'source_delimiter_custom',
       'source_enclosure',
       'source_enclosure_custom',
-      'source_disable_convert_to_utf8',
+      'source_convert_to_utf8',
       'destination_target',
       'destination_vocabulary_id',
       'import_existing_items',
