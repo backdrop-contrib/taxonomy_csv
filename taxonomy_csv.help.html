@@ -1,16 +1,18 @@
 <!-- $Id$ -->
-<p>This module allows to import taxonomies, structures or simple lists of terms</a> into a vocabulary from a <a href="http://en.wikipedia.org/wiki/Comma-separated_values" title="Wikipedia definition">CSV</a> file or a copy-and-paste text.</p>
-<p>If you are unsure how to create a CSV file, you might want to use <a href="http://www.openoffice.org" title="OpenOffice.org">OpenOffice Calc</a> or another spreadsheet application to export your data into a CSV file.</p>
+<p>This module allows to import taxonomies, structures or simple lists of terms</a> into a vocabulary from a <a href="http://en.wikipedia.org/wiki/Comma-separated_values" title="Wikipedia definition">CSV</a> file, a url or a copy-and-paste text.</p>
+<p>Csv format is a simple list of values separated by a delimiter, often comma (<strong><code>,</code></strong>) or semi-colon (<strong><code>;</code></strong>), and enclosures, often quotation marks (<strong><code>"</code></strong>). If you are unsure how to create a CSV file, you might want to use <a href="http://www.openoffice.org" title="OpenOffice.org">OpenOffice Calc</a> or another spreadsheet application to export your data into a CSV file.</p>
 <br />
-<p>To import terms, user need these <a href="?q=admin/user/permissions#module-taxonomy_csv" title="configure taxonomy_csv permissions">permissions</a>:<br />
+<p>To import terms, user need one <a href="?q=admin/user/permissions#module-taxonomy_csv" title="configure taxonomy_csv permissions">permission</a>:<br />
   <ul>
-    <li>System modules / access administration pages;</li>
-    <li>Taxonomy module / administer taxonomy;</li>
-    <li>Taxonomy_csv module / administer taxonomy by csv.</li>
+    <li>Taxonomy_csv module / administer taxonomy by csv</li>
+  </ul>
+This permission is often associated with these ones:
+  <ul>
+    <li>System modules / access administration pages</li>
+    <li>Taxonomy module / administer taxonomy</li>
   </ul>
 </p>
 <br />
-
 <p>Four items need to be set in order to import your terms.</p>
 <br />
 <h3>1. What to import (content of the source)?</h3>
@@ -38,16 +40,16 @@
       Use this option to create a structure of a vocabulary (tree). Your file can be written with two schemes.<br/>
       In the first scheme, you need to set all ancestors to each term. The second column will be imported as the name of a child term of the term defined by the first column. The third column will be imported as a child of the second column, and so on. Lines can have any order. Example:<br />
       <ul>
-        <li><code>Animal,Mammal,Whale</code></li>
-        <li><code>Animal,Mammal,Monkey</code></li>
+        <li><code>Animal, Mammal, Whale</code></li>
+        <li><code>Animal, Mammal, Monkey</code></li>
       </ul>
       Be careful: when a child is added or updated, line should contain all its ancestors. So a third line may be:<br />
       <ul>
-        <li><code>Animal,Mammal,Human</code></li>
+        <li><code>Animal, Mammal, Human</code></li>
       </ul>
       but <strong>not</strong>:
       <ul>
-        <li><code>Mammal,Human</code></li>
+        <li><code>Mammal, Human</code></li>
       </ul>
       because in this second case, < <code>Mammal</code> > is imported as a first level term and not as a < <code>Animal</code> > term child as in previous line.<br />
       <br />
@@ -64,24 +66,52 @@
       So, first lines of your csv file can be:
       <ul>
         <li><code>World</code></li>
+        <li><code>,Asia</code></li>
+        <li><code>,,Japan</code></li>
+        <li><code>,,,Tokyo</code></li>
+        <li><code>,,Korea</code></li>
+        <li><code>,,,Seoul</code></li>
         <li><code>,Europe</code></li>
         <li><code>,,France</code></li>
         <li><code>,,,Paris</code></li>
       </ul>
       < <code>Paris</code> > will be automatically added as a child of < <code>France</code> > and so on.
-      <p>Partial lines are allowed, so a fifth line can be:</p>
+      <p>Partial lines are allowed, so a next line can be:</p>
       <ul>
         <li><code>,,Switzerland,Bern</code></li>
       </ul>
       < <code>Switzerland</code> > will be added as a child of < <code>Europe</code> > and of course < <code>Bern</code> > as a child of < <code>Switzerland</code> >.
-      <p>In same way, first to fourth lines above can be simplified to:</p>
+      <p>In same way, above lines can be simplified to:</p>
       <ul>
-        <li><code>World,Europe,France,Paris</code></li>
+        <li><code>World, Asia, Japan, Tokyo</code></li>
+        <li><code>,, Korea, Seoul</code></li>
+        <li><code>World, Europe, France, Paris</code></li>
       </ul>
-      Full lines, partial and one term lines can be mixed, but order is important two by two lines. In this example, if fourth and fifth lines are shift, < <code>Paris</code> > will become a child of < <code>Switzerland</code> >.
+      Full lines, partial and one term lines can be mixed, but order is important two by two lines, except when there are only full lines. In this example, if fifth and sixth lines are shift, < <code>Seoul</code> > will become a child of < <code>Japan</code> >.
+    </dd>
+    <dt>First level parents of a term</dt>
+    <dd>
+      The first item is imported as a term, the second and next as first level parents of first term. For example, lines may be:<br />
+      <ul>
+        <li><code>Daughter, Mother, Father</code></li>
+        <li><code>Son, Mother, Father 2</code></li>
+        <li><code>Mother, Great-Mother, Great-Father</code></li>
+        <li><code>Father, Great-Mother 1, Great-Father 2</code></li>
+      </ul>
+    </dd>
+    <dt>First level children of a term</dt>
+    <dd>
+      The first item is imported as a term, the second and next as first level children of first term. For example, lines may be:<br />
+      <ul>
+        <li><code>Mother, Daughter, Son</code></li>
+        <li><code>Father, Daughter, Son 2</code></li>
+        <li><code>Great-Mother, Mother</code></li>
+        <li><code>Great-Father, Mother</code></li>
+      </ul>
     </dd>
     <dt>Related terms</dt>
     <dd>
+      Warning: in Drupal 7, related terms have been removed and replaced by fields. So this option is available only with Drupal 6.<br />
       Use this option to create links between terms, as "see also" in an encyclopedia.
       The second and next columns will be imported as related terms of the first column term. For example, a line may be:<br />
       <ul>
@@ -110,13 +140,21 @@
         <li><code>"United Kingdom","Great Britain","England"</code></li>
       </ul>
     </dd>
+    <dt>Taxonomy manager export</dt>
+    <dd>
+      This format is used by <a href="http://drupal.org/project/taxonomy_manager" title="Taxonomy manager module">Taxonomy manager</a> to export vocabularies. Columns are: vocabulary id, term id, term name, term description, first level parent 1, ..., first level parent n. Example:<br />
+      <ul>
+        <li><code>"1"; "25"; "Louis XVII"; "King of France"; "Louis XVI"; "Marie-Antoinette"</code></li>
+      </ul>
+      In this format, order of all lines is important: it's impossible to attach a parent to an item if this parent hasn't been imported in a previous line.<br />
+      When a vocabulary is imported in an existing one, only option "ignore existing terms" can be used.
+    </dd>
   </dl>
   <br />
 
 <h3>2. Where are terms to import?</h3>
-  <p>You can import your terms from a file or with a text area. Simply check your choice.</p>
-  <p>If import fails by one way (mainly due to character formats or server restrictions), you can try the second way as upload process is different.</p>
-  <p>Advanced setting allow you to set delimiter and format of the file (see below).</p>
+  <p>You can import your terms from a file or with a text area. Simply check your choice. File can be a local file path or a url.</p>
+  <p>Advanced settings allow to set non standard delimiter and enclosure.</p>
   <br />
 
 <h3>3. Where to import into (vocabulary destination)?</h3>
@@ -159,7 +197,22 @@
 <h3>Advanced settings and hints</h3>
   <ul>
     <li>
-      Delimiters (comma "<strong><code>,</code></strong>" by default, semicolon "<strong><code>;</code></strong>" or tabulation) between terms can be chosen in Advanced settings in the second fieldset. You can choose a custom delimiter too. Delimiter can have multiple characters only with text area import. Example with delimiter < <strong><code>¤</code></strong> >:<br />
+      To import big taxonomies when access to time and memory settings of server are forbidden, it is recommended first to disable some other modules as "pathauto" before import. Settings aren't lost when you disable a module - and not uninstall it -. After import process, modules can be reactivated.<br />
+      Second, you can use file import. Third, you can reduce log level. Fourth, you can use these tweaks.
+      <dl>
+        <dt>Disable internal cache</dt>
+        <dd>To disable internal cache allows to import vocabularies of any size. Internal cache is used to import complex vocabularies, with multiple parents and some duplicates. It allows too to display informations about import process. When disabled, no information about results can be displayed except eventual first error or warning.</dd>
+        <dt>Manually set vocabulary hierarchy</dt>
+        <dd>As to calculate vocabulary hierarchy is memory intensive, this option allows to set hierarchy manually without verify it.</dd>
+        <dt>Disable line checks</dt>
+        <dd>If you are sure that vocabulary to import is well formated (utf8, order of items...), you can disable checks. This option increases import speed by 5%.</dd>
+      </dl>
+    </li>
+    <li>
+      Warning: with default Drupal "List terms" function, a memory error can occurs with big taxonomies. So use another manager as <a href="http://drupal.org/project/taxonomy_manager" title="Taxonomy manager module">Taxonomy manager</a>.
+    </li>
+    <li>
+      Delimiters (comma "<strong><code>,</code></strong>" by default, semicolon "<strong><code>;</code></strong>" or tabulation) between terms can be chosen in Advanced settings in the second fieldset. You can choose a custom delimiter too. Delimiter is a one character string. Example with delimiter < <strong><code>¤</code></strong> >:<br />
       <ul>
         <li><code>term 1¤This field has commas, a semicolon (;), a quotation mark (") and a tabulation, but it will be correctly imported.</code></li>
       </ul>
@@ -169,19 +222,10 @@
       <ul>
         <li><code>"term 1","This field has a comma, but it will be correctly imported."</code></li>
       </ul>
-      You can choose a custom enclosure character in Advanced settings in the second fieldset. Enclosure can have multiple characters only with text area import.
+      You can choose a custom enclosure character in Advanced settings in the second fieldset. Enclosure can have only one character or be null.
     </li>
     <li>
-      It's recommended to use text area import or utf8 encoded file in order to avoid problems with non-ASCII terms.
-    </li>
-    <li>
-      If your server doesn't support utf8 conversion, an option allows to disable it in the second fieldset.
-    </li>
-    <li>
-      If you want to import big taxonomy and you can't increase maximum allowed time and memory on the server, you can activate <code>Multistep autodivide import</code> in the fifth fieldset. This option autodivides your taxonomy by the specified number of lines (100 by default). You only need to click a button to import each set of lines.
-    </li>
-    <li>
-      Warning: with default Drupal "List terms" function, a memory error can occurs with big taxonomies. So use another manager as <a href="http://drupal.org/project/taxonomy_manager" title="Taxonomy manager module">Taxonomy manager</a>.
+      It's recommended to use text area import or utf8 encoded file in order to avoid problems with non-ASCII terms. If your server doesn't support utf8 conversion, an option allows to disable it in the last fieldset.
     </li>
     <li>
       When you want to import child term names as well as descriptions, synonyms, related terms, term weights and a hierarchical structure, you should begin with the file containing the hierarchical structure. So first import child term names with the < <em>Structure</em> > option. Second, upload the other files with the adequate option and one of the <em>Update terms...</em> option.

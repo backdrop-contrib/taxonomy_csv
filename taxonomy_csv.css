@@ -4,22 +4,87 @@
  * Allows to hide unchosen sub-options and to show chosen sub-options.
  */
 /* Hide */
-#source.filtered #edit-textarea-wrapper,
-#source.filtered #edit-local-file-wrapper,
+#source.filtered #edit-text-wrapper,
+#source.filtered #edit-filepath-wrapper,
 #source.filtered #edit-source-delimiter-custom-wrapper,
 #source.filtered #edit-source-enclosure-custom-wrapper,
+
+#edit-import-existing-items-update-wrapper.filtered,
+#edit-import-existing-items-update-merge-wrapper.filtered,
+#edit-import-existing-items-update-replace-wrapper.filtered,
+#edit-import-existing-items-ignore-wrapper.filtered,
+#edit-import-existing-items-ignore-create-wrapper.filtered,
+#edit-import-existing-items-ignore-all-wrapper.filtered,
+
+#description_alone_terms.filtered,
+#description_terms.filtered,
+#description_structure.filtered,
+#description_parents.filtered,
+#description_children.filtered,
+#description_relations.filtered,
+#description_descriptions.filtered,
+#description_weights.filtered,
+#description_synonyms.filtered,
+#description_manager_export.filtered,
+
+#specific_relations.filtered,
+
 #destination.filtered #edit-destination-vocabulary-id-wrapper,
-#autodivide.filtered #edit-autodivide-lines-wrapper{
+
+#result_display_cache.filtered,
+#hierarchy_level.filtered,
+#result_display_options.filtered,
+#result_type.filtered{
   display:none;
 }
 
 /* Show */
-#source.textarea #edit-textarea-wrapper,
-#source.local_file #edit-local-file-wrapper,
+#source.text #edit-text-wrapper,
+#source.filepath #edit-filepath-wrapper,
 #source.custom_delimiter #edit-source-delimiter-custom-wrapper,
 #source.custom_enclosure #edit-source-enclosure-custom-wrapper,
+
+#edit-import-existing-items-update-wrapper.alone_terms,
+#edit-import-existing-items-ignore-wrapper.alone_terms,
+#edit-import-existing-items-update-wrapper.terms,
+#edit-import-existing-items-ignore-wrapper.terms,
+#edit-import-existing-items-update-replace-wrapper.structure,
+#edit-import-existing-items-ignore-create-wrapper.structure,
+#edit-import-existing-items-update-merge-wrapper.parents,
+#edit-import-existing-items-update-replace-wrapper.parents,
+#edit-import-existing-items-ignore-create-wrapper.parents,
+#edit-import-existing-items-update-merge-wrapper.children,
+#edit-import-existing-items-update-replace-wrapper.children,
+#edit-import-existing-items-ignore-create-wrapper.children,
+#edit-import-existing-items-update-merge-wrapper.relations,
+#edit-import-existing-items-update-replace-wrapper.relations,
+#edit-import-existing-items-ignore-create-wrapper.relations,
+#edit-import-existing-items-update-merge-wrapper.descriptions,
+#edit-import-existing-items-update-replace-wrapper.descriptions,
+#edit-import-existing-items-ignore-create-wrapper.descriptions,
+#edit-import-existing-items-update-merge-wrapper.weights,
+#edit-import-existing-items-ignore-create-wrapper.weights,
+#edit-import-existing-items-update-merge-wrapper.synonyms,
+#edit-import-existing-items-update-replace-wrapper.synonyms,
+#edit-import-existing-items-ignore-create-wrapper.synonyms,
+#edit-import-existing-items-update-merge-wrapper.manager_export,
+#edit-import-existing-items-update-replace-wrapper.manager_export,
+#edit-import-existing-items-ignore-create-wrapper.manager_export,
+
+#description_alone_terms.alone_terms,
+#description_terms.terms,
+#description_structure.structure,
+#description_parents.parents,
+#description_children.children,
+#description_relations.relations,
+#description_descriptions.descriptions,
+#description_weights.weights,
+#description_synonyms.synonyms,
+#description_manager_export.manager_export,
+
+#specific_relations.relations,
+
 #destination.duplicate #edit-destination-vocabulary-id-wrapper,
-#destination.existing #edit-destination-vocabulary-id-wrapper,
-#autodivide.checked #edit-autodivide-lines-wrapper{
+#destination.existing #edit-destination-vocabulary-id-wrapper{
   display:block;
 }

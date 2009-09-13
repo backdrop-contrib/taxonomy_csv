@@ -8,8 +8,8 @@
 -- SUMMARY --
   ---------
 
-This module allows to import taxonomy from a CSV (comma-separated values) file
-or a copy-and-paste text.
+This module allows to import taxonomy from a CSV (comma-separated values) local
+or distant file or a copy-and-paste text.
 
 When you want to import a vocabulary, a taxonomy, a structure or a simple list
 of terms in your Drupal site, you have three main choices: taxonomy_xml,

@@ -1,12 +1,18 @@
 <!-- $Id$ -->
-<p>Ce module permet d'importer des taxinomies, des structures ou de simples listes de termes</a> dans un vocabulaire à partir d'un fichier <a href="http://fr.wikipedia.org/wiki/Comma-separated_values" title="Définition Wikipedia">CSV</a> ou d'un texte copié-collé.</p>
-<p>Si vous ne savez pas comment créer un fichier CSV, vous pouvez utiliser <a href="http://www.openoffice.org" title="OpenOffice.org">OpenOffice Calc</a> ou un autre tableur pour exporter vos données dans un fichier CSV.</p>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+</head>
+<p>Ce module permet d'importer des taxinomies, des structures ou de simples listes de termes</a> dans un vocabulaire à partir d'un fichier <a href="http://fr.wikipedia.org/wiki/Comma-separated_values" title="Définition Wikipedia">CSV</a>, d'une url ou d'un texte copié-collé.</p>
+<p>Le format csv correspond à une simple liste de valeurs séparées par un séparateur, souvent une virgule(<strong><code>,</code></strong>) ou un point-virgule (<strong><code>;</code></strong>), et des caractères de délimitation, souvent les guillemets (<strong><code>"</code></strong>). Si vous ne savez pas comment créer un fichier CSV, vous pouvez utiliser <a href="http://www.openoffice.org" title="OpenOffice.org">OpenOffice Calc</a> ou un autre tableur pour exporter vos données dans un fichier CSV.</p>
 <br />
-<p>Pour importer des termes, l'utilisateur doit avoir les <a href="?q=admin/user/permissions#module-taxonomy_csv" title="configurer les permissions de taxonomy_csv">droits d'accès</a> suivants :<br />
+<p>Pour importer des termes, l'utilisateur doit avoir le <a href="?q=admin/user/permissions#module-taxonomy_csv" title="configurer les permissions de taxonomy_csv">droit d'accès</a> suivant :<br />
+  <ul>
+    <li>Module taxonomy_csv / Gérer les taxinomies par csv.</li>
+  </ul>
+Ce droit d'accès est souvent associé avec ceux-ci :
   <ul>
     <li>Module system / accéder aux pages d'administration ;</li>
     <li>Module taxonomy / administrer la classification ;</li>
-    <li>Module taxonomy_csv / Gérer les taxinomies par csv.</li>
   </ul>
 </p>
 <br />
@@ -64,24 +70,52 @@
       Ainsi, les premières lignes de votre fichier csv seraient :
       <ul>
         <li><code>Monde</code></li>
+        <li><code>,Asie</code></li>
+        <li><code>,,Japon</code></li>
+        <li><code>,,,Tokyo</code></li>
+        <li><code>,,Corée</code></li>
+        <li><code>,,,Séoul</code></li>
         <li><code>,Europe</code></li>
         <li><code>,,France</code></li>
         <li><code>,,,Paris</code></li>
       </ul>
       < <code>Paris</code> > sera automatiquement ajouté comme enfant du terme < <code>France</code> >.
-      <p>Les lignes peuvent être partielles. Ainsi, une cinquième ligne pourrait être :</p>
+      <p>Les lignes peuvent être partielles. Ainsi, la ligne suivante pourrait être :</p>
       <ul>
         <li><code>,,Suisse,Bern</code></li>
       </ul>
       < <code>Suisse</code> > serait alors ajouté comme enfant d'< <code>Europe</code> > et bien sûr < <code>Bern</code> > comme enfant de < <code>Suisse</code> >.
-      <p>De la même façon, les lignes 1 à 4 ci-dessus peuvent être simplifiées en :</p>
+      <p>De la même façon, les lignes ci-dessus peuvent être simplifiées en :</p>
       <ul>
-        <li><code>Monde,Europe,France,Paris</code></li>
+        <li><code>Monde, Asie, Japon, Tokyo</code></li>
+        <li><code>,, Corée, Séoul</code></li>
+        <li><code>Monde, Europe, France, Paris</code></li>
       </ul>
-      Les lignes complètes, avec un seul terme ou partielles peuvent être mélangées, mais l'ordre est pris en compte deux lignes par deux. Dans cet exemple, si les quatrième et cinquième lignes sont interverties, < <code>Paris</code> > deviendrait un enfant de < <code>Suisse</code> >.
+      Les lignes complètes, avec un seul terme ou partielles peuvent être mélangées, mais l'ordre est pris en compte deux lignes par deux, sauf lorsque toutes les lignes sont complètes. Dans cet exemple, si les cinquième et sixième lignes sont interverties, < <code>Séoul</code> > deviendrait un enfant de < <code>Japon</code> >.
+    </dd>
+    <dt>Parents de premier niveau d'un terme</dt>
+    <dd>
+      Le premier élément est importé en tant que terme et les suivants en tant que parents de premier niveau du terme. Par exemple, des lignes peuvent être :<br />
+      <ul>
+        <li><code>Fille, Mère, Père</code></li>
+        <li><code>Fils, Mère, Père 2</code></li>
+        <li><code>Mère, Grand-Mère, Grand-Père</code></li>
+        <li><code>Père, Grand-Mère 1, Grand-Père 2</code></li>
+      </ul>
+    </dd>
+    <dt>Enfants de premier niveau d'un terme</dt>
+    <dd>
+      Le premier élément est importé en tant que terme et les suivants en tant qu'enfants de premier niveau du terme. Par exemple, des lignes peuvent être :<br />
+      <ul>
+        <li><code>Mère, Fille, Fils</code></li>
+        <li><code>Père, Fille, Fils 2</code></li>
+        <li><code>Grand-Mère, Mère</code></li>
+        <li><code>Grand-Père, Mère</code></li>
+      </ul>
     </dd>
     <dt>Termes liés (termes connexes)</dt>
     <dd>
+      Attention : sous Drupal 7, les termes liés ont été supprimés et remplacés par les champs (fields). Cette option est donc disponible seulement avec Drupal 6.<br />
       Cette option permet de créer des liens entre les termes comme les "voir aussi" dans une encyclopédie. La deuxième colonne et les suivantes seront importées en tant que termes connexes du terme de la première colonne. Par exemple, une ligne pourrait être :<br />
       <ul>
         <li><code>Baobab, Madagascar, Fantôme</code></li>
@@ -109,13 +143,21 @@
         <li><code>"Royaume Uni","Grande-Bretagne","Angleterre"</code></li>
       </ul>
     </dd>
+    <dt>Taxonomy manager export</dt>
+    <dd>
+      Ce format est utilisé par <a href="http://drupal.org/project/taxonomy_manager" title="Module Taxonomy manager">Taxonomy manager</a> pour exporter des vocabulaires. Les colonnes sont : identifiant du vocabulaire, identifiant du terme, nom du terme, description du terme, parent 1 de premier niveau, ..., parent n de premier niveau. Example:<br />
+      <ul>
+        <li><code>"1"; "25"; "Louis XVII"; "Roi de France"; "Louis XVI"; "Marie-Antoinette"</code></li>
+      </ul>
+      Dans ce format, l'ordre des lignes est important : il est impossible d'attacher un parent à un terme si ce parent n'a pas été importé dans une ligne précédente.<br />
+      Lorsqu'un vocabulaire est importé dans un vocabulaire existant, seule l'option "ignorer et créer" peut être utilisée.
+    </dd>
   </dl>
   <br />
 
 <h3>2. Où se trouvent les termes à importer ?</h3>
-  <p>Vous pouvez importez les termes à partir d'un fichier ou avec une zone de texte. Sélectionnez simplement votre choix.</p>
-  <p>Si l'importation échoue par l'un des deux moyens, généralement en raison de problèmes de format ou des restrictions du serveur, vous pouvez essayer l'autre moyen puisque le processus de téléchargement est différent.</p>
-  <p>Les paramètres avancés permettent de choisir le séparateur de champ et le format du fichier (voir ci-dessous).</p>
+  <p>Vous pouvez importez les termes à partir d'un fichier ou avec une zone de texte. Sélectionnez simplement votre choix. L'adresse du fichier peut être un chemin local ou une url.</p>
+  <p>Les paramètres avancés permettent de choisir le séparateur et le délimiteur de champ.</p>
   <br />
 
 <h3>3. Où importer les termes (vocabulaire cible) ?</h3>
@@ -158,7 +200,22 @@
 <h3>Paramètres avancés et conseils</h3>
   <ul>
     <li>
-      Le séparateur (virgule "<strong><code>,</code></strong>" par défaut, point-virgule "<strong><code>;</code></strong>" ou tabulation) entre les termes peut être choisi dans les paramètres avancés du deuxième groupe d'options. Le séparateur peut également être personnalisé. Il peut avoir plusieurs caractères, mais seulement pour l'importation par la zone de texte. Exemple avec le séparateur < <strong><code>¤</code></strong> > :<br />
+      Pour importer une taxinomie de taille importante lorsqu'il n'est pas possible de modifier les temps et mémoire maximum autorisés par le serveur, il est d'abord conseillé de désactiver certains modules tels que "pathauto" avant l'importation. Les paramètres ne sont pas perdus lorsqu'un module est désactivé - et non désinstallé -.<br />
+      Ensuite, vous pouvez utiliser l'importation par fichier. Vous pouvez également réduire le niveau de détail du journal. Enfin, vous pouvez utiliser les paramètres avancés suivants :
+      <dl>
+        <dt>Désactiver le cache interne</dt>
+        <dd>Désactiver le cache interne permet d'importer des vocabulaires de n'importe quelle taille. Le cache interne sert à importer des vocabulaires complexes, avec de multiples parents et certains doublons. Il permet également d'afficher des informations sur l'importation. Lorsqu'il est désactivé, aucune information sur le résultat n'est affichée, sauf l'éventuelle première erreur.</dd>
+        <dt>Indiquer manuellement le niveau hiérarchique du vocabulaire</dt>
+        <dd>Déterminer le niveau hiérarchique d'un vocabulaire nécessite beaucoup de mémoire. Cette option permet donc de le définir manuellement sans vérification.</dd>
+        <dt>Désactiver la vérification des lignes</dt>
+        <dd>Si vous êtes sûr que le vocabulaire à importer est correctement formaté (utf8, ordre des éléments...), vous pouvez désactiver la vérification. Cette option augmente la vitesse d'importation de 5%.</dd>
+      </dl>
+    </li>
+    <li>
+      Attention: la fonction "Lister les termes" par défaut de Drupal peut engendrer des erreurs de mémoire avec les taxinomies de taille importante. Dans ce cas, il est préférable d'utiliser un autre gestionnaire de taxinomies tel que <a href="http://drupal.org/project/taxonomy_manager" title="Module Taxonomy manager">Taxonomy manager</a>.
+    </li>
+    <li>
+      Le séparateur (virgule "<strong><code>,</code></strong>" par défaut, point-virgule "<strong><code>;</code></strong>" ou tabulation) entre les termes peut être choisi dans les paramètres avancés du deuxième groupe d'options. Le séparateur peut également être personnalisé. Il ne peut avoir qu'un seul caractère. Exemple avec le séparateur < <strong><code>¤</code></strong> > :<br />
       <ul>
         <li><code>terme 1¤Ce champ contient des virgules, un point-virgule (;), des guillemets (") et une tabulation, mais il est correctement importé.</code></li>
       </ul>
@@ -168,19 +225,10 @@
       <ul>
         <li><code>"terme 1","Ce champ contient une virgule, mais il sera correctement importé."</code></li>
       </ul>
-      Vous pouvez choisir un caractère de délimitation personalisé dans les paramètres avancés du deuxième groupe d'options. Il peut avoir plusieurs caractères, mais seulement pour l'importation par la zone de texte.
+      Vous pouvez choisir un caractère de délimitation personalisé dans les paramètres avancés du deuxième groupe d'options. Il ne peut avoir qu'un seul caractère ou être absent.
     </li>
     <li>
-      Il est conseillé d'utiliser la zone de texte ou un fichier encodé au format utf8 pour éviter les problèmes avec les termes non-ASCII.
-    </li>
-    <li>
-      Si votre serveur ne supporte pas la conversion en utf8, une option permet de la désactiver dans le deuxième groupe d'options.
-    </li>
-    <li>
-      Si vous voulez importer une taxinomie importante et que vous ne pouvez pas modifier les temps et mémoire maximum autorisés, vous pouvez activer l'option <code>Importation en plusieurs étapes</code> dans le cinquième groupe d'options. Cette option divise automatiquement la taxinomie par le nombre de lignes indiquées (100 par défaut). Vous devrez alors simplement cliquer sur un bouton pour importer chaque ensemble de lignes.
-    </li>
-    <li>
-      Attention: la fonction "Lister les termes" par défaut de Drupal peut engendrer des erreurs de mémoire avec les taxinomies de taille importante. Dans ce cas, il est préférable d'utiliser un autre gestionnaire de taxinomies tel que <a href="http://drupal.org/project/taxonomy_manager" title="Module Taxonomy manager">Taxonomy manager</a>.
+      Il est conseillé d'utiliser la zone de texte ou un fichier encodé au format utf8 pour éviter les problèmes avec les termes non-ASCII. Si votre serveur ne supporte pas la conversion en utf8, une option permet de la désactiver dans le dernier groupe d'options.
     </li>
     <li>
       Si vous voulez importer à la fois des termes enfants, des descriptions, des poids, des termes synonymes et connexes et une structure hiérarchique, vous devez commencer par le fichier contenant la structure hiérarchique des parents et des enfants. Ainsi, vous devez d'abord importer le fichier des termes enfants en choisissant l'option <em>Noms des termes enfants</em>. Ensuite, vous pouvez importer les autres fichiers en choisissant l'option adéquate et l'une ou l'autre option <em>Mettre à jour...</em>

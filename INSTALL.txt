@@ -19,7 +19,9 @@
  1) Extract and copy the taxonomy_csv directory into the appropriate modules
     directory in your Drupal installation (recommended: sites/all/modules).
 
- 2) Go to Administer > Site building > Modules and enable the
+ 2) Adjust permissions of directory and files (read access).
+
+ 3) Go to Administer > Site building > Modules and enable the
     "Taxonomy CSV import" module in the "Taxonomy" section.
     Drupal "Taxonomy" core module is automatically enabled.
 

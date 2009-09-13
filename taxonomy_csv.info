@@ -1,8 +1,9 @@
 ; $Id$
 name = "Taxonomy CSV import"
-description = "Allow quick import of complete taxonomies, hierarchical structure or simple lists of terms and properties with a CSV file or by a copy-and-paste text."
+description = "Quick import complete taxonomies, hierarchical structure or simple lists of terms and properties from a CSV file, url or text."
 core = 6.x
 dependencies[] = taxonomy
-package = Taxonomy
-files[] = taxonomy_csv.module
+package = 'Taxonomy'
 files[] = taxonomy_csv.install
+files[] = taxonomy_csv.module
+files[] = taxonomy_csv.api.inc
