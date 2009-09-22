@@ -1,15 +1,23 @@
 <!-- $Id$ -->
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <style type="text/css"><!--
+    /* Code example */
+    div.codeblock {
+      border: 1px solid rgb(204, 204, 204);
+      padding: 5px;
+      background-color: rgb(238, 238, 238);
+    }
+  --></style>
 </head>
 <p>Ce module permet d'importer des taxinomies, des structures ou de simples listes de termes</a> dans un vocabulaire à partir d'un fichier <a href="http://fr.wikipedia.org/wiki/Comma-separated_values" title="Définition Wikipedia">CSV</a>, d'une url ou d'un texte copié-collé.</p>
 <p>Le format csv correspond à une simple liste de valeurs séparées par un séparateur, souvent une virgule(<strong><code>,</code></strong>) ou un point-virgule (<strong><code>;</code></strong>), et des caractères de délimitation, souvent les guillemets (<strong><code>"</code></strong>). Si vous ne savez pas comment créer un fichier CSV, vous pouvez utiliser <a href="http://www.openoffice.org" title="OpenOffice.org">OpenOffice Calc</a> ou un autre tableur pour exporter vos données dans un fichier CSV.</p>
 <br />
 <p>Pour importer des termes, l'utilisateur doit avoir le <a href="?q=admin/user/permissions#module-taxonomy_csv" title="configurer les permissions de taxonomy_csv">droit d'accès</a> suivant :<br />
   <ul>
-    <li>Module taxonomy_csv / Gérer les taxinomies par csv.</li>
+    <li>Module taxonomy_csv / gérer les taxinomies par csv.</li>
   </ul>
-Ce droit d'accès est souvent associé avec ceux-ci :
+Ce droit d'accès est souvent associé à :
   <ul>
     <li>Module system / accéder aux pages d'administration ;</li>
     <li>Module taxonomy / administrer la classification ;</li>
@@ -20,41 +28,43 @@ Ce droit d'accès est souvent associé avec ceux-ci :
 <p>Quatre éléments doivent être paramètrés pour importer les termes.</p>
 <br />
 <h3>1. Que voulez-vous importer (contenu de la source) ?</h3>
-  <p>La source peut être configurée avec le premier groupe d'options. La première colonne indique toujours le nom du terme importé. Vous pouvez indiquer comment les colonnes suivantes doivent être importées.</p>
+  <p>La source peut être configurée avec le premier groupe d'options. La première colonne indique toujours le nom du terme importé. Vous pouvez indiquer comment les colonnes suivantes doivent être importées.>br />
+  La structure du vocabulaire doit être importée en premier lorsque plusieurs fichiers sont utilisés. Il faut donc choisir d'abord les options plat, structure, premier niveau de parents ou d'enfants avant les options relations, descriptions, etc.</p>
   <dl>
-    <dt>Termes seuls</dt>
-    <dd>
+    <h4>Termes seuls</h4>
+    <p>
       Les termes sont importés comme de simples termes. Les colonnes suivantes sont ignorées. Exemple :<br />
-      <ul>
+      <div class="codeblock"><ul>
         <li><code>Diamant</code></li>
         <li><code>Or</code></li>
         <li><code>Bois</code></li>
-      </ul>
-    </dd>
-    <dt>Termes (vocabulaire plat)</dt>
-    <dd>
+      </ul></div>
+    </p>
+    <h4>Termes (vocabulaire plat)</h4>
+    <p>
       Cette option permet d'importer un ensemble de termes de manière à créer un vocabulaire plat. Tous les éléments du fichier seront importés en tant que termes. Exemple :<br />
-      <ul>
+      <div class="codeblock"><ul>
         <li><code>Vétements, Arbres, Maisons</code></li>
         <li><code>Paris, Drupal</code></li>
-      </ul>
-    </dd>
-    <dt>Structure hiérarchique ou en tableau d'un terme par ligne</dt>
-    <dd>
-      Cette option permet de créer la structure d'un vocabulaire (arborescence). Votre fichier peut être écrit selon deux schémas.<br >
+      </ul></div>
+    </p>
+    <h4>Structure hiérarchique ou en tableau d'un terme par ligne</h4>
+    <p>
+      Cette option permet de créer la structure arborescente d'un vocabulaire (géographie, classification...). Pour importer une hiérarchie à plusieurs parents, il est préférable d'utiliser les importations "Polyhiérarchie", "Enfants de premier niveau" ou "Parents de premier niveau".<br />
+      Votre fichier peut être écrit selon deux schémas.<br />
       Dans le premier schéma, vous devez indiquer tous les ancêtres de chaque terme. La deuxième colonne sera importée comme un enfant du terme de la première colonne. La troisième colonne sera importée comme un enfant du terme de la deuxième colonne et ainsi de suite. Les lignes peuvent avoir n'importe quel ordre. Exemple:<br />
-      <ul>
+      <div class="codeblock"><ul>
         <li><code>Animal,Mammifère,Baleine</code></li>
         <li><code>Animal,Mammifère,Singe</code></li>
-      </ul>
+      </ul></div>
       Attention : lorsqu'un enfant est ajouté ou mis à jour, la ligne doit contenir tous ses ancêtres. Ainsi, une troisième ligne pourrait être :
-      <ul>
+      <div class="codeblock"><ul>
         <li><code>Animal,Mammifère,Humain</code></li>
-      </ul>
+      </ul></div>
       mais <strong>pas</strong> :
-      <ul>
+      <div class="codeblock"><ul>
         <li><code>Mammifère,Humain</code></li>
-      </ul>
+      </ul></div>
       car dans ce cas, < <code>Mammifère</code> > serait importé comme terme de premier niveau et non comme un enfant du terme < <code>Animal</code> > comme dans la ligne précédente.<br />
       <br />
       Dans le schéma "structure en tableau d'un terme par ligne", vous pouvez importer les termes sans répéter tous les ancêtres si la ligne précédente les contient. Ce mode est très pratique pour importer une structure depuis un tableur. Il permet également de construire facilement une structure et de télécharger un fichier plus léger. Votre hiérarchie peut être présentée de la façon suivante :<br />
@@ -68,7 +78,7 @@ Ce droit d'accès est souvent associé avec ceux-ci :
       </table></code>
       <br />
       Ainsi, les premières lignes de votre fichier csv seraient :
-      <ul>
+      <div class="codeblock"><ul>
         <li><code>Monde</code></li>
         <li><code>,Asie</code></li>
         <li><code>,,Japon</code></li>
@@ -78,80 +88,109 @@ Ce droit d'accès est souvent associé avec ceux-ci :
         <li><code>,Europe</code></li>
         <li><code>,,France</code></li>
         <li><code>,,,Paris</code></li>
-      </ul>
+      </ul></div>
+      <div class="codeblock"><ul>
+        <li><code>,,Italie,Abruzzes,Chieti,Chieti</code></li>
+        <li><code>,,,,,Civitaluparella</code></li>
+      </ul></div>
       < <code>Paris</code> > sera automatiquement ajouté comme enfant du terme < <code>France</code> >.
       <p>Les lignes peuvent être partielles. Ainsi, la ligne suivante pourrait être :</p>
-      <ul>
+      <div class="codeblock"><ul>
         <li><code>,,Suisse,Bern</code></li>
-      </ul>
+      </ul></div>
       < <code>Suisse</code> > serait alors ajouté comme enfant d'< <code>Europe</code> > et bien sûr < <code>Bern</code> > comme enfant de < <code>Suisse</code> >.
       <p>De la même façon, les lignes ci-dessus peuvent être simplifiées en :</p>
-      <ul>
+      <div class="codeblock"><ul>
         <li><code>Monde, Asie, Japon, Tokyo</code></li>
         <li><code>,, Corée, Séoul</code></li>
         <li><code>Monde, Europe, France, Paris</code></li>
-      </ul>
+      </ul></div>
       Les lignes complètes, avec un seul terme ou partielles peuvent être mélangées, mais l'ordre est pris en compte deux lignes par deux, sauf lorsque toutes les lignes sont complètes. Dans cet exemple, si les cinquième et sixième lignes sont interverties, < <code>Séoul</code> > deviendrait un enfant de < <code>Japon</code> >.
-    </dd>
-    <dt>Parents de premier niveau d'un terme</dt>
-    <dd>
+    </p>
+    <h4>Structure polyhiérarchique</h4>
+    <p>
+      Cette option permet de créer une structure polyhiérarchique telle qu'une généalogie.<br />
+      Le format est le même que le précédent : chaque terme est l'enfant du précédent : parent, enfant, petit-enfant... et ainsi de suite.<br />
+      Cependant, quatre points différent. Premièrement, le premier élément ne doit pas forcément être une racine. Deuxièmement, les doublons sont toujours fusionnés, sauf lorsque l'un est parent direct de l'autre, ceci étant interdit dans Drupal. De ce fait, dans le cas d'un vocabulaire monohierarchique sans doublons non-direct, comme l'exemple géographique ci-dessus, le résultat est le même qu'avec l'option précédente. Troisièmement, les lignes peuvent également être partielles, mais dans certains cas de doublons, le résultat sera différent. Enfin, la polyhierarchie peut être récursive.<br />
+      Par exemple, des lignes peuvent être :<br />
+      <div class="codeblock"><ul>
+        <li><code>Grand-Mère, Mère, Fille</code></li>
+        <li><code>Grand-Père, Mère, Fils</code></li>
+        <li><code>Grand-Mère 2, Père, Fille</code></li>
+        <li><code>Grand-Père 2, Père, Fils</code></li>
+        <li><code>            ,     , Fils 2</code></li>
+        <li><code>            , Oncle</code></li>
+        <li><code>Grand-Mère 2, Oncle</code></li>
+        <li><code>Père, Fils 3</code></li>
+      </ul></div>
+    </p>
+    <h4>Parents de premier niveau d'une liste de termes</h4>
+    <p>
+      Cette option permet d'importer un vocabulaire dans lequel les termes peuvent avoir plusieurs parents, comme dans une généalogie (polyhierarchy).<br />
       Le premier élément est importé en tant que terme et les suivants en tant que parents de premier niveau du terme. Par exemple, des lignes peuvent être :<br />
-      <ul>
+      <div class="codeblock"><ul>
         <li><code>Fille, Mère, Père</code></li>
-        <li><code>Fils, Mère, Père 2</code></li>
+        <li><code>Fils, Mère, Père</code></li>
+        <li><code>Fils 2, Père</code></li>
+        <li><code>Fils 3, Père</code></li>
         <li><code>Mère, Grand-Mère, Grand-Père</code></li>
-        <li><code>Père, Grand-Mère 1, Grand-Père 2</code></li>
-      </ul>
-    </dd>
-    <dt>Enfants de premier niveau d'un terme</dt>
-    <dd>
+        <li><code>Père, Grand-Mère 2, Grand-Père 2</code></li>
+        <li><code>Oncle, Grand-Mère 2, Grand-Père 2</code></li>
+      </ul></div>
+    </p>
+    <h4>Enfants de premier niveau d'une liste de termes</h4>
+    <p>
+      Cette option permet d'importer un vocabulaire dans lequel les termes peuvent avoir plusieurs parents, comme dans une généalogie (polyhierarchy).<br />
       Le premier élément est importé en tant que terme et les suivants en tant qu'enfants de premier niveau du terme. Par exemple, des lignes peuvent être :<br />
-      <ul>
+      <div class="codeblock"><ul>
         <li><code>Mère, Fille, Fils</code></li>
-        <li><code>Père, Fille, Fils 2</code></li>
+        <li><code>Père, Fille, Fils, Fils 2, Fils 3</code></li>
         <li><code>Grand-Mère, Mère</code></li>
         <li><code>Grand-Père, Mère</code></li>
-      </ul>
-    </dd>
-    <dt>Termes liés (termes connexes)</dt>
-    <dd>
-      Attention : sous Drupal 7, les termes liés ont été supprimés et remplacés par les champs (fields). Cette option est donc disponible seulement avec Drupal 6.<br />
+        <li><code>Grand-Mère 2, Père, Oncle</code></li>
+        <li><code>Grand-Père 2, Père, Oncle</code></li>
+      </ul></div>
+      Les trois exemples précédents correspondent au même vocabulaire lorsque l'option des termes existants est "mettre à jour et fusionner", ce qui est l'option recommandée.
+    </p>
+    <h4>Termes liés (termes connexes)</h4>
+    <p>
+      Attention : sous Drupal 7, les termes liés ont été supprimés et remplacés par les champs (fields). Cette option est donc disponible seulement avec Drupal 6. Pour disposer de la même fonctionnalité, il faut créer un champ 'relations'.<br />
       Cette option permet de créer des liens entre les termes comme les "voir aussi" dans une encyclopédie. La deuxième colonne et les suivantes seront importées en tant que termes connexes du terme de la première colonne. Par exemple, une ligne pourrait être :<br />
-      <ul>
+      <div class="codeblock"><ul>
         <li><code>Baobab, Madagascar, Fantôme</code></li>
-      </ul>
+      </ul></div>
       Ainsi, < <code>Baobab</code> > renverra à < <code>Madagascar</code> > et à < <code>Fantôme</code> >. Une option permet de créer également les sous-relations, en l'occurrence entre < <code>Madagascar</code> > et < <code>Fantôme</code> > (voir ci-dessous).
-    </dd>
-    <dt>Description du terme</dt>
-    <dd>
-      La seconde colonne sera importée comme description du terme défini dans la première colonne.Exemple :<br/>
-      <ul>
+    </p>
+    <h4>Description du terme</h4>
+    <p>
+      La seconde colonne sera importée comme description du terme défini dans la première colonne.Exemple :<br >
+      <div class="codeblock"><ul>
         <li><code>"Baobab","Un arbre africain"</code></li>
-      </ul>
-    </dd>
-    <dt>Poids des termes</dt>
-    <dd>
-      La seconde colonne sera importée comme poids du terme défini dans la première colonne. Exemple :<br/>
-      <ul>
+      </ul></div>
+    </p>
+    <h4>Poids des termes</h4>
+    <p>
+      La seconde colonne sera importée comme poids du terme défini dans la première colonne. Exemple :<br >
+      <div class="codeblock"><ul>
         <li><code>Baobab, 3</code></li>
-      </ul>
-    </dd>
-    <dt>Termes synonymes</dt>
-    <dd>
+      </ul></div>
+    </p>
+    <h4>Termes synonymes</h4>
+    <p>
       La deuxième colonne et les suivantes seront importées comme termes synonymes du terme de la première colonne. Exemple :<br />
-      <ul>
+      <div class="codeblock"><ul>
         <li><code>"Royaume Uni","Grande-Bretagne","Angleterre"</code></li>
-      </ul>
-    </dd>
-    <dt>Taxonomy manager export</dt>
-    <dd>
+      </ul></div>
+    </p>
+    <h4>Taxonomy manager export</h4>
+    <p>
       Ce format est utilisé par <a href="http://drupal.org/project/taxonomy_manager" title="Module Taxonomy manager">Taxonomy manager</a> pour exporter des vocabulaires. Les colonnes sont : identifiant du vocabulaire, identifiant du terme, nom du terme, description du terme, parent 1 de premier niveau, ..., parent n de premier niveau. Example:<br />
-      <ul>
+      <div class="codeblock"><ul>
         <li><code>"1"; "25"; "Louis XVII"; "Roi de France"; "Louis XVI"; "Marie-Antoinette"</code></li>
-      </ul>
+      </ul></div>
       Dans ce format, l'ordre des lignes est important : il est impossible d'attacher un parent à un terme si ce parent n'a pas été importé dans une ligne précédente.<br />
       Lorsqu'un vocabulaire est importé dans un vocabulaire existant, seule l'option "ignorer et créer" peut être utilisée.
-    </dd>
+    </p>
   </dl>
   <br />
 
@@ -174,41 +213,41 @@ Ce droit d'accès est souvent associé avec ceux-ci :
 <h3>4. Comment importer les termes ?</h3>
   <p>La destination peut être configurée avec le second groupe d'options. Vous pouvez définir ce que deviendront les termes existants. Jusqu'à quatre choix sont possibles selon le contenu de la source :</p>
   <dl>
-    <dt>Mettre les termes à jour et fusionner avec l'existant</dt>
-    <dd>
+    <h4>Mettre les termes à jour et fusionner avec l'existant</h4>
+    <p>
       Met à jour les termes existants lorsque le nom correspond avec celui des termes importés et fusionne les descriptions, parents, synonymes et termes connexes existants. Les doublons sont supprimés. Ce choix est conseillé si vous voulez conserver un vocabulaire et si vous avez des descriptions, des parents, des synonymes et des termes connexes que vous ne voulez pas perdre.
-    </dd>
-    <dt>Mettre les termes à jour et remplacer l'existant</dt>
-    <dd>
+    </p>
+    <h4>Mettre les termes à jour et remplacer l'existant</h4>
+    <p>
       Met à jour les termes existants si le nom correspond à celui des termes importés, mais remplace les descriptions, les parents, les termes synonymes et connexes existants. Choisissez cette option si vous voulez créer proprement un nouveau vocabulaire sans perdre les termes existants.
       <br />
       Attention : s'il n'y a pas de description, parent, synonyme ou terme connexe, c'est-à-dire si la ligne contient seulement un terme dans la première colonne, cela supprimera l'existant.
-    </dd>
-    <dt>Ignorer les termes existants et en créer de nouveaux</dt>
-    <dd>
+    </p>
+    <h4>Ignorer les termes existants et en créer de nouveaux</h4>
+    <p>
       Conserve les termes existants tels qu'ils sont et crée un nouveau terme pour le terme de la première colonne.
       <br />
       Attention : cela peut créer des doublons. Cette option est conseillée seulement si vous êtes sûr que la taxinomie importée contient seulement des termes nouveaux ou si votre vocabulaire autorise les parents multiples.
-    </dd>
-    <dt>Ignorer tous les termes et en créer de nouveaux</dt>
-    <dd>
+    </p>
+    <h4>Ignorer tous les termes et en créer de nouveaux</h4>
+    <p>
       Crée un nouveau terme pour chaque terme de la ligne.
-    </dd>
+    </p>
   </dl>
   <br />
 
 <h3>Paramètres avancés et conseils</h3>
   <ul>
     <li>
-      Pour importer une taxinomie de taille importante lorsqu'il n'est pas possible de modifier les temps et mémoire maximum autorisés par le serveur, il est d'abord conseillé de désactiver certains modules tels que "pathauto" avant l'importation. Les paramètres ne sont pas perdus lorsqu'un module est désactivé - et non désinstallé -.<br />
+      Pour importer une taxinomie de taille importante lorsqu'il n'est pas possible de modifier les temps et mémoire maximum autorisés par le serveur, il est d'abord conseillé de désactiver certains modules utilisant les taxinomies tels que "pathauto" avant l'importation. Les paramètres ne sont pas perdus lorsqu'un module est désactivé - et non désinstallé -.<br />
       Ensuite, vous pouvez utiliser l'importation par fichier. Vous pouvez également réduire le niveau de détail du journal. Enfin, vous pouvez utiliser les paramètres avancés suivants :
       <dl>
-        <dt>Désactiver le cache interne</dt>
-        <dd>Désactiver le cache interne permet d'importer des vocabulaires de n'importe quelle taille. Le cache interne sert à importer des vocabulaires complexes, avec de multiples parents et certains doublons. Il permet également d'afficher des informations sur l'importation. Lorsqu'il est désactivé, aucune information sur le résultat n'est affichée, sauf l'éventuelle première erreur.</dd>
-        <dt>Indiquer manuellement le niveau hiérarchique du vocabulaire</dt>
-        <dd>Déterminer le niveau hiérarchique d'un vocabulaire nécessite beaucoup de mémoire. Cette option permet donc de le définir manuellement sans vérification.</dd>
-        <dt>Désactiver la vérification des lignes</dt>
-        <dd>Si vous êtes sûr que le vocabulaire à importer est correctement formaté (utf8, ordre des éléments...), vous pouvez désactiver la vérification. Cette option augmente la vitesse d'importation de 5%.</dd>
+        <h4>Désactiver le cache interne</h4>
+        <p>Désactiver le cache interne permet d'importer des vocabulaires de n'importe quelle taille. Le cache interne sert à accélérer l'importation, à réduire les appels à la base sql et à être informé sur le traitement. Lorsqu'il est désactivé, aucune information sur le résultat n'est affichée, sauf l'éventuelle première erreur.</p>
+        <h4>Indiquer manuellement le niveau hiérarchique du vocabulaire</h4>
+        <p>Déterminer le niveau hiérarchique d'un vocabulaire nécessite beaucoup de mémoire. Cette option permet donc de le définir manuellement sans vérification.</p>
+        <h4>Désactiver la vérification des lignes</h4>
+        <p>Si vous êtes sûr que le vocabulaire à importer est correctement formaté (utf8, ordre des éléments...), vous pouvez désactiver la vérification. Cette option augmente la vitesse d'importation de 5%.</p>
       </dl>
     </li>
     <li>
@@ -216,25 +255,25 @@ Ce droit d'accès est souvent associé avec ceux-ci :
     </li>
     <li>
       Le séparateur (virgule "<strong><code>,</code></strong>" par défaut, point-virgule "<strong><code>;</code></strong>" ou tabulation) entre les termes peut être choisi dans les paramètres avancés du deuxième groupe d'options. Le séparateur peut également être personnalisé. Il ne peut avoir qu'un seul caractère. Exemple avec le séparateur < <strong><code>¤</code></strong> > :<br />
-      <ul>
+      <div class="codeblock"><ul>
         <li><code>terme 1¤Ce champ contient des virgules, un point-virgule (;), des guillemets (") et une tabulation, mais il est correctement importé.</code></li>
-      </ul>
+      </ul></div>
     </li>
     <li>
       Il est conseillé de protéger les termes par des caractères de délimitation tels que les guillemets (<strong><code>"</code></strong>), notamment s'ils contiennent des caractères non-ASCII ou si les éléments importés, en particulier les descriptions, contiennent le séparateur choisi. Exemple:<br />
-      <ul>
+      <div class="codeblock"><ul>
         <li><code>"terme 1","Ce champ contient une virgule, mais il sera correctement importé."</code></li>
-      </ul>
-      Vous pouvez choisir un caractère de délimitation personalisé dans les paramètres avancés du deuxième groupe d'options. Il ne peut avoir qu'un seul caractère ou être absent.
+      </ul></div>
+      Vous pouvez choisir un caractère de délimitation personalisé dans les paramètres avancés du deuxième groupe d'options. Il ne peut avoir qu'un seul caractère ou être nul. Les guillemets (<strong><code>"</code></strong>) sont automatiquement pris en compte.
     </li>
     <li>
       Il est conseillé d'utiliser la zone de texte ou un fichier encodé au format utf8 pour éviter les problèmes avec les termes non-ASCII. Si votre serveur ne supporte pas la conversion en utf8, une option permet de la désactiver dans le dernier groupe d'options.
     </li>
     <li>
-      Si vous voulez importer à la fois des termes enfants, des descriptions, des poids, des termes synonymes et connexes et une structure hiérarchique, vous devez commencer par le fichier contenant la structure hiérarchique des parents et des enfants. Ainsi, vous devez d'abord importer le fichier des termes enfants en choisissant l'option <em>Noms des termes enfants</em>. Ensuite, vous pouvez importer les autres fichiers en choisissant l'option adéquate et l'une ou l'autre option <em>Mettre à jour...</em>
+      Si vous voulez importer à la fois des termes enfants, des descriptions, des poids, des termes synonymes et connexes et une structure hiérarchique, vous devez commencer par le fichier contenant la structure hiérarchique des parents et des enfants. Ainsi, vous devez d'abord importer le fichier des termes enfants en choisissant l'option <em>Vocabulaire plat</em>, <em>Structure</em>, <em>Parents</em> ou <em>Enfants</em>. Ensuite, vous pouvez importer les autres fichiers en choisissant l'option adéquate et l'une ou l'autre option <em>Mettre à jour...</em>
     </li>
     <li>
       Attention : si 1) le choix de la source <strong>n'est pas</strong> <em>"Ignorer"</em> les colonnes supplémentaires, 2) le fichier ou une ligne dans le fichier contient seulement une colonne et 3) vous choisissez <em>"Mettre à jour et remplacer"</em>, le processus d'importation deviendra un processus de suppression des éléments correspondants (les termes de la première colonne sont toujours conservés ou importés).
     </li>
   </ul>
-<p>Un autre module Drupal permet également l'mportation d'une taxinomie par le biais d'un fichier CSV, malgré son nom : <a href="http://drupal.org/project/taxonomy_xml" title="Module Taxonomy XML">taxonomy XML</a>. Son approche est différente. Il utilise un fichier unique conforme à la norme ISO 2788 sur les thésaurus, en l'occurrence un fichier CSV à trois colonnes : <code>premier terme, type de lien, second terme</code>, ou, pour les specialistes, <code>sujet, prédicat, objet</code>. Pour Drupal 4.7 et Drupal 5, <a href="http://drupal.org/project/taxonomy_batch_operations" title="Module Taxonomy batch operations">taxonomy batch operations</a> peut également être utilisé. Vous pouvez donc choisir le module correspondant le mieux à vos besoins.</p>
+<p>Un autre module Drupal permet également l'importation d'une taxinomie par le biais d'un fichier CSV, malgré son nom : <a href="http://drupal.org/project/taxonomy_xml" title="Module Taxonomy XML">taxonomy XML</a>. Son approche est différente. Il utilise un fichier unique conforme à la norme ISO 2788 sur les thésaurus, en l'occurrence un fichier CSV à trois colonnes : <code>premier terme, type de lien, second terme</code>, ou, pour les specialistes, <code>sujet, prédicat, objet</code>. Pour Drupal 4.7 et Drupal 5, <a href="http://drupal.org/project/taxonomy_batch_operations" title="Module Taxonomy batch operations">taxonomy batch operations</a> peut également être utilisé. Vous pouvez donc choisir le module correspondant le mieux à vos besoins.</p>

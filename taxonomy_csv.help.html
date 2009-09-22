@@ -1,4 +1,15 @@
 <!-- $Id$ -->
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <style type="text/css"><!--
+    /* Code example */
+    div.codeblock {
+      border: 1px solid rgb(204, 204, 204);
+      padding: 5px;
+      background-color: rgb(238, 238, 238);
+    }
+  --></style>
+</head>
 <p>This module allows to import taxonomies, structures or simple lists of terms</a> into a vocabulary from a <a href="http://en.wikipedia.org/wiki/Comma-separated_values" title="Wikipedia definition">CSV</a> file, a url or a copy-and-paste text.</p>
 <p>Csv format is a simple list of values separated by a delimiter, often comma (<strong><code>,</code></strong>) or semi-colon (<strong><code>;</code></strong>), and enclosures, often quotation marks (<strong><code>"</code></strong>). If you are unsure how to create a CSV file, you might want to use <a href="http://www.openoffice.org" title="OpenOffice.org">OpenOffice Calc</a> or another spreadsheet application to export your data into a CSV file.</p>
 <br />
@@ -16,41 +27,43 @@ This permission is often associated with these ones:
 <p>Four items need to be set in order to import your terms.</p>
 <br />
 <h3>1. What to import (content of the source)?</h3>
-  <p>Source can be configured with the first field set. The first column always contains the term name. You can specify what you want to import and how additional columns should be imported.</p>
+  <p>Source can be configured with the first field set. The first column always contains the term name. You can specify what you want to import and how additional columns should be imported.<br />
+  Vocabulary structure should be imported first when multiple files are used. So choose options flat, structure, first level of parents or children before relations, descriptions, etc.</p>
   <dl>
-    <dt>Alone terms</dt>
-    <dd>
+    <h4>Alone terms</h4>
+    <p>
       Terms are imported as simple terms. Additional columns are ignored. Example:<br />
-      <ul>
+      <div class="codeblock"><ul>
         <li><code>Diamond</code></li>
         <li><code>Gold</code></li>
         <li><code>Wood</code></li>
-      </ul>
-    </dd>
-    <dt>Terms (flat vocabulary)</dt>
-    <dd>
+      </ul></div>
+    </p>
+    <h4>Terms (flat vocabulary)</h4>
+    <p>
       Use this option to import a lot of terms in order to create a flat vocabulary. All items in your file will be imported as terms. Example:
-      <ul>
+      <div class="codeblock"><ul>
         <li><code>Clothes, Trees, Houses</code></li>
         <li><code>Paris, Drupal</code></li>
-      </ul>
-    </dd>
-    <dt>Hierarchical or one term by line structure</dt>
-    <dd>
-      Use this option to create a structure of a vocabulary (tree). Your file can be written with two schemes.<br/>
+      </ul></div>
+    </p>
+    <h4>Hierarchical tree structure or one term by line structure</h4>
+    <p>
+      Use this option to create a tree structure of a vocabulary (geography, classification...). To import a hierarchy with multiple parents as a genealogical one, it's advised to use "Polyhierarchy", "First level children" or "First level parents" imports.<br >
+      Your file can be written with two schemes.<br />
       In the first scheme, you need to set all ancestors to each term. The second column will be imported as the name of a child term of the term defined by the first column. The third column will be imported as a child of the second column, and so on. Lines can have any order. Example:<br />
-      <ul>
+      <div class="codeblock"><ul>
         <li><code>Animal, Mammal, Whale</code></li>
         <li><code>Animal, Mammal, Monkey</code></li>
-      </ul>
+      </ul></div>
       Be careful: when a child is added or updated, line should contain all its ancestors. So a third line may be:<br />
-      <ul>
+      <div class="codeblock"><ul>
         <li><code>Animal, Mammal, Human</code></li>
-      </ul>
+      </ul></div>
       but <strong>not</strong>:
-      <ul>
+      <div class="codeblock"><ul>
         <li><code>Mammal, Human</code></li>
-      </ul>
+      </ul></div>
       because in this second case, < <code>Mammal</code> > is imported as a first level term and not as a < <code>Animal</code> > term child as in previous line.<br />
       <br />
       In the "one term by line structure" scheme, you can import terms without duplicate all its ancestor if previous term has ancestors. It is very useful with a spreadsheet application. It allows to easy build a structure and to upload a less heavy file. So your hierarchy can be:<br />
@@ -64,7 +77,7 @@ This permission is often associated with these ones:
       </table></code>
       <br />
       So, first lines of your csv file can be:
-      <ul>
+      <div class="codeblock"><ul>
         <li><code>World</code></li>
         <li><code>,Asia</code></li>
         <li><code>,,Japan</code></li>
@@ -74,81 +87,110 @@ This permission is often associated with these ones:
         <li><code>,Europe</code></li>
         <li><code>,,France</code></li>
         <li><code>,,,Paris</code></li>
-      </ul>
+      </ul></div>
+      <div class="codeblock"><ul>
+        <li><code>,,Italia,Abruzzo,Chieti,Chieti</code></li>
+        <li><code>,,,,,Civitaluparella</code></li>
+      </ul></div>
       < <code>Paris</code> > will be automatically added as a child of < <code>France</code> > and so on.
       <p>Partial lines are allowed, so a next line can be:</p>
-      <ul>
+      <div class="codeblock"><ul>
         <li><code>,,Switzerland,Bern</code></li>
-      </ul>
+      </ul></div>
       < <code>Switzerland</code> > will be added as a child of < <code>Europe</code> > and of course < <code>Bern</code> > as a child of < <code>Switzerland</code> >.
       <p>In same way, above lines can be simplified to:</p>
-      <ul>
+      <div class="codeblock"><ul>
         <li><code>World, Asia, Japan, Tokyo</code></li>
         <li><code>,, Korea, Seoul</code></li>
         <li><code>World, Europe, France, Paris</code></li>
-      </ul>
+      </ul></div>
       Full lines, partial and one term lines can be mixed, but order is important two by two lines, except when there are only full lines. In this example, if fifth and sixth lines are shift, < <code>Seoul</code> > will become a child of < <code>Japan</code> >.
-    </dd>
-    <dt>First level parents of a term</dt>
-    <dd>
+    </p>
+    <h4>Polyhierarchical structure</h4>
+    <p>
+      Use this option to create a a polyhierarchical structure, as a genealogy.<br >
+      Format is the same than tree structure: each term is the child of previous item: parent, child, sub-child... and so on.<br />
+      There are four differences. First, the first item doesn't need to be a root. Second, duplicate terms are always merged, except when one is the direct parent of the other one, because it's forbidden in Drupal. So, if the vocabulary is monohierarchical and without non-direct duplicate terms, as in the previous geographical example, result is the same than with previous option. Third, lines can be partial too, but in some case of duplicates, result may differ. Last, polyhierarchy can be recursive.<br />
+      For example, lines may be:<br />
+      <div class="codeblock"><ul>
+        <li><code>Grand-Mother, Mother, Daughter</code></li>
+        <li><code>Grand-Father, Mother, Son</code></li>
+        <li><code>Grand-Mother 2, Father, Daughter</code></li>
+        <li><code>Grand-Father 2, Father, Son</code></li>
+        <li><code>              ,       , Son 2</code></li>
+        <li><code>              , Uncle</code></li>
+        <li><code>Grand-Mother 2, Uncle</code></li>
+        <li><code>Father, Son 3</code></li>
+      </ul></div>
+    </p>
+    <h4>First level parents of a list of terms</h4>
+    <p>
+      This choice allows to create a vocabulary in which terms can have more than one parent, as in a genealogy (polyhierarchy).<br />
       The first item is imported as a term, the second and next as first level parents of first term. For example, lines may be:<br />
-      <ul>
+      <div class="codeblock"><ul>
         <li><code>Daughter, Mother, Father</code></li>
-        <li><code>Son, Mother, Father 2</code></li>
-        <li><code>Mother, Great-Mother, Great-Father</code></li>
-        <li><code>Father, Great-Mother 1, Great-Father 2</code></li>
-      </ul>
-    </dd>
-    <dt>First level children of a term</dt>
-    <dd>
+        <li><code>Son, Mother, Father</code></li>
+        <li><code>Son 2, Father</code></li>
+        <li><code>Son 3, Father</code></li>
+        <li><code>Mother, Grand-Mother, Grand-Father</code></li>
+        <li><code>Father, Grand-Mother 2, Grand-Father 2</code></li>
+        <li><code>Uncle, Grand-Mother 2, Grand-Father 2</code></li>
+      </ul></div>
+    </p>
+    <h4>First level children of a list of terms</h4>
+    <p>
+      This choice allows to create a vocabulary in which terms can have more than one parent, as in a genealogy (polyhierarchy).<br />
       The first item is imported as a term, the second and next as first level children of first term. For example, lines may be:<br />
-      <ul>
+      <div class="codeblock"><ul>
         <li><code>Mother, Daughter, Son</code></li>
-        <li><code>Father, Daughter, Son 2</code></li>
-        <li><code>Great-Mother, Mother</code></li>
-        <li><code>Great-Father, Mother</code></li>
-      </ul>
-    </dd>
-    <dt>Related terms</dt>
-    <dd>
-      Warning: in Drupal 7, related terms have been removed and replaced by fields. So this option is available only with Drupal 6.<br />
+        <li><code>Father, Daughter, Son, Son 2, Son 3</code></li>
+        <li><code>Grand-Mother, Mother</code></li>
+        <li><code>Grand-Father, Mother</code></li>
+        <li><code>Grand-Mother 2, Father, Uncle</code></li>
+        <li><code>Grand-Father 2, Father, Uncle</code></li>
+      </ul></div>
+      The three previous examples import the same vocabulary when existing items option is "update and merge", which is the recommended one.
+    </p>
+    <h4>Related terms</h4>
+    <p>
+      Warning: in Drupal 7, related terms have been removed and replaced by fields. So this option is available only with Drupal 6. To get same functionnality, you need to create a "relations" field.<br />
       Use this option to create links between terms, as "see also" in an encyclopedia.
       The second and next columns will be imported as related terms of the first column term. For example, a line may be:<br />
-      <ul>
+      <div class="codeblock"><ul>
         <li><code>Baobab, Madagascar, Ghost</code></li>
-      </ul>
+      </ul></div>
       So < <code>Baobab</code> > will be related to < <code>Madagascar</code> > and < <code>Ghost</code> >. An option allow you to create subrelations, here between < <code>Madagascar</code> > and < <code>Ghost</code> > (see below).
-    </dd>
-    <dt>Term description</dt>
-    <dd>
-      The second column will be imported as the term description of the first column term. Example:<br/>
-      <ul>
+    </p>
+    <h4>Term description</h4>
+    <p>
+      The second column will be imported as the term description of the first column term. Example:<br >
+      <div class="codeblock"><ul>
         <li><code>"Baobab","An African tree"</code></li>
-      </ul>
-    </dd>
-    <dt>Term weights</dt>
-    <dd>
-      The second column will be imported as weight of the term defined by first column. Example:<br/>
-      <ul>
+      </ul></div>
+    </p>
+    <h4>Term weights</h4>
+    <p>
+      The second column will be imported as weight of the term defined by first column. Example:<br >
+      <div class="codeblock"><ul>
         <li><code>Baobab, 3</code></li>
-      </ul>
-    </dd>
-    <dt>Synonyms terms</dt>
-    <dd>
+      </ul></div>
+    </p>
+    <h4>Synonyms terms</h4>
+    <p>
       The second and next columns will be imported as synonyms terms of the first column term. Example:<br />
-      <ul>
+      <div class="codeblock"><ul>
         <li><code>"United Kingdom","Great Britain","England"</code></li>
-      </ul>
-    </dd>
-    <dt>Taxonomy manager export</dt>
-    <dd>
+      </ul></div>
+    </p>
+    <h4>Taxonomy manager export</h4>
+    <p>
       This format is used by <a href="http://drupal.org/project/taxonomy_manager" title="Taxonomy manager module">Taxonomy manager</a> to export vocabularies. Columns are: vocabulary id, term id, term name, term description, first level parent 1, ..., first level parent n. Example:<br />
-      <ul>
+      <div class="codeblock"><ul>
         <li><code>"1"; "25"; "Louis XVII"; "King of France"; "Louis XVI"; "Marie-Antoinette"</code></li>
-      </ul>
+      </ul></div>
       In this format, order of all lines is important: it's impossible to attach a parent to an item if this parent hasn't been imported in a previous line.<br />
       When a vocabulary is imported in an existing one, only option "ignore existing terms" can be used.
-    </dd>
+    </p>
   </dl>
   <br />
 
@@ -171,41 +213,41 @@ This permission is often associated with these ones:
 <h3>4. How to import your terms?</h3>
   <p>Destination can be configured with the second field set. You can specify what will become existing terms. Four choices are possible, or less matching your source content:</p>
   <dl>
-    <dt>Update terms and merge existing</dt>
-    <dd>
+    <h4>Update terms and merge existing</h4>
+    <p>
       Update current terms when name matches with imported ones and merge existing descriptions, parents, synonyms and related terms with new ones. Duplicates are removed. This choice is recommended if you want to keep a vocabulary and if you have descriptions, parents, synonyms and related terms you don't want to lose.
-    </dd>
-    <dt>Update terms and replace existing</dt>
-    <dd>
+    </p>
+    <h4>Update terms and replace existing</h4>
+    <p>
       Update current terms if name matches, but remove existing descriptions, parents, synonyms and related terms. Choose this option if you are want to create a clean new vocabulary without losing existing terms.
       <br />
       Be careful: if there is no description, parent, synonym or related term, i.e. the line contains only a term in the first column, this removes the existing.
-    </dd>
-    <dt>Ignore current terms and create new ones</dt>
-    <dd>
+    </p>
+    <h4>Ignore current terms and create new ones</h4>
+    <p>
       Let current terms as they are and create a new term for the first column term.
       <br />
       Warning: This can create duplicate terms. It is recommended to use this option only if you are sure that imported taxonomy contains only new terms or if your vocabulary allows multiple parents.
-    </dd>
-    <dt>Ignore all current terms and create new ones</dt>
-    <dd>
+    </p>
+    <h4>Ignore all current terms and create new ones</h4>
+    <p>
       Create a new term for each term on the line.
-    </dd>
+    </p>
   </dl>
   <br />
 
 <h3>Advanced settings and hints</h3>
   <ul>
     <li>
-      To import big taxonomies when access to time and memory settings of server are forbidden, it is recommended first to disable some other modules as "pathauto" before import. Settings aren't lost when you disable a module - and not uninstall it -. After import process, modules can be reactivated.<br />
+      To import big taxonomies when access to time and memory settings of server are forbidden, it is recommended first to disable some other taxonomy related modules as "pathauto" before import. Settings aren't lost when you disable a module - and not uninstall it -. After import process, modules can be reactivated.<br />
       Second, you can use file import. Third, you can reduce log level. Fourth, you can use these tweaks.
       <dl>
-        <dt>Disable internal cache</dt>
-        <dd>To disable internal cache allows to import vocabularies of any size. Internal cache is used to import complex vocabularies, with multiple parents and some duplicates. It allows too to display informations about import process. When disabled, no information about results can be displayed except eventual first error or warning.</dd>
-        <dt>Manually set vocabulary hierarchy</dt>
-        <dd>As to calculate vocabulary hierarchy is memory intensive, this option allows to set hierarchy manually without verify it.</dd>
-        <dt>Disable line checks</dt>
-        <dd>If you are sure that vocabulary to import is well formated (utf8, order of items...), you can disable checks. This option increases import speed by 5%.</dd>
+        <h4>Disable internal cache</h4>
+        <p>To disable internal cache allows to import vocabularies of any size. Internal cache is used to speed up process, to reduce access to sql base an to be informed about process. When disabled, no information about results can be displayed except eventual first error or warning.</p>
+        <h4>Manually set vocabulary hierarchy</h4>
+        <p>As to calculate vocabulary hierarchy is memory intensive, this option allows to set hierarchy manually without verify it.</p>
+        <h4>Disable line checks</h4>
+        <p>If you are sure that vocabulary to import is well formated (utf8, order of items...), you can disable checks. This option increases import speed by 5%.</p>
       </dl>
     </li>
     <li>
@@ -213,22 +255,22 @@ This permission is often associated with these ones:
     </li>
     <li>
       Delimiters (comma "<strong><code>,</code></strong>" by default, semicolon "<strong><code>;</code></strong>" or tabulation) between terms can be chosen in Advanced settings in the second fieldset. You can choose a custom delimiter too. Delimiter is a one character string. Example with delimiter < <strong><code>¤</code></strong> >:<br />
-      <ul>
+      <div class="codeblock"><ul>
         <li><code>term 1¤This field has commas, a semicolon (;), a quotation mark (") and a tabulation, but it will be correctly imported.</code></li>
-      </ul>
+      </ul></div>
     </li>
     <li>
       It is recommended to protect terms with enclosure characters as quotation marks (<strong><code>"</code></strong>), specialy if they contain non-ASCII letters or if imported items, in particular descriptions, contain the chosen delimiter. Example:<br />
-      <ul>
+      <div class="codeblock"><ul>
         <li><code>"term 1","This field has a comma, but it will be correctly imported."</code></li>
-      </ul>
-      You can choose a custom enclosure character in Advanced settings in the second fieldset. Enclosure can have only one character or be null.
+      </ul></div>
+      You can choose a custom enclosure character in Advanced settings in the second fieldset. Enclosure can have only one character or be null. Quotation marks (<strong><code>"</code></strong>) are automatically managed.
     </li>
     <li>
       It's recommended to use text area import or utf8 encoded file in order to avoid problems with non-ASCII terms. If your server doesn't support utf8 conversion, an option allows to disable it in the last fieldset.
     </li>
     <li>
-      When you want to import child term names as well as descriptions, synonyms, related terms, term weights and a hierarchical structure, you should begin with the file containing the hierarchical structure. So first import child term names with the < <em>Structure</em> > option. Second, upload the other files with the adequate option and one of the <em>Update terms...</em> option.
+      When you want to import child term names as well as descriptions, synonyms, related terms, term weights and a hierarchical structure, you should begin with the file containing the hierarchical structure. So first import child term names with <em>Flat</em>, <em>Structure</em>, <em>Parents</em> or <em>Children</em> option. Second, upload the other files with the adequate option and one of the <em>Update terms...</em> option.
     </li>
     <li>
       Be careful: if 1) source choice is <strong>not</strong> <em>"Ignore"</em> additional columns, 2) file or a line in the file has only one column and 3) you choose <em>"Update and replace"</em>, the import process will be a remove process of matching items (first column terms are always kept or imported).

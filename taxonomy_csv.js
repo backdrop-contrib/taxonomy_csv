@@ -1,6 +1,5 @@
 // $Id$
 
-if (Drupal.jsEnabled) {
   (function ($) {
 
     /**
@@ -10,74 +9,75 @@ if (Drupal.jsEnabled) {
     */
     $(document).ready(function() {
       // Source options.
-      $('#source').addClass('filtered');
+      $('#edit-source').addClass('filtered');
       // Source choice.
       // Add/remove class to show/hide it.
-      $('#source_choice').change(function(){
-        var methods = new Array('text', 'filepath');
+      $('#edit-source-choice').change(function(){
+        var methods = new Array('text', 'path', 'url');
         for(var m in methods) {
-          $('#source').removeClass(methods[m]);
+          $('#edit-source').removeClass(methods[m]);
         }
-        $('#source').addClass(this.value)
+        $('#edit-source').addClass(this.value)
           .animate({opacity:.5}, 1)
           .animate({opacity:1}, 1)
       });
       // Update current display.
-      $('#source_choice').trigger('change');
+      $('#edit-source-choice').trigger('change');
 
       // Source delimiter.
       // Add/remove class to show/hide it.
-      $('#source_delimiter').change(function(){
+      $('#edit-source-delimiter').change(function(){
         var methods = new Array('comma', 'semicolon', 'tabulation', 'space', 'custom_delimiter');
         for(var m in methods) {
-          $('#source').removeClass(methods[m]);
+          $('#edit-source').removeClass(methods[m]);
         }
-        $('#source').addClass(this.value)
+        $('#edit-source').addClass(this.value)
           .animate({opacity:.5}, 1)
           .animate({opacity:1}, 1)
       });
       // Update current display.
-      $('#source_delimiter').trigger('change');
+      $('#edit-source-delimiter').trigger('change');
 
       // Source enclosure.
       // Add/remove class to show/hide it.
-      $('#source_enclosure').change(function(){
+      $('#edit-source-enclosure').change(function(){
         var methods = new Array('none', 'quotation', 'custom_enclosure');
         for(var m in methods) {
-          $('#source').removeClass(methods[m]);
+          $('#edit-source').removeClass(methods[m]);
         }
-        $('#source').addClass(this.value)
+        $('#edit-source').addClass(this.value)
           .animate({opacity:.5}, 1)
           .animate({opacity:1}, 1)
       });
       // Update current display.
-      $('#source_enclosure').trigger('change');
+      $('#edit-source-enclosure').trigger('change');
 
       // Destination choice.
-      $('#destination').addClass('filtered');
+      $('#edit-destination').addClass('filtered');
       // Add/remove class to show/hide it.
-      $('#destination_target').change(function(){
+      $('#edit-destination-target').change(function(){
         var methods = new Array('autocreate', 'duplicate', 'existing');
         for(var m in methods) {
-          $('#destination').removeClass(methods[m]);
+          $('#edit-destination').removeClass(methods[m]);
         }
-        $('#destination').addClass(this.value)
+        $('#edit-destination').addClass(this.value)
           .animate({opacity:.5}, 1)
           .animate({opacity:1}, 1)
       });
       // Update current display.
-      $('#destination_target').trigger('change');
+      $('#edit-destination-target').trigger('change');
 
       // Import options (general, description and specific).
       // Hide all items defined with the css class filtered.
-      var methods_a = new Array('#edit-import-existing-items-update-wrapper', '#edit-import-existing-items-update-merge-wrapper', '#edit-import-existing-items-update-replace-wrapper', '#edit-import-existing-items-ignore-wrapper', '#edit-import-existing-items-ignore-create-wrapper', '#edit-import-existing-items-ignore-all-wrapper', '#description_alone_terms', '#description_terms', '#description_structure', '#description_parents', '#description_children', '#description_relations', '#description_descriptions', '#description_weights', '#description_synonyms', '#description_manager_export', '#specific_relations');
+
+      var methods_a = new Array('.form-item-import-existing-items', '#edit-import-existing-items-update', '#edit-import-existing-items-update-merge', '#edit-import-existing-items-update-replace', '#edit-import-existing-items-ignore', '#edit-import-existing-items-ignore-create', '#edit-import-existing-items-ignore-all', '#description_alone_terms', '#description_flat', '#description_tree_structure', '#description_polyhierarchy', '#description_parents', '#description_children', '#description_relations', '#description_fields', '#description_descriptions', '#description_weights', '#description_synonyms', '#description_manager_export', '#help_alone_terms', '#help_flat', '#help_tree_structure', '#help_polyhierarchy', '#help_parents', '#help_children', '#help_relations', '#help_fields', '#help_descriptions', '#help_weights', '#help_synonyms', '#help_manager_export', '#edit-relations');
       for(var m in methods_a) {
         $(methods_a[m]).addClass('filtered');
       }
       // Existing terms.
       // Add/remove class to show/hide it.
       $('#source_content').change(function(){
-        var methods_b = new Array('alone_terms', 'terms', 'structure', 'parents', 'children', 'relations', 'descriptions', 'weights', 'synonyms', 'manager_export');
+        var methods_b = new Array('alone_terms', 'flat', 'tree_structure', 'polyhierarchy', 'parents', 'children', 'relations', 'fields', 'descriptions', 'weights', 'synonyms', 'manager_export');
         // Remove all added classes in order to return to base.
         for(var m in methods_a) {
           for(var n in methods_b) {
@@ -153,4 +153,3 @@ if (Drupal.jsEnabled) {
     });
 
   })(jQuery);
-}
