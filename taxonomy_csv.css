@@ -4,10 +4,13 @@
  * Allows to hide unchosen sub-options and to show chosen sub-options.
  */
 /* Hide */
-#source.filtered #edit-text-wrapper,
-#source.filtered #edit-filepath-wrapper,
-#source.filtered #edit-source-delimiter-custom-wrapper,
-#source.filtered #edit-source-enclosure-custom-wrapper,
+#edit-source.filtered #edit-text-wrapper,
+#edit-source.filtered #edit-path-wrapper,
+#edit-source.filtered #edit-url-wrapper,
+#edit-source.filtered #edit-source-delimiter-custom-wrapper,
+#edit-source.filtered #edit-source-enclosure-custom-wrapper,
+
+#edit-destination.filtered #edit-destination-vocabulary-id-wrapper,
 
 #edit-import-existing-items-update-wrapper.filtered,
 #edit-import-existing-items-update-merge-wrapper.filtered,
@@ -17,19 +20,32 @@
 #edit-import-existing-items-ignore-all-wrapper.filtered,
 
 #description_alone_terms.filtered,
-#description_terms.filtered,
-#description_structure.filtered,
+#description_flat.filtered,
+#description_tree_structure.filtered,
+#description_polyhierarchy.filtered,
 #description_parents.filtered,
 #description_children.filtered,
 #description_relations.filtered,
+#description_fields.filtered,
 #description_descriptions.filtered,
 #description_weights.filtered,
 #description_synonyms.filtered,
 #description_manager_export.filtered,
 
-#specific_relations.filtered,
+#help_alone_terms.filtered,
+#help_flat.filtered,
+#help_tree_structure.filtered,
+#help_polyhierarchy.filtered,
+#help_parents.filtered,
+#help_children.filtered,
+#help_relations.filtered,
+#help_fields.filtered,
+#help_descriptions.filtered,
+#help_weights.filtered,
+#help_synonyms.filtered,
+#help_manager_export.filtered,
 
-#destination.filtered #edit-destination-vocabulary-id-wrapper,
+#edit-relations.filtered,
 
 #result_display_cache.filtered,
 #hierarchy_level.filtered,
@@ -39,17 +55,22 @@
 }
 
 /* Show */
-#source.text #edit-text-wrapper,
-#source.filepath #edit-filepath-wrapper,
-#source.custom_delimiter #edit-source-delimiter-custom-wrapper,
-#source.custom_enclosure #edit-source-enclosure-custom-wrapper,
+#edit-source.text #edit-text-wrapper,
+#edit-source.path #edit-path-wrapper,
+#edit-source.url #edit-url-wrapper,
+#edit-source.custom_delimiter #edit-source-delimiter-custom-wrapper,
+#edit-source.custom_enclosure #edit-source-enclosure-custom-wrapper,
+
+#edit-destination.duplicate #edit-destination-vocabulary-id-wrapper,
+#edit-destination.existing #edit-destination-vocabulary-id-wrapper,
 
 #edit-import-existing-items-update-wrapper.alone_terms,
 #edit-import-existing-items-ignore-wrapper.alone_terms,
-#edit-import-existing-items-update-wrapper.terms,
-#edit-import-existing-items-ignore-wrapper.terms,
-#edit-import-existing-items-update-replace-wrapper.structure,
-#edit-import-existing-items-ignore-create-wrapper.structure,
+#edit-import-existing-items-update-wrapper.flat,
+#edit-import-existing-items-ignore-wrapper.flat,
+#edit-import-existing-items-update-replace-wrapper.tree_structure,
+#edit-import-existing-items-ignore-create-wrapper.tree_structure,
+#edit-import-existing-items-update-merge-wrapper.polyhierarchy,
 #edit-import-existing-items-update-merge-wrapper.parents,
 #edit-import-existing-items-update-replace-wrapper.parents,
 #edit-import-existing-items-ignore-create-wrapper.parents,
@@ -59,6 +80,9 @@
 #edit-import-existing-items-update-merge-wrapper.relations,
 #edit-import-existing-items-update-replace-wrapper.relations,
 #edit-import-existing-items-ignore-create-wrapper.relations,
+#edit-import-existing-items-update-merge-wrapper.fields,
+#edit-import-existing-items-update-replace-wrapper.fields,
+#edit-import-existing-items-ignore-create-wrapper.fields,
 #edit-import-existing-items-update-merge-wrapper.descriptions,
 #edit-import-existing-items-update-replace-wrapper.descriptions,
 #edit-import-existing-items-ignore-create-wrapper.descriptions,
@@ -72,19 +96,31 @@
 #edit-import-existing-items-ignore-create-wrapper.manager_export,
 
 #description_alone_terms.alone_terms,
-#description_terms.terms,
-#description_structure.structure,
+#description_flat.flat,
+#description_tree_structure.tree_structure,
+#description_polyhierarchy.polyhierarchy,
 #description_parents.parents,
 #description_children.children,
 #description_relations.relations,
+#description_fields.fields,
 #description_descriptions.descriptions,
 #description_weights.weights,
 #description_synonyms.synonyms,
 #description_manager_export.manager_export,
 
-#specific_relations.relations,
+#help_alone_terms.alone_terms,
+#help_flat.flat,
+#help_tree_structure.tree_structure,
+#help_polyhierarchy.polyhierarchy,
+#help_parents.parents,
+#help_children.children,
+#help_relations.relations,
+#help_fields.fields,
+#help_descriptions.descriptions,
+#help_weights.weights,
+#help_synonyms.synonyms,
+#help_manager_export.manager_export,
 
-#destination.duplicate #edit-destination-vocabulary-id-wrapper,
-#destination.existing #edit-destination-vocabulary-id-wrapper{
+#edit-relations.relations{
   display:block;
 }

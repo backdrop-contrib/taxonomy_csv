@@ -58,5 +58,5 @@ function taxonomy_csv_uninstall() {
     variable_del("taxonomy_csv_$option");
   }
 
-  drupal_set_message(st('Taxonomy csv import: All user preferences has been removed. Thanks for using this module!<br />Your comments are welcomed on <a href="!link">Taxonomy csv import</a>.', array('!link' => url('http://drupal.org/project/taxonomy_csv'))));
+  drupal_set_message(st('Taxonomy csv import: All user preferences have been removed. Thanks for using this module!<br />Your comments are welcomed on <a href="!link">Taxonomy csv import</a>.', array('!link' => url('http://drupal.org/project/taxonomy_csv'))));
 }

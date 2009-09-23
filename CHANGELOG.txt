@@ -12,6 +12,22 @@ Taxonomy csv x.x-x.x, xxxx-xx-xx
 --------------------------------
 
 
+Taxonomy csv 7.x-4.5, 2009-09-22
+--------------------------------
+By Daniel Berthereau: Released public version of taxonomy_csv for Drupal 7.
+
+Taxonomy csv 7.x-4.5, 2009-09-22
+Taxonomy csv 6.x-4.5, 2009-09-22
+--------------------------------
+By Daniel Berthereau: Added Polyhierarchical structure import.
+By Daniel Berthereau: Added Fields (name, weight, description, synonyms) import.
+By Daniel Berthereau: Added check of root level term.
+By Daniel Berthereau: Added check when an imported term unchanges existing ones.
+By Daniel Berthereau: Cleaned some UI items and help.
+By Daniel Berthereau: Fixed compatibility of url import with all browsers.
+By Daniel Berthereau: Fixed sensitive case update of a name.
+
+
 Taxonomy csv 7.x-4.4, 2009-09-13
 Taxonomy csv 6.x-4.4, 2009-09-13
 --------------------------------
