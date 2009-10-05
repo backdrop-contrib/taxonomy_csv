@@ -69,15 +69,14 @@
 
       // Import options (general, description and specific).
       // Hide all items defined with the css class filtered.
-
-      var methods_a = new Array('.form-item-import-existing-items', '#edit-import-existing-items-update', '#edit-import-existing-items-update-merge', '#edit-import-existing-items-update-replace', '#edit-import-existing-items-ignore', '#edit-import-existing-items-ignore-create', '#edit-import-existing-items-ignore-all', '#description_alone_terms', '#description_flat', '#description_tree_structure', '#description_polyhierarchy', '#description_parents', '#description_children', '#description_relations', '#description_fields', '#description_descriptions', '#description_weights', '#description_synonyms', '#description_manager_export', '#help_alone_terms', '#help_flat', '#help_tree_structure', '#help_polyhierarchy', '#help_parents', '#help_children', '#help_relations', '#help_fields', '#help_descriptions', '#help_weights', '#help_synonyms', '#help_manager_export', '#edit-relations');
+      var methods_a = new Array('#edit-import-existing-items-update-wrapper', '#edit-import-existing-items-update-merge-wrapper', '#edit-import-existing-items-update-replace-wrapper', '#edit-import-existing-items-ignore-wrapper', '#edit-import-existing-items-ignore-create-wrapper', '#edit-import-existing-items-ignore-all-wrapper', '#description_alone_terms', '#description_fields_links', '#description_flat', '#description_tree_structure', '#description_polyhierarchy', '#description_parents', '#description_children', '#description_relations', '#description_fields', '#description_descriptions', '#description_weights', '#description_synonyms', '#description_taxonomy_manager', '#help_alone_terms', '#help_fields_links', '#help_flat', '#help_tree_structure', '#help_polyhierarchy', '#help_parents', '#help_children', '#help_relations', '#help_fields', '#help_descriptions', '#help_weights', '#help_synonyms', '#help_taxonomy_manager', '#edit-relations');
       for(var m in methods_a) {
         $(methods_a[m]).addClass('filtered');
       }
       // Existing terms.
       // Add/remove class to show/hide it.
       $('#source_content').change(function(){
-        var methods_b = new Array('alone_terms', 'flat', 'tree_structure', 'polyhierarchy', 'parents', 'children', 'relations', 'fields', 'descriptions', 'weights', 'synonyms', 'manager_export');
+        var methods_b = new Array('alone_terms', 'fields_links', 'flat', 'tree_structure', 'polyhierarchy', 'parents', 'children', 'relations', 'fields', 'descriptions', 'weights', 'synonyms', 'taxonomy_manager');
         // Remove all added classes in order to return to base.
         for(var m in methods_a) {
           for(var n in methods_b) {

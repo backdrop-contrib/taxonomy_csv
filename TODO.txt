@@ -62,7 +62,8 @@ Functions
  x 645 745 parent merge (polyhierarchy)
  x 620 --- distinction between description and synonyms
  o         multiple files import
- - --- --- sensitive or not to uppercase/lowercase (not in D6 neither D7)
+ - --- --- option sensitive or not to uppercase/lowercase (not in D6 neither D7)
+ o         add notice when sensitive duplicate items are found in line check
  o         integrate or reference to Taxonomy manager module
  o         remove csv terms import choice
  o         test before import (autocreate a vocabulary) (see UI)
@@ -76,6 +77,7 @@ Functions
  x 643 743 import from url (#529480)
  o         allow direct duplicates with polyhierarchy
  o         option to automatically disable and re-enable non compatible modules
+ o         full term definitions and links export in order to import in Drupal 7
 
 Code / security
  o         remove query and use only Drupal core ones and php filters (useful?)
@@ -83,7 +85,7 @@ Code / security
  x 622 --- manage and inform on input error
  o         factorize code and use more php functions (import type callback...)
  x 622 --- redo a cache
- X 622 --- clean the input line at the beginning of process and never after
+ x 622 --- clean the input line at the beginning of process and never after
  o         use taxonomy_parser?
  x 622 --- change the type of vocabulary (flat, monohierarchy, polyhierarchy)
  x 630 --- add hook_perm
@@ -92,7 +94,7 @@ Code / security
  o         no order to import files
  o         use Drupal management of errors (mysql log)
  x 622 --- change function name to internal, except some
- o         vocabulary check (after and before)
+ o         vocabulary full fine check (after and before)
  o         vocabulary relations integrety check and attribute
  x 643 743 time out control
  x 645 745 fix: keep multiple parents when children import
@@ -103,7 +105,7 @@ Code / security
  o         relations with other vocabularies (unsupported in Drupal 6 neither 7)
  o         extract all helps of forms to help.html in order to remove duplicates
  x 640 --- simplify batch set (all $options aren't needed)
- -         use $form_state['storage'] for batch operations? Useless.
+ - --- --- use $form_state['storage'] for batch operations? Useless.
  x 643 743 remove base64 temporary and work only with utf8
  - --- --- use a smarter regexp delimiter than fgetcsv or explode
  x 642 742 fix: when a file is set, avoid UI bug when first option changes

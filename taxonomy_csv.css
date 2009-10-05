@@ -20,6 +20,7 @@
 #edit-import-existing-items-ignore-all.filtered,
 
 #description_alone_terms.filtered,
+#description_fields_links.filtered,
 #description_flat.filtered,
 #description_tree_structure.filtered,
 #description_polyhierarchy.filtered,
@@ -30,9 +31,10 @@
 #description_descriptions.filtered,
 #description_weights.filtered,
 #description_synonyms.filtered,
-#description_manager_export.filtered,
+#description_taxonomy_manager.filtered,
 
 #help_alone_terms.filtered,
+#help_fields_links.filtered,
 #help_flat.filtered,
 #help_tree_structure.filtered,
 #help_polyhierarchy.filtered,
@@ -43,7 +45,7 @@
 #help_descriptions.filtered,
 #help_weights.filtered,
 #help_synonyms.filtered,
-#help_manager_export.filtered,
+#help_taxonomy_manager.filtered,
 
 #edit-relations.filtered,
 
@@ -66,6 +68,7 @@
 
 #edit-import-existing-items-update.alone_terms,
 #edit-import-existing-items-ignore.alone_terms,
+#edit-import-existing-items-update-merge-wrapper.fields_links,
 #edit-import-existing-items-update.flat,
 #edit-import-existing-items-ignore.flat,
 #edit-import-existing-items-update-replace.tree_structure,
@@ -91,11 +94,12 @@
 #edit-import-existing-items-update-merge.synonyms,
 #edit-import-existing-items-update-replace.synonyms,
 #edit-import-existing-items-ignore-create.synonyms,
-#edit-import-existing-items-update-merge.manager_export,
-#edit-import-existing-items-update-replace.manager_export,
-#edit-import-existing-items-ignore-create.manager_export,
+#edit-import-existing-items-update-merge.taxonomy_manager,
+#edit-import-existing-items-update-replace.taxonomy_manager,
+#edit-import-existing-items-ignore-create.taxonomy_manager,
 
 #description_alone_terms.alone_terms,
+#description_fields_links.fields_links,
 #description_flat.flat,
 #description_tree_structure.tree_structure,
 #description_polyhierarchy.polyhierarchy,
@@ -106,9 +110,10 @@
 #description_descriptions.descriptions,
 #description_weights.weights,
 #description_synonyms.synonyms,
-#description_manager_export.manager_export,
+#description_taxonomy_manager.taxonomy_manager,
 
 #help_alone_terms.alone_terms,
+#help_fields_links.fields_links,
 #help_flat.flat,
 #help_tree_structure.tree_structure,
 #help_polyhierarchy.polyhierarchy,
@@ -119,7 +124,7 @@
 #help_descriptions.descriptions,
 #help_weights.weights,
 #help_synonyms.synonyms,
-#help_manager_export.manager_export,
+#help_taxonomy_manager.taxonomy_manager,
 
 #edit-relations.relations{
   display:block;
