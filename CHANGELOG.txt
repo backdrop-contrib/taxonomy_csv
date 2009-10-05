@@ -12,9 +12,18 @@ Taxonomy csv x.x-x.x, xxxx-xx-xx
 --------------------------------
 
 
+Taxonomy csv 7.x-4.6, 2009-10-05
+Taxonomy csv 6.x-4.6, 2009-10-05
+--------------------------------
+#590206 by Daniel Berthereau: Added import of full term definitions and links.
+By Daniel Berthereau: Added import in multiple vocabularies with 'fields_links'.
+By Daniel Berthereau: Cleaned code with some Zend Studio suggestions.
+By Daniel Berthereau: Added table of content in help.
+
+
 Taxonomy csv line api 6.x-4.5, 2009-09-23
 --------------------------------
-By Daniel Berthereau: Released light api (taxonomy_csv.line.api in CVS HEAD).
+By Daniel Berthereau: Released light api: taxonomy_csv.line.api.inc in CVS HEAD.
 
 Taxonomy csv 7.x-4.5, 2009-09-22
 --------------------------------
