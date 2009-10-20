@@ -1,8 +1,8 @@
 /* $Id$ */
 
 
-                         TAXONOMY CSV IMPORT
-                         ===================
+                      TAXONOMY CSV IMPORT/EXPORT
+                      ==========================
 
 
 == T O D O ==
@@ -77,7 +77,7 @@ Functions
  x 643 743 import from url (#529480)
  o         allow direct duplicates with polyhierarchy
  o         option to automatically disable and re-enable non compatible modules
- o         full term definitions and links export in order to import in Drupal 7
+ o 647 747 full term definitions and links export in order to import in Drupal 7
 
 Code / security
  o         remove query and use only Drupal core ones and php filters (useful?)
@@ -96,6 +96,7 @@ Code / security
  x 622 --- change function name to internal, except some
  o         vocabulary full fine check (after and before)
  o         vocabulary relations integrety check and attribute
+ o ---     use management of test in Drupal 7.
  x 643 743 time out control
  x 645 745 fix: keep multiple parents when children import
  x 622 --- fix: if ignore existing items, search in imported terms cache before

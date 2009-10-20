@@ -10,7 +10,11 @@
  * Implements hook_install().
  */
 function taxonomy_csv_install() {
-  drupal_set_message(st('Taxonomy_csv has been installed. You can now import taxonomies, structures or lists of terms under <a href="!link_import">Administer > Content management > Taxonomy > CSV import</a>. More information is available under <a href="!link_help">Administer > Help > Taxonomy CSV import</a>.', array('!link_import' => url('admin/content/taxonomy/csv'), '!link_help' => url('admin/help/taxonomy_csv'))));
+  drupal_set_message(st('Taxonomy CSV import/export has been installed. You can now import and export taxonomies, structures or lists of terms under <a href="!link_import">Administer > Content management > Taxonomy > CSV import</a> and <a href="!link_export">CSV export</a>. More information is available under <a href="!link_help">Administer > Help > Taxonomy CSV import/export</a>.', array(
+    '!link_import' => url('admin/content/taxonomy/csv_import'),
+    '!link_export' => url('admin/content/taxonomy/csv_export'),
+    '!link_help' => url('admin/help/taxonomy_csv'),
+  )));
 }
 
 /**
@@ -19,15 +23,16 @@ function taxonomy_csv_install() {
 function taxonomy_csv_uninstall() {
   // Remove user preferences.
   foreach (array(
-      'source_content',
+      // Import variables.
+      'import_format',
       'source_choice',
-      'source_delimiter',
-      'source_delimiter_custom',
-      'source_enclosure',
-      'source_enclosure_custom',
-      'destination_target',
-      'destination_vocabulary_id',
-      'import_existing_items',
+      'import_delimiter',
+      'import_delimiter_custom',
+      'import_enclosure',
+      'import_enclosure_custom',
+      'vocabulary_target',
+      'vocabulary_id',
+      'existing_items',
       'relations_create_subrelations',
       'relations_all_vocabularies',
       'disable_internal_cache',
@@ -39,6 +44,17 @@ function taxonomy_csv_uninstall() {
       'result_terms',
       'result_level',
       'result_type',
+      // Export variables.
+      'export_format',
+      'export_delimiter',
+      'export_delimiter_custom',
+      'export_enclosure',
+      'export_enclosure_custom',
+      'export_line_ending',
+      'export_order',
+      'fields_links_terms_ids',
+      'fields_links_vocabularies_ids',
+
       // Remove variables from previous releases.
       // < 6.x.4.0.
       'import_create_subrelations',
@@ -54,9 +70,21 @@ function taxonomy_csv_uninstall() {
       'autodivide_lines',
       'result_display_level',
       'result_display_type',
+      // < 6.x.4.7.
+      // < 7.x.4.7.
+      'source_content',
+      'source_delimiter',
+      'source_delimiter_custom',
+      'source_enclosure',
+      'source_enclosure_custom',
+      'destination_target',
+      'destination_vocabulary_id',
+      'import_existing_items',
     ) as $option) {
     variable_del("taxonomy_csv_$option");
   }
 
-  drupal_set_message(st('Taxonomy csv import: All user preferences have been removed. Thanks for using this module!<br />Your comments are welcomed on <a href="!link">Taxonomy csv import</a>.', array('!link' => url('http://drupal.org/project/taxonomy_csv'))));
+  drupal_set_message(st('Taxonomy csv import/export: All user preferences have been removed. Thanks for using this module!<br />Your comments are welcomed on <a href="!link">Taxonomy csv import/export</a>.', array(
+    '!link' => url('http://drupal.org/project/taxonomy_csv'),
+  )));
 }

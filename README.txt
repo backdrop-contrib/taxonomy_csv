@@ -1,19 +1,19 @@
 /* $Id$ */
 
 
-                         TAXONOMY CSV IMPORT
-                         ===================
+                      TAXONOMY CSV IMPORT/EXPORT
+                      ==========================
 
 
 -- SUMMARY --
   ---------
 
-This module allows to import taxonomy from a CSV (comma-separated values) local
-or distant file or a copy-and-paste text.
+This module allows to import or export taxonomy from or to a CSV
+(comma-separated values) local or distant file or a copy-and-paste text.
 
 When you want to import a vocabulary, a taxonomy, a structure or a simple list
-of terms in your Drupal site, you have three main choices: taxonomy_xml,
-taxonomy batch operations and taxonomy_csv.
+of terms in your Drupal site, you have three main choices: Taxonomy XML,
+Taxonomy batch operations and Taxonomy CSV.
 
 Taxonomy XML (http://drupal.org/project/taxonomy_xml) is perfect for
 standardized taxonomies and vocabularies importation. Despite its name, it can
@@ -27,6 +27,8 @@ So when you want to quick import a non-standardized vocabulary, for example an
 old thesaurus or a simple list of children, synonyms, related terms,
 descriptions or weights of a set of terms, Taxonomy CSV is simpler to use.
 
+For export, you can use Taxonomy XML too or one of backup modules. Taxonomy CSV
+is a more specialised tool which allows more precise tuning.
 
 For a full description of the module, visit the project page:
   http://drupal.org/project/taxonomy_csv
@@ -34,7 +36,7 @@ For a full description of the module, visit the project page:
 To submit bug reports and feature suggestions, or to track changes:
   http://drupal.org/project/issues/taxonomy_csv
 
-See Advanced help in Help > Taxonomy CSV import for updated help.
+See Advanced help in Help > Taxonomy CSV import/export for updated help.
 
 
 -- WARNING --
@@ -58,7 +60,7 @@ See online issues:
 -- FAQ --
   -----
 
-See Advanced help in Help > Taxonomy CSV import.
+See Advanced help in Help > Taxonomy CSV import/export.
 
 
 -- CONTACT --
