@@ -9,8 +9,15 @@
  * Only line level functions are available. No check are done on submitted
  * terms, neither before nor after importation.
  *
+ * Before to be used, file needs to be invoked as a dependency, an external or
+ * an internal function.
+ *
  * Example use:
  * @code
+ * // Invoke taxonomy_csv.line.api if not included in module.info or enabled.
+ * $taxonomy_csv_path = drupal_get_path('module', 'taxonomy_csv');
+ * require_once("$taxonomy_csv_path/taxonomy_csv.line.api.inc");
+ *
  * $result = taxonomy_csv_line_import(
  *   array(Europe, France, Paris),
  *   array(
@@ -19,6 +26,8 @@
  *    'existing_items' => 'update_replace',
  * ));
  * @endcode
+ *
+ * Warning: Returned result is simpler than the full taxonomy_csv Api.
  */
 
 /**
@@ -40,13 +49,13 @@ define('TAXONOMY_CSV_FORMAT_TAXONOMY_MANAGER',  'taxonomy_manager');
 /**
  * Available import options.
  */
-define('TAXONOMY_CSV_EXISTING_UPDATE',          'update'); // When no difference between merge and replace.
+define('TAXONOMY_CSV_EXISTING_UPDATE',          'update');
 define('TAXONOMY_CSV_EXISTING_UPDATE_MERGE',    'update_merge');
 define('TAXONOMY_CSV_EXISTING_UPDATE_REPLACE',  'update_replace');
-define('TAXONOMY_CSV_EXISTING_IGNORE',          'ignore'); // When no difference between create and all. Equal to duplicate.
+define('TAXONOMY_CSV_EXISTING_IGNORE',          'ignore');
 define('TAXONOMY_CSV_EXISTING_IGNORE_CREATE',   'ignore_create');
-define('TAXONOMY_CSV_EXISTING_IGNORE_ALL',      'ignore_all'); // Ignore even existing terms in additional columns.
-define('TAXONOMY_CSV_EXISTING_IGNORE_PREVIOUS', 'ignore_previous'); // Internal only.
+define('TAXONOMY_CSV_EXISTING_IGNORE_ALL',      'ignore_all');
+define('TAXONOMY_CSV_EXISTING_IGNORE_PREVIOUS', 'ignore_previous');
 
 /**
  * @defgroup taxonomy_csv_line Import a line
@@ -64,13 +73,16 @@ define('TAXONOMY_CSV_EXISTING_IGNORE_PREVIOUS', 'ignore_previous'); // Internal 
  *     import_format  : see _taxonomy_csv_info_lists('list_import_format')
  *     vocabulary_id  : vocabulary id to import into
  *     existing_items : see _taxonomy_csv_info_lists('list_import_option')
- *     relations_create_subrelations: boolean. Specific to related terms import
- *     relations_all_vocabularies   : boolean. Id
- *   Only destination vocabulary id is needed: other variables get default values.
+ *     // Specific to relations import:
+ *     relations_create_subrelations: boolean.
+ *     relations_all_vocabularies   : boolean.
+ *   Only destination vocabulary is needed: other variables get default values.
  * @param $previous_items
  *   Optional. Cleaned and checked previous imported line names and tids array.
- *   Needed with some contents as one term array structure import or taxonomy manager export.
- *   With taxonomy manager export, tid array is indexed with old tids.
+ *   Needed with some contents as one term array structure or taxonomy manager.
+ *   Specificities:
+ *     taxonomy_manager:
+ *       tid array is indexed with old tids.
  * @return Result array:
  *     'name' => array of imported terms names,
  *     'tid'  => array of imported terms tids,
@@ -150,201 +162,6 @@ function _taxonomy_csv_line_import_process($line, $options, $previous_items = ar
   // Only count check because line and previous line already checked.
   if (count($line)) {
     switch ($options['import_format']) {
-      case TAXONOMY_CSV_FORMAT_FLAT:
-        foreach ($line as $term_name) {
-          $term = array(
-            'name' => $term_name,
-            'vid'  => $options['vocabulary_id'],
-          );
-          // Import term then store and check result.
-          $current_result = taxonomy_csv_term_import($term, $options['existing_items']);
-          $result['name'][] = $current_result['name'];
-          $result['tid'][]  = $current_result['tid'];
-          $result['msg'][]  = $current_result['msg'];
-          if (_taxonomy_csv_message_warning($current_result['msg'])) {
-            break;
-          }
-        }
-        break;
-
-      case TAXONOMY_CSV_FORMAT_TREE_STRUCTURE:
-        // Same process, except when term is imported.
-      case TAXONOMY_CSV_FORMAT_POLYHIERARCHY:
-        // First, complete line with previous line.
-        // Calculate first non empty item as line can be a full, partial or one term array.
-        for ($first_non_empty = 0; ($first_non_empty < count($line)) && (empty($line[$first_non_empty])); $first_non_empty++) {
-        }
-
-        // Clean line of surabondant previous items then memorize previous terms for next line.
-        if ($first_non_empty) {
-          $result['name'] = $previous_items['name'] = array_slice($previous_items['name'], 0, $first_non_empty);
-          $result['tid']  = $previous_items['tid']  = array_slice($previous_items['tid'], 0, $first_non_empty);
-          foreach ($previous_items['tid'] as $key => $term) {
-            $result['msg'][]  = array(FALSE); // No error: Previous line term.
-          }
-        }
-
-        // Second, process import of new items.
-        // Set root or previous ancestor name and id.
-        $parent_name = ($first_non_empty == 0) ? '' : $previous_items['name'][$first_non_empty - 1];
-        $parent_tid  = ($first_non_empty == 0) ? 0 : $previous_items['tid'][$first_non_empty - 1];
-
-        for ($c = $first_non_empty; $c < count($line); $c++) {
-          $term = array(
-            'name'   => $line[$c],
-            'vid'    => $options['vocabulary_id'],
-            // Need an array in case of multiple parent.
-            'parent' => array($parent_tid),
-          );
-
-          // Import term then store and check result.
-          switch ($options['import_format']) {
-            case TAXONOMY_CSV_FORMAT_TREE_STRUCTURE:
-              // With TAXONOMY_CSV_EXISTING_IGNORE_CREATE, parent terms (so all terms but the last on this line)
-              // are always updated because they are successive parents of a child.
-              $current_result = ($options['existing_items'] == TAXONOMY_CSV_EXISTING_IGNORE_CREATE && ($c < count($line) - 1)) ?
-                  taxonomy_csv_term_import($term, TAXONOMY_CSV_EXISTING_IGNORE_PREVIOUS, FALSE, $parent_tid) :
-                  taxonomy_csv_term_import($term, $options['existing_items'], FALSE, $parent_tid);
-              break;
-
-            case TAXONOMY_CSV_FORMAT_POLYHIERARCHY:
-              // Manage eventual direct duplicates: in Drupal, a term can't be a parent of itself.
-              $current_result = ($term['name'] == $parent_name) ?
-                  taxonomy_csv_term_import($term, $options['existing_items'], FALSE, $parent_tid) :
-                  taxonomy_csv_term_import($term, $options['existing_items'], FALSE, NULL);
-              break;
-          }
-          $result['name'][] = $current_result['name'];
-          $result['tid'][]  = $current_result['tid'];
-          $result['msg'][]  = $current_result['msg'];
-          if (_taxonomy_csv_message_warning($current_result['msg'])) {
-            break;
-          }
-
-          $parent_name = $current_result['name'];
-          $parent_tid  = $current_result['tid'];
-        }
-        break;
-
-      case TAXONOMY_CSV_FORMAT_PARENTS:
-        // First, import parents using a recursive call and check result.
-        if (count($line) > 1) {
-          $options_temp = $options;
-          $options_temp['import_format'] = TAXONOMY_CSV_FORMAT_FLAT;
-          $result = _taxonomy_csv_line_import_process(array_slice($line, 1), $options_temp);
-          if (_taxonomy_csv_message_warning($result, 'line')) {
-            break;
-          }
-        }
-
-        // Second,import main term then store result. No check because only one term.
-        // No need to check if tid is equal to parent_tid, because duplicates have been removed.
-        $term = array(
-          'name'   => $line[0],
-          'vid'    => $options['vocabulary_id'],
-          'parent' => $result['tid'],
-        );
-        $current_result = taxonomy_csv_term_import($term, $options['existing_items']);
-        // Use array_unshift in order to keep $line order of items.
-        array_unshift($result['name'], $current_result['name']);
-        array_unshift($result['tid'], $current_result['tid']);
-        array_unshift($result['msg'], $current_result['msg']);
-        break;
-
-      case TAXONOMY_CSV_FORMAT_CHILDREN:
-        // First, import main term then store and check result.
-        $options_temp = $options;
-        $options_temp['import_format'] = TAXONOMY_CSV_FORMAT_ALONE_TERMS;
-        $result = _taxonomy_csv_line_import_process(array($line[0]), $options_temp);
-        if (_taxonomy_csv_message_warning($result, 'line')) {
-          break;
-        }
-        // Remember tid of main term.
-        $parent_tid = $result['tid'][0];
-
-        // Second, import children.
-        foreach (array_slice($line, 1) as $value) {
-          $term = array(
-            'name'   => $value,
-            'vid'    => $options['vocabulary_id'],
-            'parent' => array($parent_tid),
-          );
-
-          // Import term then store and check result.
-          // No need to check if tid is equal to parent_tid, because duplicates have been removed.
-          $current_result = taxonomy_csv_term_import($term, $options['existing_items']);
-          $result['name'][] = $current_result['name'];
-          $result['tid'][]  = $current_result['tid'];
-          $result['msg'][]  = $current_result['msg'];
-          if (_taxonomy_csv_message_warning($current_result['msg'])) {
-            break;
-          }
-        }
-        break;
-
-      case TAXONOMY_CSV_FORMAT_RELATIONS:
-        // Each related term should exist before first column term can be related to it (need of its tid). Next, process relations and eventually subrelations
-        // So, with a line array (A,B,C,D,E...), creates A, BA, CA(B), DA(BC), EA(BCD)... as it's the fatest way to create one or all relations even if items not exists.
-        // As use of name is only for first column, need to keep previous tids matching names in $previous_relations ([name] <=> [tid]).
-        $previous_relations = array();
-        foreach ($line as $key => $term) {
-          $term = array(
-            'name'      => $line[$key],
-            'vid'       => $options['vocabulary_id'],
-            'relations' => array_slice($previous_relations, 0, ($options['relations_create_subrelations']) ? $key : $key != 0),
-          );
-
-          ///TODO: Set an 'ignore all' option.
-          // For second and next terms, update merge related terms in order to keep previous relations, as option is only for the first column term.
-          $current_term_import_option = ($key == 0) ? $options['existing_items'] : TAXONOMY_CSV_EXISTING_UPDATE_MERGE;
-
-          $current_result = taxonomy_csv_term_import($term, $current_term_import_option, $options['relations_all_vocabularies'], NULL);
-          $result['name'][] = $current_result['name'];
-          $result['tid'][]  = $current_result['tid'];
-          $result['msg'][]  = $current_result['msg'];
-          if (_taxonomy_csv_message_warning($current_result['msg'])) {
-            break;
-          }
-
-          $previous_relations[$current_result['name']] = $current_result['tid'];
-        }
-        break;
-
-      case TAXONOMY_CSV_FORMAT_TAXONOMY_MANAGER:
-        $term = array(
-          'name'        => $line[2],
-          'vid'         => $options['vocabulary_id'],
-        );
-        if ($line[3]) {
-          $term['description'] = $line[3];
-        }
-
-        // Complete with parents except root. All parents exist, because it's previously checked.
-        $list_parents = array_slice($line, 4);
-        if ($list_parents[0] != 0) {
-          foreach ($list_parents as $value) {
-            $term['parent'][] = $previous_items['tid'][$value];
-          }
-        }
-
-        // Use tid if term is already imported.
-        if (isset($previous_items['tid'][$line[1]])) {
-          $term['tid'] = $previous_items['tid'][$line[1]];
-        }
-        else {
-          // No tid is given, so it's always a new term.
-          $options['existing_items'] = TAXONOMY_CSV_EXISTING_IGNORE_CREATE;
-        }
-
-        // Import term then store result. No check because only one term.
-        $current_result = taxonomy_csv_term_import($term, $options['existing_items']);
-        // Keep old index (names and tids).
-        $result = $previous_items;
-        $result['name'][$line[1]] = $current_result['name'];
-        $result['tid'][$line[1]]  = $current_result['tid'];
-        $result['msg'][$line[1]]  = $current_result['msg'];
-        break;
-
       case TAXONOMY_CSV_FORMAT_ALONE_TERMS:
       case TAXONOMY_CSV_FORMAT_FIELDS:
       case TAXONOMY_CSV_FORMAT_DESCRIPTIONS:
@@ -378,6 +195,208 @@ function _taxonomy_csv_line_import_process($line, $options, $previous_items = ar
         $result['name'][] = $current_result['name'];
         $result['tid'][]  = $current_result['tid'];
         $result['msg'][]  = $current_result['msg'];
+        break;
+
+      case TAXONOMY_CSV_FORMAT_FLAT:
+        foreach ($line as $term_name) {
+          $term = array(
+            'name' => $term_name,
+            'vid'  => $options['vocabulary_id'],
+          );
+          // Import term then store and check result.
+          $current_result = taxonomy_csv_term_import($term, $options['existing_items']);
+          $result['name'][] = $current_result['name'];
+          $result['tid'][]  = $current_result['tid'];
+          $result['msg'][]  = $current_result['msg'];
+          if (_taxonomy_csv_message_warning($current_result['msg'])) {
+            break;
+          }
+        }
+        break;
+
+      case TAXONOMY_CSV_FORMAT_TREE_STRUCTURE:
+        // Same process, except when term is imported.
+      case TAXONOMY_CSV_FORMAT_POLYHIERARCHY:
+        // First, complete line with previous line.
+        // Find first non empty item as line can be full, partial or one term.
+        for ($first_non_empty = 0; ($first_non_empty < count($line)) && (empty($line[$first_non_empty])); $first_non_empty++) {
+        }
+
+        // Remove surabondant previous items and remember them for next line.
+        if ($first_non_empty) {
+          $result['name'] = $previous_items['name'] = array_slice($previous_items['name'], 0, $first_non_empty);
+          $result['tid']  = $previous_items['tid']  = array_slice($previous_items['tid'], 0, $first_non_empty);
+          foreach ($previous_items['tid'] as $key => $term) {
+            $result['msg'][]  = array(FALSE); // No error: Previous line term.
+          }
+        }
+
+        // Second, process import of new items.
+        // Set root or previous ancestor name and id.
+        $parent_name = ($first_non_empty == 0) ? '' : $previous_items['name'][$first_non_empty - 1];
+        $parent_tid  = ($first_non_empty == 0) ? 0 : $previous_items['tid'][$first_non_empty - 1];
+
+        for ($c = $first_non_empty; $c < count($line); $c++) {
+          $term = array(
+            'name'   => $line[$c],
+            'vid'    => $options['vocabulary_id'],
+            // Need an array in case of multiple parent.
+            'parent' => array($parent_tid),
+          );
+
+          // Import term then store and check result.
+          switch ($options['import_format']) {
+            case TAXONOMY_CSV_FORMAT_TREE_STRUCTURE:
+              // With TAXONOMY_CSV_EXISTING_IGNORE_CREATE, parent terms (so all
+              // terms but the last on this line) are always updated because
+              // they are successive parents of a child.
+              $current_result = ($options['existing_items'] == TAXONOMY_CSV_EXISTING_IGNORE_CREATE && ($c < count($line) - 1)) ?
+                  taxonomy_csv_term_import($term, TAXONOMY_CSV_EXISTING_IGNORE_PREVIOUS, FALSE, $parent_tid) :
+                  taxonomy_csv_term_import($term, $options['existing_items'], FALSE, $parent_tid);
+              break;
+
+            case TAXONOMY_CSV_FORMAT_POLYHIERARCHY:
+              // Check direct duplicates: in Drupal, a term can't be its parent.
+              $current_result = ($term['name'] == $parent_name) ?
+                  taxonomy_csv_term_import($term, $options['existing_items'], FALSE, $parent_tid) :
+                  taxonomy_csv_term_import($term, $options['existing_items'], FALSE, NULL);
+              break;
+          }
+          $result['name'][] = $current_result['name'];
+          $result['tid'][]  = $current_result['tid'];
+          $result['msg'][]  = $current_result['msg'];
+          if (_taxonomy_csv_message_warning($current_result['msg'])) {
+            break;
+          }
+
+          $parent_name = $current_result['name'];
+          $parent_tid  = $current_result['tid'];
+        }
+        break;
+
+      case TAXONOMY_CSV_FORMAT_PARENTS:
+        // First, import parents using a recursive call and check result.
+        if (count($line) > 1) {
+          $options_temp = $options;
+          $options_temp['import_format'] = TAXONOMY_CSV_FORMAT_FLAT;
+          $result = _taxonomy_csv_line_import_process(array_slice($line, 1), $options_temp);
+          if (_taxonomy_csv_message_warning($result, 'line')) {
+            break;
+          }
+        }
+
+        // Second, import main term and store result.
+        // Don't check tid == parent_tid because duplicates have been removed.
+        $term = array(
+          'name'   => $line[0],
+          'vid'    => $options['vocabulary_id'],
+          'parent' => $result['tid'],
+        );
+        $current_result = taxonomy_csv_term_import($term, $options['existing_items']);
+        // Use array_unshift in order to keep $line order of items.
+        array_unshift($result['name'], $current_result['name']);
+        array_unshift($result['tid'], $current_result['tid']);
+        array_unshift($result['msg'], $current_result['msg']);
+        break;
+
+      case TAXONOMY_CSV_FORMAT_CHILDREN:
+        // First, import main term then store and check result.
+        $options_temp = $options;
+        $options_temp['import_format'] = TAXONOMY_CSV_FORMAT_ALONE_TERMS;
+        $result = _taxonomy_csv_line_import_process(array($line[0]), $options_temp);
+        if (_taxonomy_csv_message_warning($result, 'line')) {
+          break;
+        }
+        // Remember tid of main term.
+        $parent_tid = $result['tid'][0];
+
+        // Second, import children.
+        foreach (array_slice($line, 1) as $value) {
+          $term = array(
+            'name'   => $value,
+            'vid'    => $options['vocabulary_id'],
+            'parent' => array($parent_tid),
+          );
+
+          // Import term then store and check result.
+          // Don't check tid == parent_tid because duplicates have been removed.
+          $current_result = taxonomy_csv_term_import($term, $options['existing_items']);
+          $result['name'][] = $current_result['name'];
+          $result['tid'][]  = $current_result['tid'];
+          $result['msg'][]  = $current_result['msg'];
+          if (_taxonomy_csv_message_warning($current_result['msg'])) {
+            break;
+          }
+        }
+        break;
+
+      case TAXONOMY_CSV_FORMAT_RELATIONS:
+        // Each related term should exist before first column term can be
+        // related to it (need of its tid). Next, process relations and
+        // eventually subrelations.
+        // So with a line A,B,C,D,E..., creates A, BA, CA(B), DA(BC), EA(BCD)...
+        // as it's the fatest way to create one or all relations even if items
+        // don't exist.
+        // As use of name is only for first column, need to keep previous tids
+        // matching names in $previous_relations ([name] <=> [tid]).
+        $previous_relations = array();
+        foreach ($line as $key => $term) {
+          $term = array(
+            'name'      => $line[$key],
+            'vid'       => $options['vocabulary_id'],
+            'relations' => array_slice($previous_relations, 0, ($options['relations_create_subrelations']) ? $key : $key != 0),
+          );
+
+          // @todo Set an 'ignore all' option.
+          // For second and next terms, update merge related terms in order to
+          // keep previous relations, as option is only for the first column term.
+          $current_term_import_option = ($key == 0) ? $options['existing_items'] : TAXONOMY_CSV_EXISTING_UPDATE_MERGE;
+
+          $current_result = taxonomy_csv_term_import($term, $current_term_import_option, $options['relations_all_vocabularies'], NULL);
+          $result['name'][] = $current_result['name'];
+          $result['tid'][]  = $current_result['tid'];
+          $result['msg'][]  = $current_result['msg'];
+          if (_taxonomy_csv_message_warning($current_result['msg'])) {
+            break;
+          }
+
+          $previous_relations[$current_result['name']] = $current_result['tid'];
+        }
+        break;
+
+      case TAXONOMY_CSV_FORMAT_TAXONOMY_MANAGER:
+        $term = array(
+          'name'        => $line[2],
+          'vid'         => $options['vocabulary_id'],
+        );
+        if ($line[3]) {
+          $term['description'] = $line[3];
+        }
+
+        // Complete with parents except root. All parents are already checked.
+        $list_parents = array_slice($line, 4);
+        if ($list_parents[0] != 0) {
+          foreach ($list_parents as $value) {
+            $term['parent'][] = $previous_items['tid'][$value];
+          }
+        }
+
+        // Use tid if term is already imported.
+        if (isset($previous_items['tid'][$line[1]])) {
+          $term['tid'] = $previous_items['tid'][$line[1]];
+        }
+        else {
+          // No tid is given, so it's always a new term.
+          $options['existing_items'] = TAXONOMY_CSV_EXISTING_IGNORE_CREATE;
+        }
+
+        // Import term then store result. No check because only one term.
+        $current_result = taxonomy_csv_term_import($term, $options['existing_items']);
+        // Keep old index (names and tids).
+        $result = $previous_items;
+        $result['name'][$line[1]] = $current_result['name'];
+        $result['tid'][$line[1]]  = $current_result['tid'];
+        $result['msg'][$line[1]]  = $current_result['msg'];
         break;
 
       default:
@@ -435,11 +454,11 @@ function taxonomy_csv_term_import($term, $existing_items = TAXONOMY_CSV_EXISTING
   if ($term) {
     switch ($existing_items) {
       case TAXONOMY_CSV_EXISTING_UPDATE:
-        // Equal to 'update_merge' or 'update_replace'.
+        // When no difference between update/merge and update/replace.
       case TAXONOMY_CSV_EXISTING_UPDATE_MERGE:
         $existing_term = _taxonomy_csv_term_find_existing($term, $all_vocabularies, $parent_tid);
         if ($existing_term) {
-          // Needed because get name is not case sensitive.
+          // Get name is not case sensitive and a name can be updated.
           if (isset($term['name'])) {
             $existing_term['name'] = $term['name'];
           }
@@ -470,12 +489,12 @@ function taxonomy_csv_term_import($term, $existing_items = TAXONOMY_CSV_EXISTING
         break;
 
       case TAXONOMY_CSV_EXISTING_IGNORE_PREVIOUS:
-        //Doesn't ignore, but use previous parents. De facto equal to update_replace.
+        // Doesn't ignore, but use previous parents.
       case TAXONOMY_CSV_EXISTING_UPDATE_REPLACE:
         $existing_term = _taxonomy_csv_term_find_existing($term, $all_vocabularies, $parent_tid);
         if ($existing_term) {
           foreach (array(
-              'name',   // Needed because get name is not case sensitive.
+              'name',
               'vid',
               'parent',
               'relations',
@@ -492,12 +511,13 @@ function taxonomy_csv_term_import($term, $existing_items = TAXONOMY_CSV_EXISTING
         break;
 
       case TAXONOMY_CSV_EXISTING_IGNORE:
-        // Equal to 'ignore_create'.
+        // When no difference between ignore/create and ignore/all.
       case TAXONOMY_CSV_EXISTING_IGNORE_CREATE:
         break;
 
       case TAXONOMY_CSV_EXISTING_IGNORE_ALL:
-      ///TODO: IGNORE_ALL
+        // Ignore even existing terms in additional columns.
+        // @todo IGNORE_ALL
     }
 
     // If a term has no parent, it's a root term, so adds parent 0.
@@ -505,7 +525,7 @@ function taxonomy_csv_term_import($term, $existing_items = TAXONOMY_CSV_EXISTING
         || count($term['parent']) == 0) {
       $term['parent'] = array(0);
     }
-    // If a term has more than one parent, it can't be a root term, so removes parent 0.
+    // If a term has a parent, it can't be a root term, so removes parent 0.
     elseif ((count($term['parent']) > 1)
         && in_array(0, $term['parent'])) {
       unset($term['parent'][array_search(0, $term['parent'])]);
@@ -541,13 +561,27 @@ function taxonomy_csv_term_import($term, $existing_items = TAXONOMY_CSV_EXISTING
  */
 function _taxonomy_csv_term_find_existing($term, $all_vocabularies = FALSE, $parent_tid = NULL) {
   if (!empty($term['tid'])) {
-    return taxonomy_csv_term_get($term['tid']);
+    return taxonomy_csv_term_get_full($term['tid']);
   }
   elseif (isset($term['name'])) {
     return taxonomy_csv_term_find($term['name'], ($all_vocabularies) ? NULL : $term['vid'], $parent_tid);
   }
   // ERROR: no tid neither name.
   return FALSE;
+}
+
+/**
+ * Get a base term by its id.
+ *
+ * Memory overflow can occur with static cache of taxonomy_get_term function.
+ *
+ * @param $tid
+ *   The term id to get.
+ * @return
+ *   Found base term array or empty array.
+ */
+function taxonomy_csv_term_get($tid) {
+  return db_fetch_array(db_query('SELECT * FROM {term_data} WHERE tid = %d', $tid));
 }
 
 /**
@@ -558,8 +592,8 @@ function _taxonomy_csv_term_find_existing($term, $all_vocabularies = FALSE, $par
  * @return
  *   Found term array as describe in taxonomy_csv_term_import or an empty array.
  */
-function taxonomy_csv_term_get($tid) {
-  $term = (array) taxonomy_get_term($tid);
+function taxonomy_csv_term_get_full($tid) {
+  $term = taxonomy_csv_term_get($tid);
   if ($term) {
     $term['parent']    = taxonomy_csv_term_get_parents_tids($term['tid']);
     $term['relations'] = taxonomy_csv_term_get_related_tids($term['tid']);
@@ -603,7 +637,7 @@ function taxonomy_csv_term_find($name, $vid = NULL, $parent_tid = NULL) {
       $args[] = $parent_tid;
     }
 
-    $sql .= ' ORDER BY {tid} ASC LIMIT 1';
+    $sql .= ' ORDER BY t.tid ASC LIMIT 1';
 
     $result = db_query($sql, $args);
     $term   = db_fetch_array($result);
@@ -645,7 +679,7 @@ function taxonomy_csv_term_save(&$term) {
     $term['synonyms'] = implode("\n", $term['synonyms']);
   }
 
-  // Drupal taxonomy_save_term use a by reference variable so $term is automaticaly updated.
+  // Term is automaticaly updated, because it's used by reference.
   // Return either SAVED_NEW or SAVED_UPDATED.
   $result = taxonomy_save_term($term);
 
@@ -658,40 +692,88 @@ function taxonomy_csv_term_save(&$term) {
 }
 
 /**
+ * Return an array of all term links of one type from a term id.
+ *
+ * @param $tid
+ *   Term id from which to get links.
+ * @param $link
+ *   String. Type of link terms to get: 'parent', 'children' or 'relations'.
+ * @param $item
+ *   Optional. String. Type of item to get, as 'tid' (default) or 'name'.
+ * @return Result array of items.
+ */
+function taxonomy_csv_term_get_links_from_tid($tid, $link, $item = 'tid') {
+  $items = array();
+  $link_callback = array(
+    'parent'    => 'taxonomy_get_parents',
+    'children'  => 'taxonomy_get_children',
+    'relations' => 'taxonomy_get_related',
+  );
+  if (isset($link_callback[$link])
+      && !empty($tid)) {
+    $terms = call_user_func($link_callback[$link], $tid);
+    foreach ($terms as $term) {
+      $items[] = $term->$item;
+    }
+  }
+  return $items;
+}
+
+/**
  * Return an array of all parents term IDs of a given term ID.
  * If no parent, return array(0), because a term without parent is a root term.
  * If tid doesn't exist, return array(0) too (not checked).
  * Return empty array only if tid is not set.
+ * Wrapper of taxonomy_csv_term_get_links_from_tid.
+ * @todo To simplify as other wrappers.
  */
 function taxonomy_csv_term_get_parents_tids($tid) {
-  $parents_tids = array();
-  if (!empty($tid)) {
-    $parents_terms = taxonomy_get_parents($tid);
-    if ($parents_terms) {
-      foreach ($parents_terms as $term => $item) {
-        $parents_tids[] = $parents_terms[$term]->tid;
-      }
-      return $parents_tids;
-    }
-    return array(0);
+  if (empty($tid)) {
+    return array();
   }
-  return array();
+  // Else.
+  $result = taxonomy_csv_term_get_links_from_tid($tid, 'parent', 'tid');
+  return ($result) ? $result : array(0);
+}
+
+/**
+ * Return an array of all parents term names of a given term ID.
+ * Wrapper of taxonomy_csv_term_get_links_from_tid.
+ */
+function taxonomy_csv_term_get_parents_names($tid) {
+  return taxonomy_csv_term_get_links_from_tid($tid, 'parent', 'name');
+}
+
+/**
+ * Return an array of all children term id of a given term ID.
+ * Wrapper of taxonomy_csv_term_get_links_from_tid.
+ */
+function taxonomy_csv_term_get_children_tids($tid) {
+  return taxonomy_csv_term_get_links_from_tid($tid, 'children', 'tid');
+}
+
+/**
+ * Return an array of all children term names of a given term ID.
+ * Wrapper of taxonomy_csv_term_get_links_from_tid.
+ */
+function taxonomy_csv_term_get_children_names($tid) {
+  return taxonomy_csv_term_get_links_from_tid($tid, 'children', 'name');
 }
 
 /**
  * Return an array of all term IDs related to a given term ID.
+ * Wrapper of taxonomy_csv_term_get_links_from_tid.
  */
 function taxonomy_csv_term_get_related_tids($tid) {
-  $related_tids = array();
-  if (!empty($tid)) {
-    $related_terms = taxonomy_get_related($tid);
-    if ($related_terms) {
-      foreach ($related_terms as $term => $item) {
-        $related_tids[] = $related_terms[$term]->tid;
-      }
-    }
-  }
-  return $related_tids;
+  return taxonomy_csv_term_get_links_from_tid($tid, 'relations', 'tid');
+}
+
+/**
+ * Return an array of all term names related to a given term ID.
+ * Wrapper of taxonomy_csv_term_get_links_from_tid.
+ */
+function taxonomy_csv_term_get_related_names($tid) {
+  return taxonomy_csv_term_get_links_from_tid($tid, 'relations', 'name');
 }
 
 /**

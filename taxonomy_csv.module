@@ -34,6 +34,7 @@
  * taxonomy_csv.module contains functions to manage import/export form pages.
  * taxonomy_csv.api.inc is an api which can be use alone. It contains generic
  * functions to import and export vocabularies or lines.
+ * More infos on usage and structure can be found in the beginning of this api.
  */
 
 /**
@@ -104,7 +105,7 @@ function taxonomy_csv_form_import_prepare() {
   $taxonomy_csv_path = drupal_get_path('module', 'taxonomy_csv');
   require_once("$taxonomy_csv_path/taxonomy_csv.api.inc");
 
-  // Javascript and css allow to show only available options depending user's choice.
+  // Javascript and css allow to show only available options depending choices.
   drupal_add_js("$taxonomy_csv_path/taxonomy_csv.js");
   drupal_add_css("$taxonomy_csv_path/taxonomy_csv.css");
 
@@ -152,10 +153,13 @@ function taxonomy_csv_form_import($form_state) {
     'import_enclosure'              => 'none',
     'import_enclosure_custom'       => '',
     'vocabulary_target'             => 'autocreate',
-    'vocabulary_id'                 => 'choose_vocabulary', // Not used for security reason (avoid import mistake). Not to be translated.
+    // Not used in order to avoid import mistake. Not to be translated.
+    'vocabulary_id'                 => 'choose_vocabulary',
     'existing_items'                => TAXONOMY_CSV_EXISTING_UPDATE,
+    // Specific to relations import.
     'relations_create_subrelations' => FALSE,
     'relations_all_vocabularies'    => FALSE,
+    // General options.
     'disable_internal_cache'        => FALSE,
     'disable_hierarchy_check'       => FALSE,
     'hierarchy_level'               => 2,
@@ -167,8 +171,8 @@ function taxonomy_csv_form_import($form_state) {
     'result_type'                   => 'by_message',
   );
 
-  // Remember previous values to use in particular when reloading form.
-  // If not reloading form, then use previous saved value if exists, else recommended value.
+  // Remember previous values to use specially when reloading form.
+  // If not reloading form, use saved values if exist, else recommended ones.
   // Warning: specific values 'text', 'path' and 'url are not saved here.
   $list_previous_values = array();
   foreach ($list_recommended_values as $key => $value) {
@@ -203,6 +207,8 @@ function taxonomy_csv_form_import($form_state) {
   $list_import_option = _taxonomy_csv_info_lists('list_import_option');
 
   // Build form.
+
+  // Needed to upload file.
   $form = array(
     '#attributes' => array(
       'enctype' => 'multipart/form-data',
@@ -215,9 +221,32 @@ function taxonomy_csv_form_import($form_state) {
     '#value' => $list_recommended_values,
   );
 
-  // Advertise if Pathauto module is activated. Issue http://drupal.org/node/540916.
+  // Warn when modules incompatible with taxonomy_csv are enabled.
+  // Problems can't be reproduced with a memory of 256 MB, even with big
+  // taxonomies. Only pathauto slows down import process.
+  // See http://drupal.org/node/495548 and http://drupal.org/node/447852
+  $issues_modules = array(
+    'taxonomynode',
+    'taxonomy_vtn',
+  );
+  foreach ($issues_modules as $value) {
+    if (module_exists($value)) {
+      drupal_set_message(t('<strong>Warning</strong>: An incompatible module is running.<br />
+      Memory or compatibility problems have been reported with these modules: !modules.<br />
+      It is advised to increase server and php memory temporary (no problem reported with 256 MB) or to disable these modules manually in !modules_section. Settings are not lost when you disable a module (and not uninstall it). After import process, you can decrease memory and reactivate modules.', array(
+        '!modules' => '"'. implode('", "', $issues_modules). '"',
+        '!modules_section' => l(t("modules section"), 'admin/build/modules'),
+      )), 'warning');
+      break;
+    }
+  }
+  // Specific warn for Pathauto.
+  // See http://drupal.org/node/540916
   if (module_exists('pathauto')) {
-    drupal_set_message(t("<strong>Warning</strong>: Pathauto module is activated.<br />This module slows down taxonomy import process and only few terms can be imported. It's advised to disabled it manually in !modules_section. Settings aren't lost when you disable it - and not uninstall it -.<br />After import process, you can reactivate Pathauto and eventually bulk generate aliases for newly imported terms.", array('!modules_section' => l(t("modules section"), 'admin/build/modules'))), 'error');
+    drupal_set_message(t('<strong>Warning</strong>: Pathauto module is running.<br />
+    This module slows down taxonomy import process. It is advised to disable it manually in !modules_section. Settings are not lost when you disable it (and not uninstall it). After import process, you can reactivate Pathauto and eventually bulk generate aliases for newly imported terms.', array(
+      '!modules_section' => l(t("modules section"), 'admin/build/modules'),
+    )), 'warning');
   }
 
   $form['format'] = array(
@@ -247,7 +276,7 @@ function taxonomy_csv_form_import($form_state) {
       '#description' => t('Allow to import full term definitions and links.') .'<br />'.
       t('Format: term name, term id, vocabulary id, term description, weight, number of synonyms, number of first level parents, number of first level children, number of related terms, list of synonyms, list of first level parents ids, list of first level children ids, list of related terms ids, list of vocabulary ids of related terms.') .'<br/>'.
       t('Only term name should be defined. Other values can be empty. Ids are not internal term ids or vocabulary ids, but a unique identifiant. Ids can be a number or a name. In most case, you can use true name. In fact, term ids need to be specific only for duplicate term names in order to identify each item. So for duplicates, you can use term name with a serial number. Main term id is only needed when term is a duplicate one.') .'<br />'.
-      t("With this source content, destination is determined by source. If third column is empty, a new vocabulary will be created. If it's a name or a number, a vocabulary will be created if it doesn't exist. This process is used for related terms too. If vocabulary of a related term is not defined, vocabulary of main term is used. Warning: It's not recommended to change the vocabulary of a term with links."),
+      t("With this import format, destination is determined by source. If third column is empty, a new vocabulary will be created. If it's a name or a number, a vocabulary will be created if it doesn't exist. This process is used for related terms too. If vocabulary of a related term is not defined, vocabulary of main term is used. Warning: It's not recommended to change the vocabulary of a term with links."),
       '#prefix'      => '<div id="description_fields_links">',
       '#suffix'      => '</div>',
     );
@@ -446,8 +475,7 @@ function taxonomy_csv_form_import($form_state) {
       '#type'          => 'select',
       '#options'       => $list_vocabulary_target,
       '#default_value' => $list_previous_values['vocabulary_target'],
-      '#description'   => t('
-        When you want to import a new taxonomy into an existing one, it is recommended to process in three steps in order to allow a good import.
+      '#description'   => t('When you want to import a new taxonomy into an existing one, it is recommended to process in three steps in order to allow a good import.
         <ul>
           <li>First, check the import file with the < <em>Autocreate a new vocabulary</em> > option. Repeat this step while there are warnings and notices.</li>
           <li>Second, check new and existing terms merge with the < <em>Duplicate an existing vocabulary</em> > option. This choice creates a duplicate of your target existing vocabulary and import your new terms into. Original nodes attachments are not duplicated.</li>
@@ -487,7 +515,8 @@ function taxonomy_csv_form_import($form_state) {
     Some choices may be currently disabled.'),
   );
   if (isset($_COOKIE['has_js'])) {
-    // Store full list of generic existing_items and set only the correct one in order to keep all options possible with javascript and css.
+    // Store full list of generic existing_items and set only the correct one in
+    // order to keep all options possible with javascript and css.
     $form['import_options']['existing_items']['#options'] = $list_import_option;
 
     // Descriptions and examples of the option existing_items option.
@@ -648,7 +677,7 @@ function taxonomy_csv_form_import($form_state) {
     );
   }
   else {
-    // Use this form only if no javascript (or, in a next evolution, in a second step wizard).
+    // Use this form only if no javascript or in a second step wizard.
     $form['import_options']['#description'] = '<br />'. t("As you see this notice, javascript is not activated on your browser. Only options matching your source content and vocabulary destination needs to be set. Others won't be used. If you want specific examples and options, activate javascript or see <a href=\"!more_help_link\"> advanced help</a>.", array('!more_help_link' => url('admin/help/taxonomy_csv')));
 
     $form['import_options']['existing_items']['#options'] = array_intersect_key($list_import_option, array_flip(array(
@@ -794,7 +823,7 @@ function taxonomy_csv_form_import($form_state) {
       'warnings' => t('Warnings'),
       'notices'  => t('Warnings and notices'),
       'infos'    => t('Warnings, notices and informations'),
-//      'full'     => t('Errors, warnings, notices and informations for each term'),
+//      'full'     => t('Errors, warnings, notices and infos for each term'),
     ),
     '#default_value' => $list_previous_values['result_level'],
   );
@@ -805,7 +834,7 @@ function taxonomy_csv_form_import($form_state) {
     '#options'       => array(
       'by_message'  => t('By message (compact view)'),
       'by_line'     => t('By line (list view)'),
-//       'by_collapse' => t('Group warnings and notices by line (collapsible view)'),
+//       'by_collapse' => t('By line (collapsible view)'),
     ),
     '#default_value' => $list_previous_values['result_type'],
     '#prefix'        => '<div id="result_type">',
@@ -927,8 +956,10 @@ function taxonomy_csv_form_import_submit($form, &$form_state) {
       'vocabulary_target',
       'vocabulary_id',
       'existing_items',
+      // Specific to relations import.
       'relations_create_subrelations',
       'relations_all_vocabularies',
+      // General options.
       'disable_internal_cache',
       'disable_hierarchy_check',
       'hierarchy_level',
@@ -982,7 +1013,7 @@ function taxonomy_csv_form_export_prepare() {
   $taxonomy_csv_path = drupal_get_path('module', 'taxonomy_csv');
   require_once("$taxonomy_csv_path/taxonomy_csv.api.inc");
 
-  // Javascript and css allow to show only available options depending user's choice.
+  // Javascript and css allow to show only available options depending choices.
   drupal_add_js("$taxonomy_csv_path/taxonomy_csv.js");
   drupal_add_css("$taxonomy_csv_path/taxonomy_csv.css");
 
@@ -1019,7 +1050,7 @@ function taxonomy_csv_form_export($form_state) {
   );
 
   // Remember previous values to use in particular when reloading form.
-  // If not reloading form, then use previous saved value if exists, else recommended value.
+  // If not reloading form, use saved values if exist, else recommended ones.
   $list_previous_values = array();
   foreach ($list_recommended_values as $key => $value) {
     $list_previous_values[$key] = isset($form_state['values'][$key]) ?

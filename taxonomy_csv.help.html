@@ -403,8 +403,12 @@
       <li>
         Be careful: if 1) source choice is <strong>not</strong> <em>"Ignore"</em> additional columns, 2) file or a line in the file has only one column and 3) you choose <em>"Update and replace"</em>, the import process will be a remove process of matching items (first column terms are always kept or imported).
       </li>
+      <li>
+        Some memory or compatibility issues have been reported with some modules as <em>Pathauto</em>, <em>taxonomy_vtn</em> and <em>taxonomynode</em> (see <a href="http://drupal.org/node/495548">#495548</a>, <a href="http://drupal.org/node/447852">#447852</a> and <a href="http://drupal.org/node/540916">#540916</a>). It's advised to increase server and php memory temporary (no problem reported with 256 MB) or to disable these modules manually (settings aren't lost when you disable a module - and not uninstall it -). After import process, you can decrease memory and reactivate modules.
+      </li>
     </ul>
 <p>Another Drupal module allows CSV import too, despite its name: <a href="http://drupal.org/project/taxonomy_xml" title="Taxonomy XML module">taxonomy XML</a>. Its approach is different: it uses one file compliant to thesauri standard ISO 2788, i.e. a three columns csv file: <code>term, type of link (relation, description, synonym...), item</code>, or, for specialists, <code>subject, predicate, object</code>. Additional fields are managed as the third one. For Drupal 4.7 and Drupal 5, <a href="http://drupal.org/project/taxonomy_batch_operations" title="Taxonomy batch operations module">taxonomy batch operations</a> is available too. So choose the module best matching your needs.</p>
+<p>For export, you can use Taxonomy XML too or one of backup modules. Taxonomy CSV is a more specialised tool which allows more precise tuning.</p>
 <br />
 </body>
 </html>

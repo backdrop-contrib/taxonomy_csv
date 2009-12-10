@@ -6,7 +6,7 @@ if (Drupal.jsEnabled) {
     /**
     * Allows to hide unchosen sub-options and to show chosen sub-options.
     *
-    * TODO: To factorize.
+    * @todo To factorize.
     */
     $(document).ready(function() {
       // Import options.

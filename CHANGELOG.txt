@@ -12,6 +12,14 @@ Taxonomy csv x.x-x.x, xxxx-xx-xx
 --------------------------------
 
 
+Taxonomy csv 6.x-4.8, 2009-12-10
+Taxonomy csv line api 6.x-4.8, 2009-12-10
+--------------------------------
+By Daniel Berthereau: Cleaned code with SimpleTest/TestBed suggestions.
+#633348 by Jens Beltofte: Fixed field name when database uses a prefix.
+#495548 and #447852 by Daniel Berthereau: Warned if use of incompatible modules.
+
+
 Taxonomy csv 7.x-4.7, 2009-10-20
 Taxonomy csv 6.x-4.7, 2009-10-20
 --------------------------------

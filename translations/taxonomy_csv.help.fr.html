@@ -402,8 +402,12 @@
       <li>
         Attention : si 1) le choix de la source <strong>n'est pas</strong> <em>"Ignorer"</em> les colonnes supplémentaires, 2) le fichier ou une ligne dans le fichier contient seulement une colonne et 3) vous choisissez <em>"Mettre à jour et remplacer"</em>, le processus d'importation deviendra un processus de suppression des éléments correspondants (les termes de la première colonne sont toujours conservés ou importés).
       </li>
+      <li>
+        Des problèmes de mémoire ou de compatibilité ont été signalés pour certains modules tels que <em>Pathauto</em>, <em>taxonomy_vtn</em> and <em>taxonomynode</em> (see <a href="http://drupal.org/node/495548">#495548</a>, <a href="http://drupal.org/node/447852">#447852</a> et <a href="http://drupal.org/node/540916">#540916</a>). Il est conseillé d'augmenter temporairement la mémoire du serveur et de php (aucun problème n'a été signalé avec 256 Mo) ou de désactiver ces modules manuellement (les paramètres ne sont pas perdus lors d'une désactivation - et non une désinstallation -). Après l'importation, vous pouvez réduire la mémoire et réactiver les modules.
+      </li>
     </ul>
 <p>Un autre module Drupal permet également l'importation d'une taxinomie par le biais d'un fichier CSV, malgré son nom : <a href="http://drupal.org/project/taxonomy_xml" title="Module Taxonomy XML">taxonomy XML</a>. Son approche est différente. Il utilise un fichier unique conforme à la norme ISO 2788 sur les thésaurus, en l'occurrence un fichier CSV à trois colonnes : <code>terme, type de lien (relation, description, synonyme...), élément</code>, ou, pour les specialistes, <code>sujet, prédicat, objet</code>. Les champs supplémentaires sont traités comme le troisième. Pour Drupal 4.7 et Drupal 5, <a href="http://drupal.org/project/taxonomy_batch_operations" title="Module Taxonomy batch operations">taxonomy batch operations</a> peut également être utilisé. Vous pouvez donc choisir le module correspondant le mieux à vos besoins.</p>
+<p>Pour l'exportation, vous pouvez utiliser également Taxonomy XML ou l'un des modules de sauvegardes. Taxonomy CSV est un outil plus spécialisé qui permet des paramètrages plus précis.</p>
 <br />
 </body>
 </html>
