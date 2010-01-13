@@ -296,12 +296,11 @@ msgid "Term !term_number of !total_terms processed: %term"
 msgstr "Terme !term_number sur !total_terms traité : %term"
 
 #: taxonomy_csv.api.inc:1027
-msgid "!term_count / !total_terms terms of chosen vocabularies have been exported to file <a href=\"!filepath\">!filename</a> (!filesize KB). Click on link to view it or right click to download it."
+msgid "!term_count / !total_terms terms of chosen vocabularies have been exported to file !file (!filesize KB). Click on link to view it or right click to download it."
 msgstr ""
 "!term_count / !total_terms termes des vocabulaires choisis ont été "
-"exporté dans le fichier <a href=\"!filepath\">!filename</a> "
-"(!filesize Ko). Cliquer sur le lien pour le voir ou cliquer-droit pour "
-"le télécharger."
+"exporté dans le fichier !file (!filesize Ko). Cliquer sur le lien "
+"pour le voir ou cliquer-droit pour le télécharger."
 
 #: taxonomy_csv.api.inc:1042
 msgid "!count duplicate term names have been found. Error can occur when you will import this list, except if you choose \"fields and links\" export format or import option \"ignore existing items\"."

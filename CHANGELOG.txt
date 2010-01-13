@@ -11,6 +11,15 @@
 Taxonomy csv x.x-x.x, xxxx-xx-xx
 --------------------------------
 
+Taxonomy csv 6.x-4.9, 2010-01-13
+--------------------------------
+#666820 by Jeremy Rasmussen: Fixed url of exported taxonomy file.
+
+
+taxonomy_csv 5.x-1.5, 2009-12-11
+--------------------------------
+#333159 by Katrina Messenger: Added weight import.
+
 
 Taxonomy csv 6.x-4.8, 2009-12-10
 Taxonomy csv line api 6.x-4.8, 2009-12-10
@@ -33,6 +42,7 @@ Taxonomy csv 6.x-4.6, 2009-10-05
 By Daniel Berthereau: Added import in multiple vocabularies with 'fields_links'.
 By Daniel Berthereau: Cleaned code with some Zend Studio suggestions.
 By Daniel Berthereau: Added table of content in help.
+#576042 by Daniel Berthereau: Fixed use of previous choices save.
 
 
 Taxonomy csv line api 6.x-4.5, 2009-09-23
@@ -164,7 +174,6 @@ taxonomy_csv 6.x-1.5, 2008-04-19
 taxonomy_csv 5.x-1.4, 2008-04-19
 taxonomy_csv 4.7.x-1.4, 2008-04-19
 ----------------------------------
-
 By naquah: Various bug fixes regarding file encoding, line endings, and
 delimiters.
 
@@ -192,7 +201,6 @@ accomodate in importing larger files.
 taxonomy_csv 5.x-1.2, 2008-01-27
 taxonomy_csv 4.7.x-1.2, 2008-01-27
 ----------------------------------
-
 By naquah: Added a README.txt file.
 No new features, no bug fixes and no known bugs.
 

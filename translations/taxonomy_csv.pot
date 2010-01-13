@@ -238,7 +238,7 @@ msgid "Term !term_number of !total_terms processed: %term"
 msgstr ""
 
 #: taxonomy_csv.api.inc:1027
-msgid "!term_count / !total_terms terms of chosen vocabularies have been exported to file <a href=\"!filepath\">!filename</a> (!filesize KB). Click on link to view it or right click to download it."
+msgid "!term_count / !total_terms terms of chosen vocabularies have been exported to file !file (!filesize KB). Click on link to view it or right click to download it."
 msgstr ""
 
 #: taxonomy_csv.api.inc:1042

@@ -1024,11 +1024,10 @@ function _taxonomy_csv_vocabulary_export_finished($success, $results, $operation
   }
 
   // General infos.
-  $message = t('!term_count / !total_terms terms of chosen vocabularies have been exported to file <a href="!filepath">!filename</a> (!filesize KB). Click on link to view it or right click to download it.', array(
+  $message = t('!term_count / !total_terms terms of chosen vocabularies have been exported to file !file (!filesize KB). Click on link to view it or right click to download it.', array(
     '!term_count'  => $options['current_term'],
     '!total_terms' => $options['total_terms'],
-    '!filepath'    => $options['file']->filepath,
-    '!filename'    => $options['file']->filename,
+    '!file'        => l($options['file']->filename, file_create_url($options['file']->filepath)),
     '!filesize'    => number_format(filesize($options['file']->filepath) / 1000, 1),
   )) .'<br />';
   // Main check of end process.
