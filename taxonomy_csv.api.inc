@@ -254,37 +254,45 @@ function _taxonomy_csv_vocabulary_import_check_options(&$options) {
   // Check if there is write access and prepare file.
   switch ($options['source_choice']) {
     case 'path':
-    case 'url':
-      // Upload if not already uploaded.
-      if (!isset($options['file'])) {
-        // Upload from a path.
-        if ($options['source_choice'] == 'path') {
-          $options['file'] = file_save_upload($options['path']);
+      // Upload only if not already uploaded.
+      if (!isset($options['file']->filename)) {
+        if (!$options['path']) {
+          $messages['path'] = t("You choose to import a taxonomy by a file, but you don't set its name or its size is greater than the server's limit of !max_size.", array('!max_size' => format_size(parse_size(ini_get('upload_max_filesize')))));
+          break;
         }
-        // Upload from an url.
-        else {
-          $filename = file_save_data(
-            file_get_contents($options['url']),
-            basename($options['url']),
-            'FILE_EXISTS_RENAME');
-          $options['file'] = new stdClass();
-          $options['file']->filename = basename($filename);
-          $options['file']->filepath = $filename;
-          $options['file']->filesize = filesize($filename);
-        }
+        $options['file'] = file_save_upload($options['path']);
       }
 
-      if (!$options['file']) {
-        $messages['path'] = t("You choose to import a taxonomy by a file, but you don't set its name or its size is greater than the server's limit of !max_size.", array('!max_size' => format_size(parse_size(ini_get('upload_max_filesize')))));
+      if (!$options['file']->filesize) {
+        $messages['path'] = t('Size of your file is null.');
       }
-      elseif (!$options['file']->filesize) {
+      break;
+
+    case 'url':
+      // Upload only if not already uploaded.
+      if (!isset($options['file']->filename)) {
+        if (!$options['url']) {
+          $messages['url'] = t("You choose to import a taxonomy by an url, but you don't set it.");
+          break;
+        }
+        $filename = file_save_data(
+          file_get_contents($options['url']),
+          basename($options['url']),
+          'FILE_EXISTS_RENAME');
+        $options['file'] = new stdClass();
+        $options['file']->filename = basename($filename);
+        $options['file']->filepath = $filename;
+        $options['file']->filesize = filesize($filename);
+      }
+
+      if (!$options['file']->filesize) {
         $messages['path'] = t('Size of your file is null.');
       }
       break;
 
     case 'text':
       if (empty($options['text'])) {
-        $messages['text'] = t('You choose to import a taxonomy by a text, but the text is empty.');
+        $messages['text'] = t('You choose to import a taxonomy by text, but text area is empty.');
       }
       elseif (!isset($options['file'])) {
         // Prepare import by text: save text as a temp file to simplify process
@@ -323,7 +331,8 @@ function _taxonomy_csv_vocabulary_import_check_options(&$options) {
     $messages['delimiter'] = t('Delimiter and enclosure cannot be same character.');
   }
 
-  if (isset($options['file'])) {
+  // File is already loaded.
+  if (isset($options['file']->filesize)) {
     // Calculates number of lines to be imported.
     // Automatically detects line endings.
     ini_set('auto_detect_line_endings', '1');
@@ -1038,8 +1047,8 @@ function _taxonomy_csv_vocabulary_export_finished($success, $results, $operation
   $duplicate_count = count($options['duplicate_terms']);
   // If there are duplicate term names, display them.
   if ($duplicate_count) {
-    $message = t('!count duplicate term names have been found. Error can occur when you will import this list, except if you choose "fields and links" export format or import option "ignore existing items".', array('!count' => $duplicate_count)) .'<br />'.
-    t('List of duplicate term names:') .'<br />"'.
+    $message = t('!count duplicate term names have been found in all vocabularies. Error can occur when you will import this list, except if you choose "fields and links" export format or import option "ignore existing items".', array('!count' => $duplicate_count)) .'<br />'.
+    t('List of duplicated term names:') .'<br />"'.
     implode('", "', array_keys(array_flip($options['duplicate_terms']))) .'"';
     $status = 'warning';
   }
@@ -1109,7 +1118,7 @@ function taxonomy_csv_vocabulary_create($vocabulary_name = '') {
   // Create an empty vocabulary. Relations and hierarchy are updated later.
   $vocabulary = array(
     'name'         => _taxonomy_csv_vocabulary_create_name($vocabulary_name),
-    'description'  => t('Auto created vocabulary by taxonomy_csv module'),
+    'description'  => t('Vocabulary created automatically by Taxonomy csv import/export module'),
     'help'         => '',
     'relations'    => TRUE,
     'hierarchy'    => 2,
@@ -1999,7 +2008,7 @@ function _taxonomy_csv_line_import_process($line, $options, $previous_items = ar
         $term['relations'] = $tids;
 
         // 7. Import main term and check result.
-        // If there is an identifiant, pre-import term.
+        // If main term has an identifiant, pre-import it.
         if ($line[1] != '') {
           // If term is already imported, simply update main term with tid.
           if (isset($result['name']['term'][$line[1]])) {
@@ -2013,9 +2022,9 @@ function _taxonomy_csv_line_import_process($line, $options, $previous_items = ar
                 'vid'  => $term['vid'],
               ),
               TAXONOMY_CSV_EXISTING_IGNORE_CREATE);
-            $result['name']['term'][$id] = $current_result['name'];
-            $result['tid']['term'][$id]  = $current_result['tid'];
-            $result['msg'][]             = $current_result['msg'];
+            $result['name']['term'][$line[1]] = $current_result['name'];
+            $result['tid']['term'][$line[1]]  = $current_result['tid'];
+            $result['msg'][]                  = $current_result['msg'];
             if (_taxonomy_csv_message_warning($current_result['msg'])) {
               break;
             }
@@ -2044,9 +2053,10 @@ function _taxonomy_csv_line_import_process($line, $options, $previous_items = ar
             'vid'  => $vid,
             'parent' => array($parent_tid),
           );
-          // Nevertheless, tid is needed if known in order to make an update.
+          // Update term with tid and true name if known.
           if (isset($result['name']['term'][$id])) {
-            $temp_term['tid'] = $result['tid']['term'][$id];
+            $temp_term['name'] = $result['name']['term'][$id];
+            $temp_term['tid']  = $result['tid']['term'][$id];
           }
           // Import term then store and check result.
           // Don't check tid == parent_tid because duplicates have been removed.

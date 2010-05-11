@@ -5,7 +5,7 @@
  * taxonomy_csv module for Drupal
  *
  * Copyright (c) 2007-2008 Dennis Stevense, see LICENSE.txt for more information
- * Copyright (c) 2009 Daniel Berthereau <daniel.drupal@berthereau.net>
+ * Copyright (c) 2009-2010 Daniel Berthereau <daniel.drupal@berthereau.net>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -234,7 +234,7 @@ function taxonomy_csv_form_import($form_state) {
       drupal_set_message(t('<strong>Warning</strong>: An incompatible module is running.<br />
       Memory or compatibility problems have been reported with these modules: !modules.<br />
       It is advised to increase server and php memory temporary (no problem reported with 256 MB) or to disable these modules manually in !modules_section. Settings are not lost when you disable a module (and not uninstall it). After import process, you can decrease memory and reactivate modules.', array(
-        '!modules' => '"'. implode('", "', $issues_modules). '"',
+        '!modules' => '"' . implode('", "', $issues_modules) . '"',
         '!modules_section' => l(t("modules section"), 'admin/build/modules'),
       )), 'warning');
       break;
@@ -389,13 +389,14 @@ function taxonomy_csv_form_import($form_state) {
   $form['import']['path'] = array(
     '#type'          => 'file',
     '#title'         => t('CSV file'),
-    '#description'   => t('Browse to the file') .'<br >'. (($max_size = parse_size(ini_get('upload_max_filesize'))) ? t('Due to server restrictions, the <strong>maximum upload file size is !max_size</strong>. Files that exceed this size will be disregarded.', array('!max_size' => format_size($max_size))) : ''),
+    '#description'   => t('Browse to the file') .'<br >'. (($max_size = parse_size(ini_get('upload_max_filesize'))) ? t('Due to server restrictions, the <strong>maximum upload file size is !max_size</strong>. Files that exceed this size will be disregarded.') .'<br >'.
+    t(' Use "distant file" import to go beyond, even with local file.', array('!max_size' => format_size($max_size))) : ''),
   );
 
   $form['import']['url'] = array(
     '#type'          => 'textfield',
     '#title'         => t('CSV file'),
-    '#description'   => t('Enter the url (http, ftp, file, path...)') .'<br >'. (($max_size = parse_size(ini_get('upload_max_filesize'))) ? t('Due to server restrictions, the <strong>maximum upload file size is !max_size</strong>. Files that exceed this size will be disregarded.', array('!max_size' => format_size($max_size))) : ''),
+    '#description'   => t('Enter the url (http, ftp, file, path...)'),
   );
 
   $form['import']['csv_format'] = array(
@@ -458,7 +459,7 @@ function taxonomy_csv_form_import($form_state) {
   $list_vocabularies = taxonomy_get_vocabularies();
 
   if (count($list_vocabularies) == 0) {
-    $form['destination']['#description'] .= '<br />'. t("As there isn't any vocabulary, terms will be imported in a new automatically created vocabulary.");
+    $form['destination']['#description'] .= '<br /><br />'. t("As there isn't any vocabulary, terms will be imported in a new automatically created vocabulary.");
 
     $form['destination']['vocabulary_target'] = array(
       '#type'  => 'value',

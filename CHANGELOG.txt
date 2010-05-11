@@ -8,11 +8,13 @@
 == CHANGELOG ==
   ===========
 
-Taxonomy csv x.x-x.x, xxxx-xx-xx
---------------------------------
+Taxonomy csv import/export 6.x-4.10, 2010-05-10
+-----------------------------------------------
+#765964 by Alessandro Balboni: Fixed import duplicate terms with full term mode.
 
-Taxonomy csv 6.x-4.9, 2010-01-13
---------------------------------
+
+Taxonomy csv import/export 6.x-4.9, 2010-01-13
+----------------------------------------------
 #666820 by Jeremy Rasmussen: Fixed url of exported taxonomy file.
 
 
@@ -21,17 +23,17 @@ taxonomy_csv 5.x-1.5, 2009-12-11
 #333159 by Katrina Messenger: Added weight import.
 
 
-Taxonomy csv 6.x-4.8, 2009-12-10
+Taxonomy csv import/export 6.x-4.8, 2009-12-10
 Taxonomy csv line api 6.x-4.8, 2009-12-10
---------------------------------
+----------------------------------------------
 By Daniel Berthereau: Cleaned code with SimpleTest/TestBed suggestions.
 #633348 by Jens Beltofte: Fixed field name when database uses a prefix.
 #495548 and #447852 by Daniel Berthereau: Warned if use of incompatible modules.
 
 
-Taxonomy csv 7.x-4.7, 2009-10-20
-Taxonomy csv 6.x-4.7, 2009-10-20
---------------------------------
+Taxonomy csv import/export 7.x-4.7, 2009-10-20
+Taxonomy csv import/export 6.x-4.7, 2009-10-20
+----------------------------------------------
 By Daniel Berthereau: Added export of terms and vocabularies.
 
 
@@ -46,12 +48,14 @@ By Daniel Berthereau: Added table of content in help.
 
 
 Taxonomy csv line api 6.x-4.5, 2009-09-23
---------------------------------
+-----------------------------------------
 By Daniel Berthereau: Released light api: taxonomy_csv.line.api.inc in CVS HEAD.
+
 
 Taxonomy csv 7.x-4.5, 2009-09-22
 --------------------------------
 By Daniel Berthereau: Released public version of taxonomy_csv for Drupal 7.
+
 
 Taxonomy csv 7.x-4.5, 2009-09-22
 Taxonomy csv 6.x-4.5, 2009-09-22

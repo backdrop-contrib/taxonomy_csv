@@ -103,6 +103,9 @@
         <a href="#export">Export</a>
       </li>
       <li>
+        <a href="#import_api">Taxonomy csv import API</a>
+      </li>
+      <li>
         <a href="#advanced_options">Advanced settings and hints</a>
         <ol class="toc">
           <li>
@@ -355,10 +358,24 @@
     Warning: with default Drupal "List terms" function, a memory error can occurs with big taxonomies. So use another manager as <a href="http://drupal.org/project/taxonomy_manager" title="Taxonomy manager module">Taxonomy manager</a>.
 
 <h3 id="export"><a href="#contents">3. Export</a></h3>
-  <p>Taxonomy CSV allows to export structures et properties of terms of one or all vocabularies.</p>
+  <p>Taxonomy CSV allows to export structures and properties of terms of one or all vocabularies.</p>
   <p>Simply choose what you want to export (see <a href='#formats'>formats</a>) and how to export. Some formats may be unavailable.</p>
 
-<h3 id="advanced_options"><a href="#contents">4. Advanced settings and hints</a></h3>
+<h3 id="import_api"><a href="#contents">4. Taxonomy csv import API</a></h3>
+  <p>This module can be used as an API. You can use the full module as a dependance or use the light version taxonomy_csv.line.api.inc directly in your module. Import is run as this:
+  <div class="codeblock"><code>
+    $result = taxonomy_csv_line_import(<br />
+    &nbsp;&nbsp;array(Europe, France, Paris),<br />
+    &nbsp;&nbsp;array(<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;'import_format' => 'tree_structure',<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;'vocabulary_id' => 2,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;'existing_items' => 'update_replace',<br />
+    ));<br />
+  </code></div>
+  <p>Possible formats are explained in comments or <a href='#formats'>above</a>. Some may be unavailable.</p>
+  <p>Full version of API is available in the module. Light version is available in <a href="http://drupalcode.org/viewvc/drupal/contributions/modules/taxonomy_csv/taxonomy_csv.line.api.inc?view=co&pathrev=HEAD" title="taxonomy_csv.line.api.inc">HEAD branch</a> of cvs repository.</p>
+
+<h3 id="advanced_options"><a href="#contents">5. Advanced settings and hints</a></h3>
   <h4 id="delimiters_enclosures"><a href="#contents">1. Delimiters and enclosures</a></h4>
     <ul>
       <li>
