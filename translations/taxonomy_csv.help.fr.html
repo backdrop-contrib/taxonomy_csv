@@ -81,7 +81,7 @@
       </li>
       <li>
         <a href="#import">Import</a>
-        <ol class=toc>
+        <ol class="toc">
           <li>
             <a href="#import_content">Que voulez-vous importer ?</a>
           </li>
@@ -101,6 +101,9 @@
       </li>
       <li>
         <a href="#export">Export</a>
+      </li>
+      <li>
+        <a href="#import_api">Taxonomy csv import API</a>
       </li>
       <li>
         <a href="#advanced_options">Paramètres avancés et conseils</a>
@@ -130,7 +133,7 @@
       </ul></div>
   <h4 id="fields_links"><a href="#contents">2. Champs et liens des termes</a></h4>
     <p>Cette option permet d'importer la définition complète d'un terme ainsi que ses liens avec les autres termes.</p>
-    Le format est : nom du terme, identifiant du terme, identifiant du vocabulaire, description, poids, nombre de synonymes, nombre de parents de premier niveau, nombre d'enfants de premier niveau, nombre de termes associés, liste des synonymes, liste des identifiants des parents de premier niveau, liste des identifiants des enfants de premier niveau, liste des identifiants des termes associés, liste des identifiants des vocabulaires des termes associés.</p>
+    <p>Le format est : nom du terme, identifiant du terme, identifiant du vocabulaire, description, poids, nombre de synonymes, nombre de parents de premier niveau, nombre d'enfants de premier niveau, nombre de termes associés, liste des synonymes, liste des identifiants des parents de premier niveau, liste des identifiants des enfants de premier niveau, liste des identifiants des termes associés, liste des identifiants des vocabulaires des termes associés.</p>
     <p>Seul le nom doit être défini, les autres valeurs pouvant être vides. Les identifiants ne sont pas les numéros internes des terme ou des vocabulaires, mais des identifiants uniques. Ils peuvent être des noms ou des nombres. Dans la plupart des cas, vous pouvez simplement utiliser les véritables noms. En fait, les identifiants doivent être spécifiques seulement pour les nomùs de termes doublons de manière à identifier chaque élément. De ce fait, pour les doublons, vous pouvez utiliser le nom plus un nombre. L'identifiant du terme principal est nécessaire seulement lorsque le terme est un doublon.</p>
     <p>Exemple avec un synonyme, deux parents directs, pas d'enfants et une relation avec un terme d'un autre vocabulaire :</p>
       <div class="codeblock"><ul>
@@ -357,7 +360,21 @@
   <p>Taxonomy CSV permet d'exporter les structures et les propriétés des termes d'un ou plusieurs vocabulaires.</p>
   <p>Choisissez simplement ce que vous voulez exporter (cf. <a href='#formats'>formats</a>) et comment exporter. Certains formats ne sont pas disponibles.</p>
 
-<h3 id="advanced_options"><a href="#contents">4. Paramètres avancés et conseils</a></h3>
+<h3 id="import_api"><a href="#contents">4. Taxonomy csv import API</a></h3>
+  <p>Ce module peut être utilisé comme une API. Vous pouvez utiliser le module complet comme dépendance ou intégrer la version légère taxonomy_csv.line.api.inc directement dans votre module. L'import s'effectue ainsi :</p>
+  <div class="codeblock"><code>
+    $result = taxonomy_csv_line_import(<br />
+    &nbsp;&nbsp;array(Europe, France, Paris),<br />
+    &nbsp;&nbsp;array(<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;'import_format' => 'tree_structure',<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;'vocabulary_id' => 2,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;'existing_items' => 'update_replace',<br />
+    ));<br />
+  </code></div>
+  <p>Les formats d'importation sont présentés dans les commentaires et <a href='#formats'>ci-dessus</a>. Certains peuvent être indisponibles.</p>
+  <p>La version complète de l'API se trouve dans le module. La version allégée se trouve dans la <a href="http://drupalcode.org/viewvc/drupal/contributions/modules/taxonomy_csv/taxonomy_csv.help.html?view=co" title="taxonomy_csv.line.api.inc">branche HEAD</a> du dépôt cvs.</p>
+
+<h3 id="advanced_options"><a href="#contents">5. Paramètres avancés et conseils</a></h3>
   <h4 id="delimiters_enclosures"><a href="#contents">1. Séparateurs et délimiteurs</a></h4>
     <ul>
       <li>
@@ -402,8 +419,12 @@
       <li>
         Attention : si 1) le choix de la source <strong>n'est pas</strong> <em>"Ignorer"</em> les colonnes supplémentaires, 2) le fichier ou une ligne dans le fichier contient seulement une colonne et 3) vous choisissez <em>"Mettre à jour et remplacer"</em>, le processus d'importation deviendra un processus de suppression des éléments correspondants (les termes de la première colonne sont toujours conservés ou importés).
       </li>
+      <li>
+        Des problèmes de mémoire ou de compatibilité ont été signalés pour certains modules tels que <em>Pathauto</em>, <em>taxonomy_vtn</em> and <em>taxonomynode</em> (see <a href="http://drupal.org/node/495548">#495548</a>, <a href="http://drupal.org/node/447852">#447852</a> et <a href="http://drupal.org/node/540916">#540916</a>). Il est conseillé d'augmenter temporairement la mémoire du serveur et de php (aucun problème n'a été signalé avec 256 Mo) ou de désactiver ces modules manuellement (les paramètres ne sont pas perdus lors d'une désactivation - et non une désinstallation -). Après l'importation, vous pouvez réduire la mémoire et réactiver les modules.
+      </li>
     </ul>
 <p>Un autre module Drupal permet également l'importation d'une taxinomie par le biais d'un fichier CSV, malgré son nom : <a href="http://drupal.org/project/taxonomy_xml" title="Module Taxonomy XML">taxonomy XML</a>. Son approche est différente. Il utilise un fichier unique conforme à la norme ISO 2788 sur les thésaurus, en l'occurrence un fichier CSV à trois colonnes : <code>terme, type de lien (relation, description, synonyme...), élément</code>, ou, pour les specialistes, <code>sujet, prédicat, objet</code>. Les champs supplémentaires sont traités comme le troisième. Pour Drupal 4.7 et Drupal 5, <a href="http://drupal.org/project/taxonomy_batch_operations" title="Module Taxonomy batch operations">taxonomy batch operations</a> peut également être utilisé. Vous pouvez donc choisir le module correspondant le mieux à vos besoins.</p>
+<p>Pour l'exportation, vous pouvez utiliser également Taxonomy XML ou l'un des modules de sauvegardes. Taxonomy CSV est un outil plus spécialisé qui permet des paramètrages plus précis.</p>
 <br />
 </body>
 </html>

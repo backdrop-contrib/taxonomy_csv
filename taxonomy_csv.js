@@ -5,7 +5,7 @@
     /**
     * Allows to hide unchosen sub-options and to show chosen sub-options.
     *
-    * TODO: To factorize.
+    * @todo To factorize.
     */
     $(document).ready(function() {
       // Import options.
@@ -71,7 +71,7 @@
 
       // Import options (general, description and specific).
       // Hide all items defined with the css class filtered.
-      var methods_import = new Array('#edit-existing-items-update-wrapper', '#edit-existing-items-update-merge-wrapper', '#edit-existing-items-update-replace-wrapper', '#edit-existing-items-ignore-wrapper', '#edit-existing-items-ignore-create-wrapper', '#edit-existing-items-ignore-all-wrapper', '#description_alone_terms', '#description_fields_links', '#description_flat', '#description_tree_structure', '#description_polyhierarchy', '#description_parents', '#description_children', '#description_relations', '#description_fields', '#description_descriptions', '#description_weights', '#description_synonyms', '#description_taxonomy_manager', '#help_alone_terms', '#help_fields_links', '#help_flat', '#help_tree_structure', '#help_polyhierarchy', '#help_parents', '#help_children', '#help_relations', '#help_fields', '#help_descriptions', '#help_weights', '#help_synonyms', '#help_taxonomy_manager', '#edit-fields-links', '#edit-relations');
+      var methods_import = new Array('#edit-existing-items-update', '#edit-existing-items-update-merge', '#edit-existing-items-update-replace', '#edit-existing-items-ignore', '#edit-existing-items-ignore-create', '#edit-existing-items-ignore-all', '#description_alone_terms', '#description_fields_links', '#description_flat', '#description_tree_structure', '#description_polyhierarchy', '#description_parents', '#description_children', '#description_relations', '#description_fields', '#description_descriptions', '#description_weights', '#description_synonyms', '#description_taxonomy_manager', '#edit-help-alone-terms', '#edit-help-fields-links', '#edit-help-flat', '#edit-help-tree-structure', '#edit-help-polyhierarchy', '#edit-help-parents', '#edit-help-children', '#edit-help-relations', '#edit-help-fields', '#edit-help-descriptions', '#edit-help-weights', '#edit-help-synonyms', '#edit-help-taxonomy-manager', '#edit-fields-links', '#edit-relations');
       for(var m in methods_import) {
         $(methods_import[m]).addClass('filtered');
       }

@@ -1,9 +1,13 @@
 /* $Id$ */
 
 /**
+ * @file
  * Allows to hide unchosen sub-options and to show chosen sub-options.
  */
-/* Hide */
+
+/**
+ * Hide unchosen items.
+ */
 #edit-import.filtered .form-item-text,
 #edit-import.filtered .form-item-files-path,
 #edit-import.filtered .form-item-url,
@@ -36,19 +40,19 @@
 #description_synonyms.filtered,
 #description_taxonomy_manager.filtered,
 
-#help_alone_terms.filtered,
-#help_fields_links.filtered,
-#help_flat.filtered,
-#help_tree_structure.filtered,
-#help_polyhierarchy.filtered,
-#help_parents.filtered,
-#help_children.filtered,
-#help_relations.filtered,
-#help_fields.filtered,
-#help_descriptions.filtered,
-#help_weights.filtered,
-#help_synonyms.filtered,
-#help_taxonomy_manager.filtered,
+#edit-help-alone-terms.filtered,
+#edit-help-fields-links.filtered,
+#edit-help-flat.filtered,
+#edit-help-tree-structure.filtered,
+#edit-help-polyhierarchy.filtered,
+#edit-help-parents.filtered,
+#edit-help-children.filtered,
+#edit-help-relations.filtered,
+#edit-help-fields.filtered,
+#edit-help-descriptions.filtered,
+#edit-help-weights.filtered,
+#edit-help-synonyms.filtered,
+#edit-help-taxonomy-manager.filtered,
 
 #edit-fields-links.filtered,
 #edit-relations.filtered,
@@ -56,11 +60,13 @@
 #result_display_cache.filtered,
 #hierarchy_level.filtered,
 #result_display_options.filtered,
-#result_type.filtered{
-  display:none;
+#result_type.filtered {
+  display: none;
 }
 
-/* Show */
+/**
+ * Show chosen items.
+ */
 #edit-import.text .form-item-text,
 #edit-import.path .form-item-files-path,
 #edit-import.url .form-item-url,
@@ -119,21 +125,21 @@
 #description_synonyms.synonyms,
 #description_taxonomy_manager.taxonomy_manager,
 
-#help_alone_terms.alone_terms,
-#help_fields_links.fields_links,
-#help_flat.flat,
-#help_tree_structure.tree_structure,
-#help_polyhierarchy.polyhierarchy,
-#help_parents.parents,
-#help_children.children,
-#help_relations.relations,
-#help_fields.fields,
-#help_descriptions.descriptions,
-#help_weights.weights,
-#help_synonyms.synonyms,
-#help_taxonomy_manager.taxonomy_manager,
+#edit-help-alone-terms.alone_terms,
+#edit-help-fields-links.fields_links,
+#edit-help-flat.flat,
+#edit-help-tree-structure.tree_structure,
+#edit-help-polyhierarchy.polyhierarchy,
+#edit-help-parents.parents,
+#edit-help-children.children,
+#edit-help-relations.relations,
+#edit-help-fields.fields,
+#edit-help-descriptions.descriptions,
+#edit-help-weights.weights,
+#edit-help-synonyms.synonyms,
+#edit-help-taxonomy-manager.taxonomy_manager,
 
 #edit-fields-links.fields_links,
-#edit-relations.relations{
-  display:block;
+#edit-relations.relations {
+  display: block;
 }

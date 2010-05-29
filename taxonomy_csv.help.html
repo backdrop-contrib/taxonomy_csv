@@ -81,7 +81,7 @@
       </li>
       <li>
         <a href="#import">Import</a>
-        <ol class=toc>
+        <ol class="toc">
           <li>
             <a href="#import_content">What to import (content of the source)?</a>
           </li>
@@ -101,6 +101,9 @@
       </li>
       <li>
         <a href="#export">Export</a>
+      </li>
+      <li>
+        <a href="#import_api">Taxonomy csv import API</a>
       </li>
       <li>
         <a href="#advanced_options">Advanced settings and hints</a>
@@ -130,7 +133,7 @@
       </ul></div>
   <h4 id="fields_links"><a href="#contents">2. Full term fields and links</a></h4>
     <p>This option allows to import full term definitions and direct links to other terms.</p>
-    Format is: term name, term id, vocabulary id, term description, weight, number of synonyms, number of first level parents, number of first level children, number of related terms, list of synonyms, list of first level parents ids, list of first level children ids, list of related terms ids, list of vocabulary ids of related terms.</p>
+    <p>Format is: term name, term id, vocabulary id, term description, weight, number of synonyms, number of first level parents, number of first level children, number of related terms, list of synonyms, list of first level parents ids, list of first level children ids, list of related terms ids, list of vocabulary ids of related terms.</p>
     <p>Only term name should be defined. Other values can be empty. Ids are not internal term ids or vocabulary ids, but a unique identifiant. Ids can be a number or a name. In most case, you can use true name. In fact, term ids need to be specific only for duplicate term names in order to identify each item. So for duplicates, you can use term name with a serial number. Main term id is needed only when term name is a duplicate one.</p>
     <p>Example with one synonym, two first level parents, no children, one relation with a term of another vocabulary:</p>
       <div class="codeblock"><ul>
@@ -355,10 +358,24 @@
     Warning: with default Drupal "List terms" function, a memory error can occurs with big taxonomies. So use another manager as <a href="http://drupal.org/project/taxonomy_manager" title="Taxonomy manager module">Taxonomy manager</a>.
 
 <h3 id="export"><a href="#contents">3. Export</a></h3>
-  <p>Taxonomy CSV allows to export structures et properties of terms of one or all vocabularies.</p>
+  <p>Taxonomy CSV allows to export structures and properties of terms of one or all vocabularies.</p>
   <p>Simply choose what you want to export (see <a href='#formats'>formats</a>) and how to export. Some formats may be unavailable.</p>
 
-<h3 id="advanced_options"><a href="#contents">4. Advanced settings and hints</a></h3>
+<h3 id="import_api"><a href="#contents">4. Taxonomy csv import API</a></h3>
+  <p>This module can be used as an API. You can use the full module as a dependance or use the light version taxonomy_csv.line.api.inc directly in your module. Import is run as this:</p>
+  <div class="codeblock"><code>
+    $result = taxonomy_csv_line_import(<br />
+    &nbsp;&nbsp;array("Europe", "France", "Paris"),<br />
+    &nbsp;&nbsp;array(<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;'import_format' => 'tree_structure',<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;'vocabulary_id' => 2,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;'existing_items' => 'update_replace',<br />
+    ));<br />
+  </code></div>
+  <p>Possible formats are explained in comments or <a href='#formats'>above</a>. Some may be unavailable.</p>
+  <p>Full version of API is available in the module. Light version is available in <a href="http://drupalcode.org/viewvc/drupal/contributions/modules/taxonomy_csv/taxonomy_csv.help.html?view=co" title="taxonomy_csv.line.api.inc">HEAD branch</a> of cvs repository.</p>
+
+<h3 id="advanced_options"><a href="#contents">5. Advanced settings and hints</a></h3>
   <h4 id="delimiters_enclosures"><a href="#contents">1. Delimiters and enclosures</a></h4>
     <ul>
       <li>
@@ -403,8 +420,12 @@
       <li>
         Be careful: if 1) source choice is <strong>not</strong> <em>"Ignore"</em> additional columns, 2) file or a line in the file has only one column and 3) you choose <em>"Update and replace"</em>, the import process will be a remove process of matching items (first column terms are always kept or imported).
       </li>
+      <li>
+        Some memory or compatibility issues have been reported with some modules as <em>Pathauto</em>, <em>taxonomy_vtn</em> and <em>taxonomynode</em> (see <a href="http://drupal.org/node/495548">#495548</a>, <a href="http://drupal.org/node/447852">#447852</a> and <a href="http://drupal.org/node/540916">#540916</a>). It's advised to increase server and php memory temporary (no problem reported with 256 MB) or to disable these modules manually (settings aren't lost when you disable a module - and not uninstall it -). After import process, you can decrease memory and reactivate modules.
+      </li>
     </ul>
 <p>Another Drupal module allows CSV import too, despite its name: <a href="http://drupal.org/project/taxonomy_xml" title="Taxonomy XML module">taxonomy XML</a>. Its approach is different: it uses one file compliant to thesauri standard ISO 2788, i.e. a three columns csv file: <code>term, type of link (relation, description, synonym...), item</code>, or, for specialists, <code>subject, predicate, object</code>. Additional fields are managed as the third one. For Drupal 4.7 and Drupal 5, <a href="http://drupal.org/project/taxonomy_batch_operations" title="Taxonomy batch operations module">taxonomy batch operations</a> is available too. So choose the module best matching your needs.</p>
+<p>For export, you can use Taxonomy XML too or one of backup modules. Taxonomy CSV is a more specialised tool which allows more precise tuning.</p>
 <br />
 </body>
 </html>

@@ -23,6 +23,7 @@ function taxonomy_csv_install() {
 function taxonomy_csv_uninstall() {
   // Remove user preferences.
   foreach (array(
+      // Import variables.
       'import_format',
       'source_choice',
       'import_delimiter',
