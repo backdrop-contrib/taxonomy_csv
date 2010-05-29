@@ -8,9 +8,17 @@
 == CHANGELOG ==
   ===========
 
+Taxonomy csv import/export 7.x-4.11-dev, 2010-05-29
+Taxonomy csv import/export 6.x-4.11, 2010-05-29
+---------------------------------------------------
+By Daniel Berthereau: Fixed and updated release to prepare Drupal 7 release.
+By Daniel Berthereau: Small changed 6.x release to keep it close to the 7.x one.
+By Daniel Berthereau: Added check of maximum length of names to 255 characters.
+
+
 Taxonomy csv import/export 6.x-4.10, 2010-05-10
 -----------------------------------------------
-#765964 by Alessandro Balboni: Fixed import duplicate terms with full term mode.
+#765964 by Daniel Berthereau: Fixed import duplicate terms with full term mode.
 
 
 Taxonomy csv import/export 6.x-4.9, 2010-01-13

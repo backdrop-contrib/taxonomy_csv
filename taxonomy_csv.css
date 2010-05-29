@@ -1,9 +1,13 @@
 /* $Id$ */
 
 /**
+ * @file
  * Allows to hide unchosen sub-options and to show chosen sub-options.
  */
-/* Hide */
+
+/**
+ * Hide unchosen items.
+ */
 #edit-import.filtered #edit-text-wrapper,
 #edit-import.filtered #edit-path-wrapper,
 #edit-import.filtered #edit-url-wrapper,
@@ -56,11 +60,13 @@
 #result_display_cache.filtered,
 #hierarchy_level.filtered,
 #result_display_options.filtered,
-#result_type.filtered{
-  display:none;
+#result_type.filtered {
+  display: none;
 }
 
-/* Show */
+/**
+ * Show chosen items.
+ */
 #edit-import.text #edit-text-wrapper,
 #edit-import.path #edit-path-wrapper,
 #edit-import.url #edit-url-wrapper,
@@ -134,6 +140,6 @@
 #help_taxonomy_manager.taxonomy_manager,
 
 #edit-fields-links.fields_links,
-#edit-relations.relations{
-  display:block;
+#edit-relations.relations {
+  display: block;
 }

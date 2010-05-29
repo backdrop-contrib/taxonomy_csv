@@ -47,11 +47,13 @@ function taxonomy_csv_help($path, $arg) {
     case 'admin/content/taxonomy/csv_import':
       $output = '<p>'. t('Use this form to import a taxonomy, a structure or a list of terms into a vocabulary from a simple <a href="!link" title="Wikipedia definition">CSV</a> file, a url or a copy-and-paste text.', array('!link' => url('http://en.wikipedia.org/wiki/Comma-separated_values'))) .'</p>';
       $output .= '<p>'. t('For performance reasons, it is recommended to disable some other taxonomy related modules before import of big taxonomies and to reactivate them after process.') .'</p>';
-      $output .= '<p>'. t('<strong>Warning:</strong> If you want to update an existing vocabulary, make sure you have a backup before you proceed so you can roll back, if necessary.') . theme('more_help_link', url('admin/help/taxonomy_csv')) .'</p>';
+      $output .= '<p>'. t('<strong>Warning:</strong> If you want to update an existing vocabulary, make sure you have a backup before you proceed so you can roll back, if necessary.');
+      $output .= theme('more_help_link', url('admin/help/taxonomy_csv')) .'</p>';
       return $output;
 
     case 'admin/content/taxonomy/csv_export':
-      $output = '<p>'. t('Use this form to export a taxonomy, a structure or a list of terms to a simple <a href="!link" title="Wikipedia definition">CSV</a> file.', array('!link' => url('http://en.wikipedia.org/wiki/Comma-separated_values'))) . theme('more_help_link', url('admin/help/taxonomy_csv')) .'</p>';
+      $output = '<p>'. t('Use this form to export a taxonomy, a structure or a list of terms to a simple <a href="!link" title="Wikipedia definition">CSV</a> file.', array('!link' => url('http://en.wikipedia.org/wiki/Comma-separated_values')));
+      $output .= theme('more_help_link', url('admin/help/taxonomy_csv')) .'</p>';
       return $output;
 
     case 'admin/help#taxonomy_csv':
@@ -214,6 +216,14 @@ function taxonomy_csv_form_import($form_state) {
       'enctype' => 'multipart/form-data',
     )
   );
+
+  if (!isset($_COOKIE['has_js'])) {
+    $form['warning_no_javascript'] = array(
+      '#type'        => 'item',
+      '#value'       => t('Javascript is not activated!'),
+      '#description' => t("As you see this notice, javascript is disabled on your browser. All fields are shown, but only those matching your choices needs to be set. Others won't be used. If you want specific examples and options, activate javascript or see <a href=\"!more_help_link\"> advanced help</a>.", array('!more_help_link' => url('admin/help/taxonomy_csv'))),
+    );
+  }
 
   // Used with recommended values button.
   $form['list']['list_recommended_values'] = array(
@@ -389,8 +399,11 @@ function taxonomy_csv_form_import($form_state) {
   $form['import']['path'] = array(
     '#type'          => 'file',
     '#title'         => t('CSV file'),
-    '#description'   => t('Browse to the file') .'<br >'. (($max_size = parse_size(ini_get('upload_max_filesize'))) ? t('Due to server restrictions, the <strong>maximum upload file size is !max_size</strong>. Files that exceed this size will be disregarded.') .'<br >'.
-    t(' Use "distant file" import to go beyond, even with local file.', array('!max_size' => format_size($max_size))) : ''),
+    '#description'   => t('Browse to the file') .'<br >'.
+      (($max_size = parse_size(ini_get('upload_max_filesize'))) ?
+        t('Due to server restrictions, the <strong>maximum upload file size is !max_size</strong>. Files that exceed this size will be disregarded.', array('!max_size' => format_size($max_size))) .'<br >'.
+          t('Use "distant file" import to go beyond, even with local file.') :
+        ''),
   );
 
   $form['import']['url'] = array(
@@ -505,11 +518,11 @@ function taxonomy_csv_form_import($form_state) {
     '#required'    => TRUE,
     '#collapsible' => TRUE,
     '#collapsed'   => FALSE,
+    '#description' => t('What will existing or previous imported terms become when a term with same name will be imported?'),
   );
 
   $form['import_options']['existing_items'] = array(
     '#type'          => 'radios',
-    '#title'         => t('What will existing or previous imported terms become when a term with same name will be imported?'),
     '#default_value' => $list_previous_values['existing_items'],
     '#description'   => t('This option allows to set what previous imported terms will become if a new line contains the same terms. Usually, it indicates an error or a unoptimized source, unless you allow duplicates.<br />
     This option is used too with existing terms in the target vocabulary. Recommended value is to update and merge. If you choose to ignore previous or existing terms, the vocabulary will have duplicate terms.<br />
@@ -678,9 +691,9 @@ function taxonomy_csv_form_import($form_state) {
     );
   }
   else {
-    // Use this form only if no javascript or in a second step wizard.
-    $form['import_options']['#description'] = '<br />'. t("As you see this notice, javascript is not activated on your browser. Only options matching your source content and vocabulary destination needs to be set. Others won't be used. If you want specific examples and options, activate javascript or see <a href=\"!more_help_link\"> advanced help</a>.", array('!more_help_link' => url('admin/help/taxonomy_csv')));
+    $form['import_options']['#description'] .= '<br />'. t("As you see this notice, javascript is not activated on your browser. Only options matching your source content and vocabulary destination needs to be set. Others won't be used. If you want specific examples and options, activate javascript or see <a href=\"!more_help_link\"> advanced help</a>.", array('!more_help_link' => url('admin/help/taxonomy_csv')));
 
+    // Use this form only if no javascript or in a second step wizard.
     $form['import_options']['existing_items']['#options'] = array_intersect_key($list_import_option, array_flip(array(
       TAXONOMY_CSV_EXISTING_UPDATE,
       TAXONOMY_CSV_EXISTING_UPDATE_MERGE,
@@ -855,7 +868,7 @@ function taxonomy_csv_form_import($form_state) {
 
   $form['recommended_values_submit'] = array(
     '#type'     => 'submit',
-    '#value'    => t('Default values'),
+    '#value'    => t('Reset to defaults'),
     '#validate' => array('_taxonomy_csv_form_recommended_values'),
   );
 
@@ -1252,7 +1265,7 @@ function taxonomy_csv_form_export($form_state) {
 
   $form['recommended_values_submit'] = array(
     '#type'     => 'submit',
-    '#value'    => t('Default values'),
+    '#value'    => t('Reset to defaults'),
     '#validate' => array('_taxonomy_csv_form_recommended_values'),
   );
 

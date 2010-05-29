@@ -112,12 +112,14 @@ Code / security
  x 642 742 fix: when a file is set, avoid UI bug when first option changes
  x 645 745 change Warning empty line by a simple info except if problem
  o         modularize code to simplify addition of new schemes
+ o         modularize code to simplify integration of Taxonomy Builder API
  x 643 743 create API
  R --- --- fix: make multistep import compatible with one term by line import
  R --- --- allow cancel multistep when import in an existing vocabulary
  - --- --- fix: allow only users with taxonomy rights (useless: roles)
  R --- --- fix: display main form when error occurs in multistep process
  x 643 743 direct read of lines without prepare batch for file import
+ o         fix: created unchanged terms are counted and merged with created ones
 
 Documentation
  o         make it simpler

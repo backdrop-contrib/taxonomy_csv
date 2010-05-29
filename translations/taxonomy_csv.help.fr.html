@@ -364,7 +364,7 @@
   <p>Ce module peut être utilisé comme une API. Vous pouvez utiliser le module complet comme dépendance ou intégrer la version légère taxonomy_csv.line.api.inc directement dans votre module. L'import s'effectue ainsi :</p>
   <div class="codeblock"><code>
     $result = taxonomy_csv_line_import(<br />
-    &nbsp;&nbsp;array(Europe, France, Paris),<br />
+    &nbsp;&nbsp;array("Europe", "France", "Paris"),<br />
     &nbsp;&nbsp;array(<br />
     &nbsp;&nbsp;&nbsp;&nbsp;'import_format' => 'tree_structure',<br />
     &nbsp;&nbsp;&nbsp;&nbsp;'vocabulary_id' => 2,<br />
