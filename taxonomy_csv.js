@@ -9,74 +9,13 @@ if (Drupal.jsEnabled) {
     * @todo To factorize.
     */
     $(document).ready(function() {
-      // Import options.
-      $('#edit-import').addClass('filtered');
-      // Source choice.
-      // Add/remove class to show/hide it.
-      $('#edit-source-choice').change(function(){
-        var methods = new Array('text', 'path', 'url');
-        for(var m in methods) {
-          $('#edit-import').removeClass(methods[m]);
-        }
-        $('#edit-import').addClass(this.value)
-          .animate({opacity:.5}, 1)
-          .animate({opacity:1}, 1)
-      });
-      // Update current display.
-      $('#edit-source-choice').trigger('change');
-
-      // Import/Export CSV format options.
-      $('#edit-csv-format').addClass('filtered');
-      // Export delimiter.
-      // Add/remove class to show/hide it.
-      $('#delimiter').change(function(){
-        var methods = new Array('comma', 'semicolon', 'tabulation', 'space', 'currency_sign', 'custom_delimiter');
-        for(var m in methods) {
-          $('#edit-csv-format').removeClass(methods[m]);
-        }
-        $('#edit-csv-format').addClass(this.value)
-          .animate({opacity:.5}, 1)
-          .animate({opacity:1}, 1)
-      });
-      // Update current display.
-      $('#delimiter').trigger('change');
-
-      // Import/Export CSV enclosure.
-      // Add/remove class to show/hide it.
-      $('#enclosure').change(function(){
-        var methods = new Array('none', 'quotation', 'custom_enclosure');
-        for(var m in methods) {
-          $('#edit-csv-format').removeClass(methods[m]);
-        }
-        $('#edit-csv-format').addClass(this.value)
-          .animate({opacity:.5}, 1)
-          .animate({opacity:1}, 1)
-      });
-      // Update current display.
-      $('#enclosure').trigger('change');
-
-      // Destination choice.
-      $('#edit-destination').addClass('filtered');
-      // Add/remove class to show/hide it.
-      $('#edit-vocabulary-target').change(function(){
-        var methods = new Array('autocreate', 'duplicate', 'existing');
-        for(var m in methods) {
-          $('#edit-destination').removeClass(methods[m]);
-        }
-        $('#edit-destination').addClass(this.value)
-          .animate({opacity:.5}, 1)
-          .animate({opacity:1}, 1)
-      });
-      // Update current display.
-      $('#edit-vocabulary-target').trigger('change');
-
-      // Import options (general, description and specific).
+      // Import options
       // Hide all items defined with the css class filtered.
-      var methods_import = new Array('#edit-existing-items-update-wrapper', '#edit-existing-items-update-merge-wrapper', '#edit-existing-items-update-replace-wrapper', '#edit-existing-items-ignore-wrapper', '#edit-existing-items-ignore-create-wrapper', '#edit-existing-items-ignore-all-wrapper', '#description_alone_terms', '#description_fields_links', '#description_flat', '#description_tree_structure', '#description_polyhierarchy', '#description_parents', '#description_children', '#description_relations', '#description_fields', '#description_descriptions', '#description_weights', '#description_synonyms', '#description_taxonomy_manager', '#help_alone_terms', '#help_fields_links', '#help_flat', '#help_tree_structure', '#help_polyhierarchy', '#help_parents', '#help_children', '#help_relations', '#help_fields', '#help_descriptions', '#help_weights', '#help_synonyms', '#help_taxonomy_manager', '#edit-fields-links', '#edit-relations');
+      var methods_import = new Array('#description_alone_terms', '#description_fields_links', '#description_flat', '#description_tree_structure', '#description_polyhierarchy', '#description_parents', '#description_children', '#description_relations', '#description_fields', '#description_descriptions', '#description_weights', '#description_synonyms', '#description_taxonomy_manager', '#existing_items_alone_terms','#existing_items_fields_links', '#existing_items_flat', '#existing_items_tree_structure', '#existing_items_polyhierarchy', '#existing_items_parents', '#existing_items_children', '#existing_items_relations', '#existing_items_fields', '#existing_items_descriptions', '#existing_items_weights', '#existing_items_synonyms', '#existing_items_taxonomy_manager', '#help_alone_terms', '#help_fields_links', '#help_flat', '#help_tree_structure', '#help_polyhierarchy', '#help_parents', '#help_children', '#help_relations', '#help_fields', '#help_descriptions', '#help_weights', '#help_synonyms', '#help_taxonomy_manager', '#edit-relations', '#edit-fields-links');
       for(var m in methods_import) {
         $(methods_import[m]).addClass('filtered');
       }
-      // Existing terms.
+      // Import format description and existing terms.
       // Add/remove class to show/hide it.
       $('#edit-import-format').change(function(){
         var methods_import_format = new Array('alone_terms', 'fields_links', 'flat', 'tree_structure', 'polyhierarchy', 'parents', 'children', 'relations', 'fields', 'descriptions', 'weights', 'synonyms', 'taxonomy_manager');
@@ -96,9 +35,97 @@ if (Drupal.jsEnabled) {
       // Update current display.
       $('#edit-import-format').trigger('change');
 
+      // Import options.
+      $('#import').addClass('filtered');
+      // Source choice.
+      // Add/remove class to show/hide it.
+      $('#edit-source-choice').change(function(){
+        var methods = new Array('text', 'path', 'url');
+        for(var m in methods) {
+          $('#import').removeClass(methods[m]);
+          $('#edit-utf8-check-wrapper').removeClass(methods[m]);
+        }
+        $('#import').addClass(this.value)
+          .animate({opacity:.5}, 1)
+          .animate({opacity:1}, 1)
+        $('#edit-utf8-check-wrapper').addClass(this.value);
+      });
+      // Update current display.
+      $('#edit-source-choice').trigger('change');
+
+      // Vocabulary hierarchy.
+      // Add/remove class to show/hide it.
+      $('#edit-hierarchy-check').change(function(){
+        if (this.checked) {
+          $('#hierarchy_level').addClass('filtered');
+        }
+        else {
+          $('#hierarchy_level').removeClass('filtered');
+        }
+      });
+      // Update current display.
+      $('#edit-hierarchy-check').trigger('change');
+
+      // Import/Export CSV format options.
+      $('#csv_format').addClass('filtered');
+      // Export delimiter.
+      // Add/remove class to show/hide it.
+      $('#delimiter').change(function(){
+        var methods = new Array('comma', 'semicolon', 'tabulation', 'space', 'currency_sign', 'custom_delimiter');
+        for(var m in methods) {
+          $('#csv_format').removeClass(methods[m]);
+        }
+        $('#csv_format').addClass(this.value)
+          .animate({opacity:.5}, 1)
+          .animate({opacity:1}, 1)
+      });
+      // Update current display.
+      $('#delimiter').trigger('change');
+
+      // Import/Export CSV enclosure.
+      // Add/remove class to show/hide it.
+      $('#enclosure').change(function(){
+        var methods = new Array('none', 'quotation', 'custom_enclosure');
+        for(var m in methods) {
+          $('#csv_format').removeClass(methods[m]);
+        }
+        $('#csv_format').addClass(this.value)
+          .animate({opacity:.5}, 1)
+          .animate({opacity:1}, 1)
+      });
+      // Update current display.
+      $('#enclosure').trigger('change');
+
+      // Destination choice.
+      $('#destination').addClass('filtered');
+      // Add/remove class to show/hide it.
+      $('#edit-vocabulary-target').change(function(){
+        var methods = new Array('autocreate', 'duplicate', 'existing');
+        for(var m in methods) {
+          $('#destination').removeClass(methods[m]);
+        }
+        $('#destination').addClass(this.value)
+          .animate({opacity:.5}, 1)
+          .animate({opacity:1}, 1)
+      });
+      // Update current display.
+      $('#edit-vocabulary-target').trigger('change');
+
+      // Result level.
+      // Add/remove class to show/hide it.
+      $('#edit-result-level').change(function(){
+        var methods = new Array('none', 'warnings', 'notices', 'infos');
+        for(var m in methods) {
+          $('#result_type').removeClass(methods[m]);
+        }
+        $('#result_type').addClass(this.value);
+      });
+      // Update current display.
+      $('#edit-result-level').trigger('change');
+
       // Export options (specific)
       // Hide all items defined with the css class filtered.
-      var methods_export = new Array('#edit-fields-links');
+      var methods_export = new Array('#specific_info', '#edit-fields-links');
       for(var m in methods_export) {
         $(methods_export[m]).addClass('filtered');
       }
@@ -120,63 +147,6 @@ if (Drupal.jsEnabled) {
       });
       // Update current display.
       $('#edit-export-format').trigger('change');
-
-      // Advanced options.
-      // Result display.
-      // Add/remove class to show/hide it.
-      $('#edit-disable-internal-cache').change(function(){
-        if (this.checked) {
-          $('#result_display_options').addClass('filtered');
-          $('#result_display_cache').removeClass('filtered');
-        }
-        else {
-          $('#result_display_options').removeClass('filtered');
-          $('#result_display_cache').addClass('filtered');
-        }
-      });
-      // Update current display.
-      $('#edit-disable-internal-cache').trigger('change');
-
-      // Vocabulary hierarchy.
-      // Add/remove class to show/hide it.
-      $('#edit-disable-hierarchy-check').change(function(){
-        if (this.checked) {
-          $('#hierarchy_level').removeClass('filtered');
-        }
-        else {
-          $('#hierarchy_level').addClass('filtered');
-        }
-      });
-      // Update current display.
-      $('#edit-disable-hierarchy-check').trigger('change');
-
-      // Result level.
-      // Add/remove class to show/hide it.
-      $('#edit-result-level-none').change(function(){
-        if (this.checked) {
-          $('#result_type').addClass('filtered');
-        }
-      });
-      $('#edit-result-level-warnings').change(function(){
-        if (this.checked) {
-          $('#result_type').removeClass('filtered');
-        }
-      });
-      $('#edit-result-level-notices').change(function(){
-        if (this.checked) {
-          $('#result_type').removeClass('filtered');
-        }
-      });
-      $('#edit-result-level-infos').change(function(){
-        if (this.checked) {
-          $('#result_type').removeClass('filtered');
-        }
-      });
-      // Update current display.
-      $('#edit-result-level-none').trigger('change');
-      $('#edit-result-level-warnings').trigger('change');
-      $('#edit-result-level-notices').trigger('change');
-      $('#edit-result-level-infos').trigger('change');
     });
 
   })(jQuery);

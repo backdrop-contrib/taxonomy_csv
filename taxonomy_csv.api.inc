@@ -149,10 +149,9 @@ define('TAXONOMY_CSV_UNCHANGED',   5);
  *     vocabulary_target: 'autocreate' (default), 'duplicate' or 'existing'
  *     vocabulary_id  : vocabulary id to duplicate or to import into
  *     existing_items : see _taxonomy_csv_info_lists('list_import_option')
- *     internal_cache : boolean. use (default) or not internal cache
  *     hierarchy_check: boolean. check (default) or not vocabulary hierarchy
  *     hierarchy_level: if not hierarchy check, set hierarchy level (0, 1 or 2)
- *     line_checks    : boolean. check (default) or not format of lines
+ *     line_check     : boolean. check (default) or not format of lines
  *     utf8_check     : boolean. check (default) or not utf8 format
  *     result_stats   : boolean. Display (default) or not stats
  *     result_terms   : boolean. Display (default) or not list of imported terms
@@ -178,6 +177,13 @@ function taxonomy_csv_vocabulary_import($options) {
     $options['text'] = '';
   }
 
+  // Define internal_cache option, needed if result level isn't only first item.
+  $options['internal_cache'] = ($options['result_stats']
+      || $options['result_terms']
+      || ($options['result_level'] <> 'none')) ?
+    TRUE :
+    FALSE;
+
   // Prepare vocabularies.
   // Use name of file or url as vocabulary name.
   if ($options['source_choice'] == 'path') {
@@ -194,7 +200,7 @@ function taxonomy_csv_vocabulary_import($options) {
   if (!in_array($options['import_format'], array(
       TAXONOMY_CSV_FORMAT_FIELDS_LINKS,
     ))) {
-    // User choose to autocreate or duplicate a vocabulary.
+    // User choose to autocreate or to duplicate a vocabulary.
     switch ($options['vocabulary_target']) {
       case 'autocreate':
         $new_vocabulary = taxonomy_csv_vocabulary_create($name);
@@ -245,9 +251,8 @@ function _taxonomy_csv_vocabulary_import_check_options(&$options) {
       'delimiter'          => ',',
       'enclosure'          => '',
       'vocabulary_target'  => 'autocreate',
-      'internal_cache'     => TRUE,
       'hierarchy_check'    => TRUE,
-      'line_checks'        => TRUE,
+      'line_check'         => TRUE,
       'utf8_check'         => TRUE,
       'result_stats'       => 'result_stats',
       'result_terms'       => 'result_terms',
@@ -670,7 +675,7 @@ function _taxonomy_csv_vocabulary_import_finished($success, $results, $operation
         break;
     }
 
-    if (!$options['line_checks']) {
+    if (!$options['line_check']) {
       drupal_set_message(t('Line checks have been disabled. Some warnings and notices may have not been reported.'), 'warning');
     }
 
@@ -1334,7 +1339,7 @@ function taxonomy_csv_vocabulary_get_id($vocabulary_name) {
  *     import_format : see _taxonomy_csv_info_lists('list_import_format')
  *     vocabulary_id : vocabulary id to import into
  *     existing_items: see _taxonomy_csv_info_lists('list_import_option')
- *     line_checks   : boolean. Tweak to check (default) or not format of lines
+ *     line_check    : boolean. Tweak to check (default) or not format of lines
  *     utf8_check    : boolean. Tweak to check (default) or not utf8 format
  *     // Specific to relations import:
  *     relations_create_subrelations: boolean.
@@ -1366,7 +1371,7 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array()) {
     'msg'  => array(),
   );
 
-  if ($options['line_checks']) {
+  if ($options['line_check']) {
     // 1. Validate and clean line.
     $line = _taxonomy_csv_line_import_clean(
       $line,
@@ -3385,7 +3390,7 @@ function _taxonomy_csv_info_lists($list) {
 }
 
 /**
- * Return formated list of options in order to inform user.
+ * Return formatted list of options in order to inform user.
  */
 function _taxonomy_csv_info_chosen_options($options) {
   // Local file, distant file or text.
