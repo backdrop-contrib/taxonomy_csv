@@ -149,10 +149,9 @@ define('TAXONOMY_CSV_UNCHANGED',   5);
  *     vocabulary_target: 'autocreate' (default), 'duplicate' or 'existing'
  *     vocabulary_id  : vocabulary id to duplicate or to import into
  *     existing_items : see _taxonomy_csv_info_lists('list_import_option')
- *     internal_cache : boolean. use (default) or not internal cache
  *     hierarchy_check: boolean. check (default) or not vocabulary hierarchy
  *     hierarchy_level: if not hierarchy check, set hierarchy level (0, 1 or 2)
- *     line_checks    : boolean. check (default) or not format of lines
+ *     line_check     : boolean. check (default) or not format of lines
  *     utf8_check     : boolean. check (default) or not utf8 format
  *     result_stats   : boolean. Display (default) or not stats
  *     result_terms   : boolean. Display (default) or not list of imported terms
@@ -178,6 +177,13 @@ function taxonomy_csv_vocabulary_import($options) {
     $options['text'] = '';
   }
 
+  // Define internal_cache option, needed if result level isn't only first item.
+  $options['internal_cache'] = ($options['result_stats']
+      || $options['result_terms']
+      || ($options['result_level'] <> 'none')) ?
+    TRUE :
+    FALSE;
+
   // Prepare vocabularies.
   // Use name of file or url as vocabulary name.
   if ($options['source_choice'] == 'path') {
@@ -194,7 +200,7 @@ function taxonomy_csv_vocabulary_import($options) {
   if (!in_array($options['import_format'], array(
       TAXONOMY_CSV_FORMAT_FIELDS_LINKS,
     ))) {
-    // User choose to autocreate or duplicate a vocabulary.
+    // User choose to autocreate or to duplicate a vocabulary.
     switch ($options['vocabulary_target']) {
       case 'autocreate':
         $new_vocabulary = taxonomy_csv_vocabulary_create($name);
@@ -218,7 +224,7 @@ function taxonomy_csv_vocabulary_import($options) {
     'progress_message' => '',
     'error_message'    => t('An error occurred during the import.'),
     'finished'         => '_taxonomy_csv_vocabulary_import_finished',
-    'file'             => dirname(drupal_get_filename('module', 'taxonomy_csv')) .'/taxonomy_csv.api.inc',
+    'file'             => dirname(drupal_get_filename('module', 'taxonomy_csv')) . '/taxonomy_csv.api.inc',
     'progressive'      => TRUE,
     'operations'       => array(
       0 => array('_taxonomy_csv_vocabulary_import_process', array($options)),
@@ -245,9 +251,8 @@ function _taxonomy_csv_vocabulary_import_check_options(&$options) {
       'delimiter'          => ',',
       'enclosure'          => '',
       'vocabulary_target'  => 'autocreate',
-      'internal_cache'     => TRUE,
       'hierarchy_check'    => TRUE,
-      'line_checks'        => TRUE,
+      'line_check'         => TRUE,
       'utf8_check'         => TRUE,
       'result_stats'       => 'result_stats',
       'result_terms'       => 'result_terms',
@@ -619,9 +624,9 @@ function _taxonomy_csv_vocabulary_import_finished($success, $results, $operation
         t('Vocabulary "%vocabulary_name" has been used or created.', array('%vocabulary_name' => $vocabulary->name)):
         _taxonomy_csv_info_vocabulary_destination($vocabulary, $options['vocabulary_target']);
     $message .=  '<br />';
-    $message .= _taxonomy_csv_info_vocabulary_result($vocabulary, $options['vocabulary_target'], $new_hierarchy[$vocabulary_id]) .'<br />';
+    $message .= _taxonomy_csv_info_vocabulary_result($vocabulary, $options['vocabulary_target'], $new_hierarchy[$vocabulary_id]) . '<br />';
     if (!$options['hierarchy_check']) {
-      $message .= t('Hierarchy level has been manually set.') .'<br />';
+      $message .= t('Hierarchy level has been manually set.') . '<br />';
     }
     drupal_set_message($message, 'status');
   }
@@ -629,18 +634,18 @@ function _taxonomy_csv_vocabulary_import_finished($success, $results, $operation
   // Prepare batch result message.
   if (!$success) {
     $message = t('Importation failed');
-    $message .= '<br />'. t('This issue is related to import process or to size import and probably not to content.');
+    $message .= '<br />' . t('This issue is related to import process or to size import and probably not to content.');
     if ($options['current_line'] == $options['total_lines']) {
-      $message .= '<br />'. t('Import process was successful, but the evaluation of hierarchy level has failed, because it is highly memory consumming. You need to change its value with default Drupal functions or set it in Tweaks section of Taxonomy csv.') .' '. t('This problem can be caused too by a high log level. You can reduce it in advanced options.');
+      $message .= '<br />' . t('Import process was successful, but the evaluation of hierarchy level has failed, because it is highly memory consumming. You need to change its value with default Drupal functions or set it in Tweaks section of Taxonomy csv.') . ' ' . t('This problem can be caused too by a high log level. You can reduce it in advanced options.');
     }
     else {
-      $message .= '<br />'. t('Import process was successful until the line !line_count of a total of !total_lines. You can first check your file on this line and check file uploading.', array(
+      $message .= '<br />' . t('Import process was successful until the line !line_count of a total of !total_lines. You can first check your file on this line and check file uploading.', array(
         '!line_count'  => $options['current_line'],
         '!total_lines' => $options['total_lines'],
       ));
     }
-    $message .= '<br />'. t('You can reduce log level or disable internal cache to avoid this error.');
-    $message .= '<br />'. t('You can reinstall module from a fresh release or submit an issue on <a href="!link">Taxonomy CSV import/export module</a>.', array(
+    $message .= '<br />' . t('You can reduce log level or disable internal cache to avoid this error.');
+    $message .= '<br />' . t('You can reinstall module from a fresh release or submit an issue on <a href="!link">Taxonomy CSV import/export module</a>.', array(
       '!link' => url('http://drupal.org/project/issues/taxonomy_csv/'),
     ));
 
@@ -673,7 +678,7 @@ function _taxonomy_csv_vocabulary_import_finished($success, $results, $operation
         break;
     }
 
-    if (!$options['line_checks']) {
+    if (!$options['line_check']) {
       drupal_set_message(t('Line checks have been disabled. Some warnings and notices may have not been reported.'), 'warning');
     }
 
@@ -752,7 +757,7 @@ function taxonomy_csv_vocabulary_export($options) {
     'progress_message' => '',
     'error_message'    => t('An error occurred during the export.'),
     'finished'         => '_taxonomy_csv_vocabulary_export_finished',
-    'file'             => dirname(drupal_get_filename('module', 'taxonomy_csv')) .'/taxonomy_csv.api.inc',
+    'file'             => dirname(drupal_get_filename('module', 'taxonomy_csv')) . '/taxonomy_csv.api.inc',
     'progressive'      => TRUE,
     'operations'       => array(
         0 => array('_taxonomy_csv_vocabulary_export_process', array($options)),
@@ -1054,9 +1059,9 @@ function _taxonomy_csv_vocabulary_export_finished($success, $results, $operation
   $message = t('!term_count / !total_terms terms of chosen vocabularies have been exported to file !file (!filesize KB). Click on link to view it or right click to download it.', array(
     '!term_count'  => $options['current_term'],
     '!total_terms' => $options['total_terms'],
-    '!file'        => l($options['file']->filename, file_create_url('public://'. $options['file']->filename)),
+    '!file'        => l($options['file']->filename, file_create_url('public://' . $options['file']->filename)),
     '!filesize'    => number_format(filesize($options['file']->filepath) / 1000, 1),
-  )) .'<br />';
+  )) . '<br />';
   // Main check of end process.
   $status = (($options['current_term'] == $options['total_terms']) && ($options['current_term'] > 0)) ? 'status' : 'error';
   drupal_set_message($message, $status);
@@ -1065,9 +1070,9 @@ function _taxonomy_csv_vocabulary_export_finished($success, $results, $operation
   $duplicate_count = count($options['duplicate_terms']);
   // If there are duplicate term names, display them.
   if ($duplicate_count) {
-    $message = t('!count duplicate term names have been found in all vocabularies. Error can occur when you will import this list, except if you choose "fields and links" export format or import option "ignore existing items".', array('!count' => $duplicate_count)) .'<br />'.
-    t('List of duplicated term names:') .'<br />"'.
-    implode('", "', array_keys(array_flip($options['duplicate_terms']))) .'"';
+    $message = t('!count duplicate term names have been found in all vocabularies. Error can occur when you will import this list, except if you choose "fields and links" export format or import option "ignore existing items".', array('!count' => $duplicate_count)) . '<br />' .
+    t('List of duplicated term names:') . '<br />"' .
+    implode('", "', array_keys(array_flip($options['duplicate_terms']))) . '"';
     $status = 'warning';
   }
   else {
@@ -1080,18 +1085,18 @@ function _taxonomy_csv_vocabulary_export_finished($success, $results, $operation
   // Prepare batch result message.
   if (!$success) {
     $message = t('Exportation failed');
-    $message .= '<br />'. t('This issue is related to export process and may be caused by a memory overrun of the database.');
+    $message .= '<br />' . t('This issue is related to export process and may be caused by a memory overrun of the database.');
     if ($options['current_term'] == $options['total_terms']) {
-      $message .= '<br />'. t('All terms were exported, but a unknown error appears after the end of process.');
+      $message .= '<br />' . t('All terms were exported, but a unknown error appears after the end of process.');
     }
     else {
-      $message .= '<br />'. t('Export process was successful until the term !term_count (%term_name) of a total of !total_terms.', array(
+      $message .= '<br />' . t('Export process was successful until the term !term_count (%term_name) of a total of !total_terms.', array(
         '!term_count'  => $options['current_term'],
         '%term_name'   => $options['current_name'],
         '!total_terms' => $options['total_terms'],
       ));
     }
-    $message .= '<br />'. t('You can reinstall module from a fresh release or submit an issue on <a href="!link">Taxonomy CSV import/export module</a>.', array(
+    $message .= '<br />' . t('You can reinstall module from a fresh release or submit an issue on <a href="!link">Taxonomy CSV import/export module</a>.', array(
       '!link' => url('http://drupal.org/project/issues/taxonomy_csv/'),
     ));
 
@@ -1374,7 +1379,7 @@ function taxonomy_csv_vocabulary_get_id($vocabulary_name) {
  *     import_format : see _taxonomy_csv_info_lists('list_import_format')
  *     vocabulary_id : vocabulary id to import into
  *     existing_items: see _taxonomy_csv_info_lists('list_import_option')
- *     line_checks   : boolean. Tweak to check (default) or not format of lines
+ *     line_check    : boolean. Tweak to check (default) or not format of lines
  *     utf8_check    : boolean. Tweak to check (default) or not utf8 format
  *     // Specific to relations import:
  *     relations_create_subrelations: boolean.
@@ -1406,7 +1411,7 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array()) {
     'msg'  => array(),
   );
 
-  if ($options['line_checks']) {
+  if ($options['line_check']) {
     // 1. Validate and clean line.
     $line = _taxonomy_csv_line_import_clean(
       $line,
@@ -1414,7 +1419,7 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array()) {
       $line_messages);
     // Check if an error occurs and if line is not empty.
     if (!_taxonomy_csv_message_warning($line_messages)
-      && ((count($line_messages) == 0) || ($line_messages[0] != 696))) {
+        && ((count($line_messages) == 0) || ($line_messages[0] != 696))) {
 
       // 2. Check items of line.
       $line = _taxonomy_csv_line_import_check(
@@ -2452,7 +2457,7 @@ function taxonomy_csv_line_export($term, $options, $duplicate_terms = array()) {
             // If another option, identifiant depends on duplicate names.
             // Term name is a duplicate, so append tid to name.
             elseif (isset($duplicate_terms[$item->tid])) {
-              $ids[$link][] = $item->name .' '. $item->tid;
+              $ids[$link][] = $item->name . ' ' . $item->tid;
             }
             // Not duplicate, so use name or eventually nothing for main term.
             else {
@@ -2674,7 +2679,7 @@ function taxonomy_csv_term_import($term, $existing_items = TAXONOMY_CSV_EXISTING
             $i = trim($existing_term['description']);
             $existing_term['description'] = (($i == '') || ($i == $term['description'])) ?
                 $term['description'] :
-                $i ."\n". $term['description'];
+                $i . "\n" . $term['description'];
           }
           // Weight is always replaced as it is a simple number.
           if (isset($term['weight'])) {
@@ -3351,7 +3356,7 @@ function _taxonomy_csv_info_lists($list) {
         TAXONOMY_CSV_FORMAT_PARENTS          => t('First level parents'),
         TAXONOMY_CSV_FORMAT_CHILDREN         => t('First level children'),
         // Unused in Drupal 7: related terms have been replaced by fields.
-        // TAXONOMY_CSV_FORMAT_RELATIONS      => t('Related terms'),
+        // TAXONOMY_CSV_FORMAT_RELATIONS        => t('Related terms'),
         TAXONOMY_CSV_FORMAT_FIELDS           => t('Full term definitions'),
         TAXONOMY_CSV_FORMAT_DESCRIPTIONS     => t('Term descriptions'),
         TAXONOMY_CSV_FORMAT_WEIGHTS          => t('Term weights'),
@@ -3464,7 +3469,7 @@ function _taxonomy_csv_info_lists($list) {
 }
 
 /**
- * Return formated list of options in order to inform user.
+ * Return formatted list of options in order to inform user.
  */
 function _taxonomy_csv_info_chosen_options($options) {
   // Local file, distant file or text.
@@ -3485,15 +3490,15 @@ function _taxonomy_csv_info_chosen_options($options) {
 
   // Content.
   $list = _taxonomy_csv_info_lists('list_import_format');
-  $message .= '<br />'. t('Source content: "!import_format".', array(
+  $message .= '<br />' . t('Source content: "!import_format".', array(
     '!import_format' => $list[$options['import_format']],
-  )) .'<br />';
+  )) . '<br />';
 
   // Existing items.
   $list = _taxonomy_csv_info_lists('list_import_option');
   $message .= t('Existing terms choice: "!import_items".', array(
     '!import_items' => $list[$options['existing_items']],
-  )) .'<br />';
+  )) . '<br />';
 
   return $message;
 }
@@ -3524,20 +3529,20 @@ function _taxonomy_csv_info_vocabulary_result($vocabulary, $vocabulary_target, $
     $message .= t('Old vocabulary hierarchy level was !level (!level_text).', array(
       '!level'      => $vocabulary->hierarchy,
       '!level_text' => $hierarchy_text[$vocabulary->hierarchy],
-    )) .'<br />';
+    )) . '<br />';
   }
   $message .= t('Vocabulary hierarchy level is !level (!level_text).', array(
     '!level'      => $new_hierarchy,
     '!level_text' => $hierarchy_text[$new_hierarchy],
-  )) .'<br />';
+  )) . '<br />';
 
   // Direct links to edit vocabulary and view terms.
   $message .= t('Properties can be edited at <a href="!vocabulary_edit_link">Administer > Structure > Taxonomy > edit vocabulary</a>.', array(
     '!vocabulary_edit_link' => url("admin/structure/taxonomy/$vocabulary->machine_name/edit"),
-  )) .'<br />';
+  )) . '<br />';
   $message .= t('You can view terms at <a href="!vocabulary_list">Administer > Structure > Taxonomy > list terms</a>.', array(
     '!vocabulary_list' => url("admin/structure/taxonomy/$vocabulary->machine_name"),
-  )) .'<br />';
+  )) . '<br />';
   if (module_exists('taxonomy_manager')) {
     $message .= t('It is recommended to use <a href="!link" title="Taxonomy manager module">Administer > Taxonomy manager > Vocabularies</a> with big taxonomies because a memory error can occur with default Drupal "List terms" menu.', array('!link' => url("admin/structure/taxonomy_manager/voc/$vocabulary->machine_name")));
   }
@@ -3572,10 +3577,10 @@ function _taxonomy_csv_info_terms_stats(&$imported_terms, $result_level = 'full'
 
     $processed_message_text = '';
     foreach ($list_imported_text as $imported => $imported_text) {
-      $processed_message_text .= "$imported_text : ". count($stats_imported_terms[$imported]) .'<br />';
+      $processed_message_text .= "$imported_text : " . count($stats_imported_terms[$imported]) . '<br />';
       if ($stats_imported_terms[$imported]
           && ($result_level == 'full')) {
-        $processed_message_text .= '"'. implode('", "', $stats_imported_terms[$imported]) .'".<br />';
+        $processed_message_text .= '"' . implode('", "', $stats_imported_terms[$imported]) . '".<br />';
       }
     }
     return $processed_message_text;
@@ -3659,10 +3664,10 @@ function _taxonomy_csv_info_result_by_line($messages_set, $result_level = 'full'
 
     foreach ($list_messages as $line_number => $message_codes) {
       $processed_message_level = _taxonomy_csv_message_get_worst_level($message_codes);
-      $processed_message_text  = t('Line #!line_number:', array('!line_number' => $line_number)) .'<br />';
+      $processed_message_text  = t('Line #!line_number:', array('!line_number' => $line_number)) . '<br />';
 
       foreach ($message_codes as $message_code) {
-        $processed_message_text .= _taxonomy_csv_info_result_text($message_code) .'<br />';
+        $processed_message_text .= _taxonomy_csv_info_result_text($message_code) . '<br />';
       }
 
       switch ($processed_message_level) {
@@ -3736,7 +3741,7 @@ function _taxonomy_csv_info_result_by_message($messages_set, $result_level = 'fu
       // Only show line level message with created, updated and unchanged terms.
       if (($message_code != 691) && ($message_code != 692) && ($message_code != 695)) {
         $processed_message_level = _taxonomy_csv_message_get_level($message_code);
-        $processed_message_text  = _taxonomy_csv_info_result_text($message_code) .' '. t('Lines:') .'<br />'. implode(', ', $line_numbers) .'.';
+        $processed_message_text  = _taxonomy_csv_info_result_text($message_code) . ' ' . t('Lines:') . '<br />' . implode(', ', $line_numbers) . '.';
 
       switch ($processed_message_level) {
         case TAXONOMY_CSV_WATCHDOG_ERROR:
@@ -3773,9 +3778,9 @@ function _taxonomy_csv_info_result_text($message_code) {
 
   if (!isset($watchdog_messages)) {
     // These variables are used to simplify strings management and translation.
-    $error   = ' '. t("Import process is stopped.");
-    $warning = ' '. t("This line won't be processed.");
-    $notice  = ' '. t("Line is processed.");
+    $error   = ' ' . t("Import process is stopped.");
+    $warning = ' ' . t("This line won't be processed.");
+    $notice  = ' ' . t("Line is processed.");
 
     $watchdog_messages = array(
       // Format: Level, Type of import, Serial.
@@ -3833,15 +3838,15 @@ function _taxonomy_csv_info_result_text($message_code) {
       501 => t('Too many items. Second and next columns will be ignored, as import choice is to ignore them.'),
       510 => t('Line contains empty items after first item to import. They will be ignored.'),
       511 => t('To change vocabulary of a term is not recommended.'),
-      512 => t("Line contains items matching first column term. A term can't be related to itself and a synonym may be different to it.") .' '. t('Duplicates will be ignored.'),
+      512 => t("Line contains items matching first column term. A term can't be related to itself and a synonym may be different to it.") . ' ' . t('Duplicates will be ignored.'),
       530 => t('Line contains empty items. They will be ignored.'),
-      531 => t('Line contains duplicate items.') .' '. t('Duplicates will be ignored.'),
-      532 => t('Line contains duplicate items.') .' '. t('Duplicates are allowed.'),
-      533 => t("Line contains items matching term name. A term can't be related, parent, child or synonym to itself.") .' '. t('Duplicates will be ignored.'),
-      535 => t('Line contains duplicate synonyms.') .' '. t('Duplicates will be ignored.'),
-      536 => t('Line contains duplicate parents.') .' '. t('Duplicates will be ignored.'),
-      537 => t('Line contains duplicate children.') .' '. t('Duplicates will be ignored.'),
-      538 => t('Line contains duplicate related terms.') .' '. t('Duplicates will be ignored.'),
+      531 => t('Line contains duplicate items.') . ' ' . t('Duplicates will be ignored.'),
+      532 => t('Line contains duplicate items.') . ' ' . t('Duplicates are allowed.'),
+      533 => t("Line contains items matching term name. A term can't be related, parent, child or synonym to itself.") . ' ' . t('Duplicates will be ignored.'),
+      535 => t('Line contains duplicate synonyms.') . ' ' . t('Duplicates will be ignored.'),
+      536 => t('Line contains duplicate parents.') . ' ' . t('Duplicates will be ignored.'),
+      537 => t('Line contains duplicate children.') . ' ' . t('Duplicates will be ignored.'),
+      538 => t('Line contains duplicate related terms.') . ' ' . t('Duplicates will be ignored.'),
       541 => t('Too many items. Third and next columns will be ignored, as a term gets only one description and one weight.'),
       550 => t("No first column, but line can be processed."),
       551 => t('No parent, so it is a root term.'),
@@ -3863,7 +3868,7 @@ function _taxonomy_csv_info_result_text($message_code) {
       605 => t('No error in options.'),
       610 => t('New vocabulary has been created.'),
       611 => t('A vocabulary has been duplicated.'),
-      632 => t('Line contains duplicate items.') .' '. t('Duplicates are allowed.'),
+      632 => t('Line contains duplicate items.') . ' ' . t('Duplicates are allowed.'),
       639 => t('Line contains empty vocabulary for related terms. They will be created in vocabulary of main term.'),
       640 => t('Vocabulary checked.'),
       662 => t('No predicate.'),
@@ -3890,7 +3895,7 @@ function _taxonomy_csv_info_result_text($message_code) {
 
   if (is_int($message_code) && ($message_code >= 0) && ($message_code <= 999)) {
     $message_title = intval($message_code / 100) * 100;
-    $message_title = $watchdog_messages[(isset($watchdog_messages[$message_title])) ? $message_title : 700] .' : ';
+    $message_title = $watchdog_messages[(isset($watchdog_messages[$message_title])) ? $message_title : 700] . ' : ';
 
     return $message_title . $watchdog_messages[(isset($watchdog_messages[$message_code])) ? $message_code : 798];
   }
