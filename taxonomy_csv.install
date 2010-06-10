@@ -1,6 +1,5 @@
 <?php
-// $Id$
-
+2 	// $Id$ 
 /**
  * @file
  * Taxonomy_csv install and uninstall hook.
@@ -13,7 +12,7 @@ function taxonomy_csv_install() {
   drupal_set_message(st('Taxonomy CSV import/export has been installed. You can now import and export taxonomies, structures or lists of terms under <a href="!link_import">Administer > Content management > Taxonomy > CSV import</a> and <a href="!link_export">CSV export</a>. More information is available under <a href="!link_help">Administer > Help > Taxonomy CSV import/export</a>.', array(
     '!link_import' => url('admin/content/taxonomy/csv_import'),
     '!link_export' => url('admin/content/taxonomy/csv_export'),
-    '!link_help' => url('admin/help/taxonomy_csv'),
+    '!link_help'   => url('admin/help/taxonomy_csv'),
   )));
 }
 
@@ -35,11 +34,10 @@ function taxonomy_csv_uninstall() {
       'existing_items',
       'relations_create_subrelations',
       'relations_all_vocabularies',
-      'disable_internal_cache',
-      'disable_hierarchy_check',
+      'hierarchy_check',
       'hierarchy_level',
-      'disable_line_checks',
-      'disable_utf8_check',
+      'line_check',
+      'utf8_check',
       'result_stats',
       'result_terms',
       'result_level',
@@ -80,11 +78,18 @@ function taxonomy_csv_uninstall() {
       'destination_target',
       'destination_vocabulary_id',
       'import_existing_items',
+      // < 6.x.5.0.
+      // < 7.x.5.0.
+      'disable_internal_cache',
+      'disable_hierarchy_check',
+      'disable_line_checks',
+      'disable_utf8_check',
     ) as $option) {
     variable_del("taxonomy_csv_$option");
   }
 
-  drupal_set_message(st('Taxonomy csv import/export: All user preferences have been removed. Thanks for using this module!<br />Your comments are welcomed on <a href="!link">Taxonomy csv import/export</a>.', array(
+  drupal_set_message(st('Taxonomy csv import/export: All user preferences have been removed. Thanks for using this module!<br />
+    Your comments are welcomed on <a href="!link">Taxonomy csv import/export</a>.', array(
     '!link' => url('http://drupal.org/project/taxonomy_csv'),
   )));
 }
