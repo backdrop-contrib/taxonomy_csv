@@ -252,7 +252,7 @@ function taxonomy_csv_form_import($form_state) {
   // Specific warn for Pathauto.
   // See http://drupal.org/node/540916
   // @todo To be rechecked.
-  if (module_exists('pathauto')) {
+  if (module_exists('pathauto') && empty($form_state['post'])) {
     drupal_set_message(t('<strong>Warning</strong>: Pathauto module is running.<br />
     This module slows down taxonomy import process. It is advised to disable it manually in !modules_section. Settings are not lost when you disable it (and not uninstall it). After import process, you can reactivate Pathauto and eventually bulk generate aliases for newly imported terms.', array(
       '!modules_section' => l(t("modules section"), 'admin/build/modules'),
@@ -260,13 +260,15 @@ function taxonomy_csv_form_import($form_state) {
   }
 
   // Advertise as it's a developpement release.
-  drupal_set_message(t('<strong>Warning</strong>: This module is under development.') . '<br .>' .
-  t('* This release works on Drupal 7.x-dev release of the 29 may 2010.<br />
-  * User interface issue: sometime this warning is displayed twice after import.') . '<br />' .
-  t('<strong>Warning</strong>: In Drupal 7, synonyms and related terms have been removed and replaced by fields (see <a href="!link_synonym">Drupal Docs</a> and <a href="!link_related">Drupal Docs</a>). You need to create fields in order to get same functionnality. So, currently, they are not managed. They will be automatically managed in next release.', array(
-      '!link_synonym' => 'http://drupal.org/node/224333#no-synonyms-taxonomy',
-      '!link_related' => 'http://drupal.org/node/224333#related_terms',
-    )) . '<br />', 'warning');
+  if (empty($form_state['post'])) {
+    drupal_set_message(t('<strong>Warning</strong>: This module is under development.') . '<br .>' .
+    t('* This release works on Drupal 7.x-dev release of the 29 may 2010.<br />
+    * User interface issue: sometime this warning is displayed twice after import.') . '<br />' .
+    t('<strong>Warning</strong>: In Drupal 7, synonyms and related terms have been removed and replaced by fields (see <a href="!link_synonym">Drupal Docs</a> and <a href="!link_related">Drupal Docs</a>). You need to create fields in order to get same functionnality. So, currently, they are not managed. They will be automatically managed in next release.', array(
+        '!link_synonym' => 'http://drupal.org/node/224333#no-synonyms-taxonomy',
+        '!link_related' => 'http://drupal.org/node/224333#related_terms',
+      )) . '<br />', 'warning');
+  }
 
   $form['tab'] = array(
     '#type'        => 'vertical_tabs',
@@ -945,8 +947,6 @@ function taxonomy_csv_form_import_submit($form, &$form_state) {
   taxonomy_csv_vocabulary_import($options);
 
   // End of form process. Reinitialize choices.
-  unset($form_state['values']);
-  unset($form_state['storage']);
   $form_state['rebuild'] = TRUE;
 }
 
@@ -1335,8 +1335,6 @@ function taxonomy_csv_form_export_submit($form, &$form_state) {
   taxonomy_csv_vocabulary_export($options);
 
   // End of form process. Reinitialize choices.
-  unset($form_state['values']);
-  unset($form_state['storage']);
   $form_state['rebuild'] = TRUE;
 }
 
