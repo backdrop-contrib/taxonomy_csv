@@ -3038,7 +3038,7 @@ function taxonomy_csv_term_find($name, $vid = NULL, $parent_tid = NULL) {
       $args[':parent'] = $parent_tid;
     }
 
-    $sql .= ' ORDER BY {tid} ASC LIMIT 1';
+    $sql .= ' ORDER BY {t.tid} ASC LIMIT 1';
 
     $result = db_query($sql, $args);
 

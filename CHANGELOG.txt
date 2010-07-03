@@ -8,6 +8,10 @@
 == CHANGELOG ==
   ===========
 
+
+#843526 by iAugur: Fixed field name prefix.
+
+
 Taxonomy csv import/export 7.x-4.11-dev, 2010-05-29
 Taxonomy csv import/export 6.x-4.11, 2010-05-29
 ---------------------------------------------------
