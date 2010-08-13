@@ -1976,4 +1976,3 @@ msgstr ""
 "été supprimées. Merci d'utiliser ce module !<br />Vos commentaires "
 "sont les bienvenus sur <a href=\"!link\">Taxonomy csv "
 "import/export</a>."
-
