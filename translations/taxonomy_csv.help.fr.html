@@ -18,7 +18,7 @@
       margin-top: 8px;
     }
     table {
-      width: 75%;
+      width: 80%;
     }
     table,
     div.codeblock {
@@ -42,7 +42,7 @@
             <a href="#alone_terms">Termes seuls</a>
           </li>
           <li>
-            <a href="#fields_links">Champs et liens des termes</a>
+            <a href="#def_links">Champs et liens des termes</a>
           </li>
           <li>
             <a href="#flat">Termes (vocabulaire plat)</a>
@@ -63,6 +63,9 @@
             <a href="#relations">Termes associés (termes connexes)</a>
           </li>
           <li>
+            <a href="#synonyms">Termes synonymes</a>
+          </li>
+          <li>
             <a href="#fields">Définitions complètes de termes</a>
           </li>
           <li>
@@ -70,9 +73,6 @@
           </li>
           <li>
             <a href="#weights">Poids des termes</a>
-          </li>
-          <li>
-            <a href="#synonyms">Termes synonymes</a>
           </li>
           <li>
             <a href="#taxonomy_manager">Taxonomy manager</a>
@@ -89,13 +89,16 @@
             <a href="#source">Où se trouvent les termes à importer ?</a>
           </li>
           <li>
-            <a href="#destination">Où importer les termes (vocabulaire cible) ?</a>
+            <a href="#file_format">Quel est le format de la source ?</a>
           </li>
           <li>
-            <a href="#import_options">Comment importer les termes ?</a>
+            <a href="#destination">Quel est le vocabulaire de destination ?</a>
           </li>
           <li>
-            <a href="#big_taxonomies">Import de grosses taxinomies</a>
+            <a href="#import_options">Quand un terme existe, que faire avec ?</a>
+          </li>
+          <li>
+            <a href="#info_process">Infos sur le traitement et import de grosses taxinomies</a>
           </li>
         </ol>
       </li>
@@ -108,9 +111,6 @@
       <li>
         <a href="#advanced_options">Paramètres avancés et conseils</a>
         <ol class="toc">
-          <li>
-            <a href="#delimiters_enclosures">Séparateurs et délimiteurs</a>
-          </li>
           <li>
             <a href="#permissions">Permissions</a>
           </li>
@@ -131,7 +131,7 @@
         <li><code>Or</code></li>
         <li><code>Bois</code></li>
       </ul></div>
-  <h4 id="fields_links"><a href="#contents">2. Champs et liens des termes</a></h4>
+  <h4 id="def_links"><a href="#contents">2. Champs et liens des termes</a></h4>
     <p>Cette option permet d'importer la définition complète d'un terme ainsi que ses liens avec les autres termes.</p>
     <p>Le format est : nom du terme, identifiant du terme, identifiant du vocabulaire, description, poids, nombre de synonymes, nombre de parents de premier niveau, nombre d'enfants de premier niveau, nombre de termes associés, liste des synonymes, liste des identifiants des parents de premier niveau, liste des identifiants des enfants de premier niveau, liste des identifiants des termes associés, liste des identifiants des vocabulaires des termes associés.</p>
     <p>Seul le nom doit être défini, les autres valeurs pouvant être vides. Les identifiants ne sont pas les numéros internes des terme ou des vocabulaires, mais des identifiants uniques. Ils peuvent être des noms ou des nombres. Dans la plupart des cas, vous pouvez simplement utiliser les véritables noms. En fait, les identifiants doivent être spécifiques seulement pour les nomùs de termes doublons de manière à identifier chaque élément. De ce fait, pour les doublons, vous pouvez utiliser le nom plus un nombre. L'identifiant du terme principal est nécessaire seulement lorsque le terme est un doublon.</p>
@@ -255,12 +255,17 @@
         <li><code>Baobab, Madagascar, Fantôme</code></li>
       </ul></div>
     Ainsi, &lt; <code>Baobab</code> &gt; renverra à &lt; <code>Madagascar</code> &gt; et à &lt; <code>Fantôme</code> &gt;. Une option permet de créer également les sous-relations, en l'occurrence entre &lt; <code>Madagascar</code> &gt; et &lt; <code>Fantôme</code> &gt; (voir ci-dessous).
+  <h4 id="synonyms"><a href="#contents">12. Termes synonymes</a></h4>
+    <p>La deuxième colonne et les suivantes seront importées comme termes synonymes du terme de la première colonne. Exemple :</p>
+      <div class="codeblock"><ul>
+        <li><code>"Royaume Uni","Grande-Bretagne","Angleterre"</code></li>
+      </ul></div>
   <h4 id="fields"><a href="#contents">9. Définitions complètes de termes</a></h4>
     <p>Cette option permet d'importer des définitions complètes de termes.Le format est : nom, poids, description, liste des synonymes éventuels. Exemple :</p>
       <div class="codeblock"><ul>
         <li><code>Rue, 1, "Une voie urbaine", Avenue, Route</code></li>
       </ul></div>
-    Un autre choix, <a href="#fields_links"><code>Champs et liens des termes</code></a>, permet d'importer non seulement les définitions, mais également les liens.
+    Un autre choix, <a href="#def_links"><code>Champs et liens des termes</code></a>, permet d'importer non seulement les définitions, mais également les liens.
   <h4 id="descriptions"><a href="#contents">10. Descriptions des termes</a></h4>
     <p>La seconde colonne sera importée comme description du terme défini dans la première colonne. Exemple :</p>
       <div class="codeblock"><ul>
@@ -270,11 +275,6 @@
     <p>La seconde colonne sera importée comme poids du terme défini dans la première colonne. Exemple :</p>
       <div class="codeblock"><ul>
         <li><code>Baobab, 3</code></li>
-      </ul></div>
-  <h4 id="synonyms"><a href="#contents">12. Termes synonymes</a></h4>
-    <p>La deuxième colonne et les suivantes seront importées comme termes synonymes du terme de la première colonne. Exemple :</p>
-      <div class="codeblock"><ul>
-        <li><code>"Royaume Uni","Grande-Bretagne","Angleterre"</code></li>
       </ul></div>
   <h4 id="taxonomy_manager"><a href="#contents">13. Taxonomy manager</a></h4>
     <p>Ce format est utilisé par <a href="http://drupal.org/project/taxonomy_manager" title="Module Taxonomy manager">Taxonomy manager</a> pour exporter des vocabulaires. Les colonnes sont : identifiant du vocabulaire, identifiant du terme, nom du terme, description du terme, parent 1 de premier niveau, ..., parent n de premier niveau. Example:</p>
@@ -293,7 +293,29 @@
     <p>Vous pouvez importez les termes à partir d'un fichier ou avec une zone de texte. Sélectionnez simplement votre choix. L'adresse du fichier peut être un chemin local ou une url.</p>
     <p>Les paramètres avancés permettent de choisir le séparateur et le délimiteur de champ.</p>
 
-  <h4 id="destination"><a href="#contents">3. Où importer les termes (vocabulaire cible) ?</a></h4>
+  <h4 id="file_format"><a href="#contents">3. Quel est le format de la source ?</a></h4>
+    <p>L'import doit être formaté au format utf-8, de préférence sans la marque d'ordre des octets.</p>
+    <p>Ce groupe d'options permet de définir les séparateur et délimiteur  spécifiques des champs ainsi qu'une format de langue tel que 'fr_FR.utf8'.</p>
+    <ul>
+      <li>
+        Le séparateur (virgule "<strong><code>,</code></strong>" par défaut, point-virgule "<strong><code>;</code></strong>" ou tabulation) entre les termes peut être choisi dans les paramètres avancés du deuxième groupe d'options. Le séparateur peut également être personnalisé. Il ne peut avoir qu'un seul caractère. Exemple avec le séparateur &lt; <strong><code>¤</code></strong> &gt; :<br />
+        <div class="codeblock"><ul>
+          <li><code>terme 1¤Ce champ contient des virgules, un point-virgule (;), des guillemets (") et une tabulation, mais il est correctement importé.</code></li>
+        </ul></div>
+      </li>
+      <li>
+        Il est conseillé de protéger les termes par des caractères de délimitation tels que les guillemets (<strong><code>"</code></strong>), notamment s'ils contiennent des caractères non-ASCII ou si les éléments importés, en particulier les descriptions, contiennent le séparateur choisi. Exemple:<br />
+        <div class="codeblock"><ul>
+          <li><code>"terme 1","Ce champ contient une virgule, mais il sera correctement importé."</code></li>
+        </ul></div>
+        Vous pouvez choisir un caractère de délimitation personalisé dans les paramètres avancés du deuxième groupe d'options. Il ne peut avoir qu'un seul caractère ou être nul. Les guillemets (<strong><code>"</code></strong>) sont automatiquement pris en compte.
+      </li>
+      <li>
+        Attention : quand vous exportez un vocabulaire, le séparateur et le délimiteur ne doivent pas être utilisés dans les définitions des termes, notamment dans les descriptions. L'export s'arrêtera en cas de problème.
+      </li>
+    </ul>
+
+  <h4 id="destination"><a href="#contents">4. Quel est le vocabulaire de destination ?</a></h4>
     <p>Vous pouvez importer vos termes dans un vocabulaire existant ou en créer un nouveau. Vous pouvez également importer vos termes dans une copie d'un vocabulaire existant.</p>
     <p>Quand vous voulez importer une nouvelle liste dans une taxinomie existante, il est recommandé de procéder en trois étapes de façon à garantir la qualité de l'importation.</p>
     <ul>
@@ -304,7 +326,7 @@
     <p>Si vous voulez seulement créer un nouveau vocabulaire, le premier choix est suffisant, à moins que vous avez plusieurs fichiers pour un vocabulaire.</p>
     <p>Quand le contenu de la source est <code>Définitions complètes de termes et liens</code>, la destination est déterminée par la source. Si la troisième colonne est un identifiant, un nouveau vocabulaire sera créé. S'il s'agit d'un nom, un vocabulaire sera créé s'il n'existe pas. Si elle est vide ou égale à zéro, le vocabulaire sera autocréé, dupliqué ou utilisé selon l'option. Il en est de même pour les termes associés.</p>
 
-  <h4 id="import_options"><a href="#contents">4. Comment importer les termes ?</a></h4>
+  <h4 id="import_options"><a href="#contents">5. Quand un terme existe, que faire avec ?</a></h4>
     <p>La destination peut être configurée avec le second groupe d'options. Vous pouvez définir ce que deviendront les termes existants. Jusqu'à quatre choix sont possibles selon le contenu de la source :</p>
     <ul>
       <li>
@@ -337,13 +359,14 @@
       </li>
     </ul>
 
-  <h4 id="big_taxonomies"><a href="#contents">5. Import de grosses taxinomies</a></h4>
+  <h4 id="info_process"><a href="#contents">6. Infos sur le traitement et import de grosses taxinomies</a></h4>
+    <p>Ce groupe d'options permet de choisir les informations affichés à la fin du traitement.</p>
     <p>Pour importer une taxinomie de taille importante (à partir de 1000 ou 10000 lignes selon le serveur) lorsqu'il n'est pas possible de modifier les temps et mémoire maximum autorisés par le serveur, il est d'abord conseillé de désactiver certains modules utilisant les taxinomies tels que "pathauto" avant l'importation. Les paramètres ne sont pas perdus lorsqu'un module est désactivé - et non désinstallé -.<br />
-    Ensuite, vous pouvez utiliser l'importation par fichier. Vous pouvez également réduire le niveau de détail du journal. Enfin, vous pouvez utiliser les paramètres avancés suivants :</p>
+    Ensuite, vous pouvez utiliser les paramètres avancés suivants (dans les groupes d'options).</p>
     <ul>
       <li>
-        <h5>Désactiver le cache interne</h5>
-        <p>Désactiver le cache interne permet d'importer des vocabulaires de n'importe quelle taille. Le cache interne sert à accélérer l'importation, à réduire les appels à la base sql et à être informé sur le traitement. Lorsqu'il est désactivé, aucune information sur le résultat n'est affichée, sauf l'éventuelle première erreur.</p>
+        <h5>Réduire le niveau d'informations</h5>
+        <p>Les stats, termes, remarques et avertissements affichés à la fin du traitement consomment de la mémoire. Vous pouvez donc les réduire ou les désactiver.</p>
       </li>
       <li>
         <h5>Indiquer manuellement le niveau hiérarchique du vocabulaire</h5>
@@ -361,57 +384,40 @@
   <p>Choisissez simplement ce que vous voulez exporter (cf. <a href='#formats'>formats</a>) et comment exporter. Certains formats ne sont pas disponibles.</p>
 
 <h3 id="import_api"><a href="#contents">4. Taxonomy csv import API</a></h3>
-  <p>Ce module peut être utilisé comme une API. Vous pouvez utiliser le module complet comme dépendance ou intégrer la version légère taxonomy_csv.line.api.inc directement dans votre module. L'import s'effectue ainsi :</p>
+  <p>Ce module peut être utilisé comme une API. Vous pouvez utiliser le module complet comme dépendance ou directement dans votre module. L'import s'effectue ainsi :</p>
+  <div class="codeblock"><code>
+    $csv_lines = '"Europe", "France", "Paris"';<br />
+    $csv_lines .=  "\n". ',, "Lyon"';<br />
+    $csv_lines .=  "\n". ',"Royaume-Uni", "Lyon"';<br />
+    $csv_lines .=  "\n". ',"Portugal", "Lisbonne"';<br />
+    $result = taxonomy_csv_import(<br />
+    &nbsp;&nbsp;array(<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;'text'           => $csv_lines,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;'import_format'  => 'tree_structure',<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;'existing_items' => 'update_replace',<br />
+    ));<br />
+  </code></div>
+  <p>Ou comme cela (import au niveau d'une ligne) :</p>
   <div class="codeblock"><code>
     $result = taxonomy_csv_line_import(<br />
-      array("Europe", "France", "Paris"),<br />
-      array(<br />
-        'import_format' => 'tree_structure',<br />
-        'vocabulary_id' => 2,<br />
-        'existing_items' => 'update_replace',<br />
+    &nbsp;&nbsp;array("Europe", "France", "Paris"),<br />
+    &nbsp;&nbsp;array(<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;'import_format' => 'tree_structure',<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;'vocabulary_id' => 2,<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;'existing_items' => 'update_replace',<br />
     ));<br />
   </code></div>
   <p>Les formats d'importation sont présentés dans les commentaires et <a href='#formats'>ci-dessus</a>. Certains peuvent être indisponibles.</p>
-  <p>La version complète de l'API se trouve dans le module. La version allégée se trouve dans la <a href="http://drupalcode.org/viewvc/drupal/contributions/modules/taxonomy_csv/taxonomy_csv.line.api.inc?revision=2.4&amp;view=co" title="taxonomy_csv.line.api.inc">branche HEAD</a> du dépôt cvs.</p>
+  <p>Des infos complémentaires sont disponibles dans <a href="http://drupalcode.org/viewvc/drupal/contributions/modules/taxonomy_csv/TECHINFO.txt?view=co">TECHINFO.txt</a>.</p>
 
 <h3 id="advanced_options"><a href="#contents">5. Paramètres avancés et conseils</a></h3>
-  <h4 id="delimiters_enclosures"><a href="#contents">1. Séparateurs et délimiteurs</a></h4>
+  <h4 id="permissions"><a href="#contents">1. Permissions</a></h4>
+    <p>Pour importer des termes, l'utilisateur doit avoir les permissions générales de <a href="?q=admin/user/permissions#module-taxonomy" title="configure taxonomy permissions">taxinomies (Drupal 6)</a> ou <a href="?q=admin/people/permissions#module-taxonomy" title="configure taxonomy permissions">taxinomies (Drupal 7)</a>. Ces droits d'accès sont souvent associés aux permissions pour accéder aux pages d'administration.</p>
+
+  <h4 id="other_hints"><a href="#contents">2. Autres conseils</a></h4>
     <ul>
       <li>
-        Le séparateur (virgule "<strong><code>,</code></strong>" par défaut, point-virgule "<strong><code>;</code></strong>" ou tabulation) entre les termes peut être choisi dans les paramètres avancés du deuxième groupe d'options. Le séparateur peut également être personnalisé. Il ne peut avoir qu'un seul caractère. Exemple avec le séparateur &lt; <strong><code>¤</code></strong> &gt; :<br />
-        <div class="codeblock"><ul>
-          <li><code>terme 1¤Ce champ contient des virgules, un point-virgule (;), des guillemets (") et une tabulation, mais il est correctement importé.</code></li>
-        </ul></div>
-      </li>
-      <li>
-        Il est conseillé de protéger les termes par des caractères de délimitation tels que les guillemets (<strong><code>"</code></strong>), notamment s'ils contiennent des caractères non-ASCII ou si les éléments importés, en particulier les descriptions, contiennent le séparateur choisi. Exemple:<br />
-        <div class="codeblock"><ul>
-          <li><code>"terme 1","Ce champ contient une virgule, mais il sera correctement importé."</code></li>
-        </ul></div>
-        Vous pouvez choisir un caractère de délimitation personalisé dans les paramètres avancés du deuxième groupe d'options. Il ne peut avoir qu'un seul caractère ou être nul. Les guillemets (<strong><code>"</code></strong>) sont automatiquement pris en compte.
-      </li>
-      <li>
-        Attention : quand vous exportez un vocabulaire, le séparateur et le délimiteur ne doivent pas être utilisés dans les définitions des termes, notamment dans les descriptions. L'export s'arrêtera en cas de problème.
-      </li>
-    </ul>
-  <h4 id="permissions"><a href="#contents">2. Permissions</a></h4>
-    <p>Pour importer des termes, l'utilisateur doit avoir le <a href="?q=admin/user/permissions#module-taxonomy_csv" title="configurer les permissions de taxonomy_csv">droit d'accès</a> suivant :</p>
-    <ul>
-      <li>Module taxonomy_csv / gérer les taxinomies par csv.</li>
-    </ul>
-    <p>Pour exporter des termes, l'utilisateur doit avoir le <a href="?q=admin/user/permissions#module-taxonomy_csv" title="configurer les permissions de taxonomy_csv">droit d'accès</a> suivant :</p>
-    <ul>
-      <li>Module taxonomy_csv / exporter les taxinomies par csv.</li>
-    </ul>
-    <p>Ces droits d'accès sont souvent associés à :</p>
-    <ul>
-      <li>Module system / accéder aux pages d'administration ;</li>
-      <li>Module taxonomy / administrer la classification ;</li>
-    </ul>
-  <h4 id="other_hints"><a href="#contents">3. Autres conseils</a></h4>
-    <ul>
-      <li>
-        Il est conseillé d'utiliser la zone de texte ou un fichier encodé au format utf8 pour éviter les problèmes avec les termes non-ASCII. Si votre serveur ne supporte pas la conversion en utf8, une option permet de la désactiver dans le dernier groupe d'options.
+        Il est conseillé d'utiliser un fichier encodé au format utf8 pour éviter les problèmes avec les termes non-ASCII.
       </li>
       <li>
         Si vous voulez importer à la fois des termes enfants, des descriptions, des poids, des termes synonymes et connexes et une structure hiérarchique, vous devez commencer par le fichier contenant la structure hiérarchique des parents et des enfants. Ainsi, vous devez d'abord importer le fichier des termes enfants en choisissant l'option <em>Vocabulaire plat</em>, <em>Structure</em>, <em>Parents</em> ou <em>Enfants</em>. Ensuite, vous pouvez importer les autres fichiers en choisissant l'option adéquate et l'une ou l'autre option <em>Mettre à jour...</em>

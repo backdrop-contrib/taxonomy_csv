@@ -10,6 +10,9 @@
  * Implements hook_install().
  */
 function taxonomy_csv_install() {
+  // Make uploads easy for csv files.
+  variable_set('upload_extensions_default', variable_get('upload_extensions_default', '') . ' csv')
+
   drupal_set_message(st('Taxonomy CSV import/export has been installed. You can now import and export taxonomies, structures or lists of terms under <a href="!link_import">Administer > Structure > Taxonomy > CSV import</a> and <a href="!link_export">CSV export</a>. More information is available under <a href="!link_help">Administer > Help > Taxonomy CSV import/export</a>.', array(
     '!link_import' => url('admin/structure/taxonomy/csv_import'),
     '!link_export' => url('admin/structure/taxonomy/csv_export'),
@@ -26,19 +29,20 @@ function taxonomy_csv_uninstall() {
       // Import variables.
       'import_format',
       'source_choice',
+      'check_hierarchy',
+      'set_hierarchy',
       'import_delimiter',
       'import_delimiter_custom',
       'import_enclosure',
       'import_enclosure_custom',
+      'check_line',
+      'check_utf8',
+      'locale_custom',
       'vocabulary_target',
       'vocabulary_id',
       'existing_items',
       'relations_create_subrelations',
       'relations_all_vocabularies',
-      'hierarchy_check',
-      'hierarchy_level',
-      'line_check',
-      'utf8_check',
       'result_stats',
       'result_terms',
       'result_level',
@@ -51,8 +55,9 @@ function taxonomy_csv_uninstall() {
       'export_enclosure_custom',
       'export_line_ending',
       'export_order',
-      'fields_links_terms_ids',
-      'fields_links_vocabularies_ids',
+      'result_duplicates',
+      'def_links_terms_ids',
+      'def_links_vocabularies_ids',
 
       // Remove variables from previous releases.
       // < 6.x.4.0.
@@ -85,6 +90,8 @@ function taxonomy_csv_uninstall() {
       'disable_hierarchy_check',
       'disable_line_checks',
       'disable_utf8_check',
+      'fields_links_terms_ids',
+      'fields_links_vocabularies_ids',
     ) as $option) {
     variable_del("taxonomy_csv_$option");
   }

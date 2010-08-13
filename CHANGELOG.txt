@@ -9,12 +9,28 @@
   ===========
 
 
-#843526 by iAugur: Fixed field name prefix.
-
-
-Taxonomy csv import/export 7.x-4.11-dev, 2010-05-29
-Taxonomy csv import/export 6.x-4.11, 2010-05-29
+Taxonomy csv import/export 7.x-5.0-beta, 2010-08-13
 ---------------------------------------------------
+By Daniel Berthereau: Changed cvs HEAD from 6.x to 7.x release.
+By Daniel Berthereau: Merged all taxonomy-csv 7.x branches except 7.x-1.
+By Daniel Berthereau: Modularized and simplified code and reintegrated line api.
+By Daniel Berthereau: Use of new features of Drupal 7 (UI and Field).
+By Daniel Berthereau: Implemented synonyms and related terms in 7.x release.
+By Daniel Berthereau: Cleaned structure of user interface.
+By Daniel Berthereau: Improved speed of tree and polyhierarchical import.
+By Daniel Berthereau: Implemented quick import mode: no check of existing terms.
+By Daniel Berthereau: Set hierarchy check disabled by default in user interface.
+By Daniel Berthereau: Removed special permissions and use 'administer taxonomy'.
+By Daniel Berthereau: Removed internal cache and use only core taxonomy ones.
+By Daniel Berthereau: Removed utf8 conversion.
+#872366 by vipzhicheng: Better support of non-Ascii characters.
+#843526 by iAugur: Fixed field name prefix.
+#686328 by Alexander N: Fixed double display of PathAuto warning.
+
+
+Taxonomy csv import/export 7.x-4.11, 2010-05-29
+Taxonomy csv import/export 6.x-4.11, 2010-05-29
+-----------------------------------------------
 By Daniel Berthereau: Fixed and updated release to prepare Drupal 7 release.
 By Daniel Berthereau: Small changed 6.x release to keep it close to the 7.x one.
 By Daniel Berthereau: Added check of maximum length of names to 255 characters.
@@ -238,4 +254,3 @@ taxonomy_csv 5.x-1.x-dev, 2007-10-21
 taxonomy_csv 4.7.x-1.x-dev, 2007-10-21
 --------------------------------------
 By naquah: Use at your own risk!
-
