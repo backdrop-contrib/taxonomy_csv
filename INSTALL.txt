@@ -37,9 +37,7 @@
 
 -- CONFIGURATION --
   ---------------
-* Go to Administer > User management > Roles, then check depending on user:
-  - "administer taxonomy by csv"
-  - "export taxonomy by csv"
+* User need access rights to Drupal Taxonomy to use Taxonomy csv import/export.
 
 
 -- USAGE --

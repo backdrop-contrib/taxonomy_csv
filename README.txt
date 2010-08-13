@@ -65,6 +65,8 @@ See online issues:
 
 See Advanced help in Help > Taxonomy CSV import/export.
 
+See technical infos in TECHINFO.txt.
+
 
 -- CONTACT --
   ---------
