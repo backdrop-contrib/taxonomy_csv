@@ -12,20 +12,20 @@
  * @param $line
  *   Array which contains items of a cleaned and checked csv line.
  * @param $options
- *   Array of import options:
- *     import_format  : see _taxonomy_csv_values('list_import_format')
- *     vocabulary_id  : vocabulary id to import into
- *     existing_items : see _taxonomy_csv_values('list_import_option')
- *     // Specific to relations import:
- *     relations_create_subrelations: boolean.
- *     relations_all_vocabularies   : boolean.
+ *   An associative array of import options:
+ *   - import_format  : see _taxonomy_csv_values('list_import_format')
+ *   - vocabulary_id  : vocabulary id to import into
+ *   - existing_items : see _taxonomy_csv_values('list_import_option')
+ *   // Specific to relations import:
+ *   - relations_create_subrelations: boolean.
+ *   - relations_all_vocabularies   : boolean.
  * @param $previous_items
- *   Optional. Cleaned and checked previous imported line names and tids array.
+ *   (Optional) Cleaned and checked previous imported line names and tids array.
  *   Needed with some contents as one term array structure or Taxonomy manager.
  *   Specificities:
- *     taxonomy_manager:
+ *   - taxonomy_manager:
  *       tid array is indexed with old tids.
- *     def_links:
+ *   - def_links:
  *       'name' and 'tid' arrays contain sub-arrays 'vocabulary' and 'term' with
  *       imported identifiant as key and name or tid/vid as value in order to
  *       allow duplicate names import and use of number identifiants.
@@ -229,10 +229,10 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array()) {
         }
         // Import main term.
         $current_result = taxonomy_csv_term_import($term, $options['existing_items']);
-        // Remember only if an identifiant is set.
-        if ($line[1] != '') {
-          $result['name']['term'][$line[1]] = $current_result['name'];
-          $result['tid']['term'][$line[1]]  = $current_result['tid'];
+        // Save with name if identifiant was not set (else, it's already saved).
+        if ($line[1] == '') {
+          $result['name']['term'][$line[0]] = $current_result['name'];
+          $result['tid']['term'][$line[0]]  = $current_result['tid'];
         }
         $result['msg'] = array_merge($result['msg'], $current_result['msg']);
         if (_taxonomy_csv_worst_message($current_result['msg']) < TAXONOMY_CSV_PROCESS_NOTICE) {
@@ -240,7 +240,7 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array()) {
         }
 
         // 8. Import each child with main term as parent and check result.
-        $parent_tid = $current_result->tid;
+        $parent_tid = $current_result['tid'];
         $tids = array();
         foreach ($children_names as $key => $id) {
           // No check because parent is added even if term is already imported.
@@ -542,23 +542,23 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array()) {
  *
  * @param $term
  *   A term object to import. Term contains:
- *     'name'        => term name string,
+ *   - 'name'        => term name string,
  *   and eventually, matching options:
- *     'tid'         => term id,
- *     'vid'         => the vocabulary id where to import,
- *     'description' => description string,
- *     'weight'      => weight integer,
- *     'parents'     => array of first level parent tids,
+ *   - 'tid'         => term id,
+ *   - 'vid'         => the vocabulary id where to import,
+ *   - 'description' => description string,
+ *   - 'weight'      => weight integer,
+ *   - 'parents'     => array of first level parent tids,
  *   // Specific thesaurus fields.
- *     'synonyms'    => array of synonyms terms names strings,
- *     'relations'   => array of related tids,
+ *   - 'synonyms'    => array of synonyms terms names strings,
+ *   - 'relations'   => array of related tids,
  * @param $existing_items
- *   Optional. Type of import on existing terms. Default to ignore and create.
+ *   (Optional) Type of import on existing terms. Default to ignore and create.
  * @param $all_vocabularies
- *   Optional. Boolean. Search in all vocabularies or only in $term->vid
+ *   (Optional) Boolean. Search in all vocabularies or only in $term->vid
  *   vocabulary (default), which need to be set. Used with relations import.
  * @param $parent_tid
- *   Optional. The direct parent term id where to restrict search.
+ *   (Optional) The direct parent term id where to restrict search.
  *   Used for structure import. Default to NULL (no parent restriction).
  *
  * @return array
@@ -645,7 +645,7 @@ function taxonomy_csv_term_import($term, $existing_items = TAXONOMY_CSV_EXISTING
 
     // Save regularly formatted term.
     // Return either SAVED_NEW, SAVED_UPDATED or FALSE (no change).
-    $result = taxonomy_term_save(_taxonomy_csv_term_format_regular($term));
+    $result = _taxonomy_csv_term_save($term);
 
     $messages[] = ($result == SAVED_NEW) ? 691 : 692; // Saved or updated.
   }

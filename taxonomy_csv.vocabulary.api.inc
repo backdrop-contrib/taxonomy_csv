@@ -18,10 +18,10 @@
  * @param $name
  *   Name of vocabulary. If vocabulary exists, it's updated, else it's created.
  * @param $synonym_field
- *   Optional. Array of field options. If FALSE, don't create synonym field.
+ *   (Optional) Array of field options. If FALSE, don't create synonym field.
  *   Warning: this module manages synonyms only if name is 'taxonomy_synonym'.
  * @param $relation_field
- *   Optional. Array of field options. If FALSE, don't create relation field.
+ *   (Optional) Array of field options. If FALSE, don't create relation field.
  *   Warning: this module manages relations only if name is 'taxonomy_relation'.
  *
  * @return
@@ -77,7 +77,7 @@ function taxonomy_csv_thesaurus_create($name = '', $synonym_field = array(), $re
  * Creates vocabulary by its name and returns vocabulary object.
  *
  * @param $name
- *   Optional. Name of vocabulary to create.
+ *   (Optional) Name of vocabulary to create.
  *
  * @return
  *   Created vocabulary object.
@@ -151,14 +151,14 @@ function taxonomy_csv_vocabulary_duplicate($vocabulary_id) {
       // Check needed when vocabulary allows multiple parents.
       if (!isset($duplicated_terms[$original_term->tid])) {
         // @todo Add other non term reference fields (text...).
-        $duplicated_terms[$original_term->tid] = array(
+        $duplicated_terms[$original_term->tid] = (object) array(
           'vid'         => $duplicated_vocabulary->vid,
           'name'        => $original_term->name,
           'description' => $original_term->description,
           'format'      => $original_term->format,
           'weight'      => $original_term->weight,
         );
-        taxonomy_term_save($duplicated_terms[$original_term->tid]);
+        $result = taxonomy_term_save($duplicated_terms[$original_term->tid]);
       }
     }
 
@@ -167,9 +167,9 @@ function taxonomy_csv_vocabulary_duplicate($vocabulary_id) {
       $original_parents = taxonomy_get_parents($original_tid);
       if (count($original_parents) > 0) {
         foreach ($original_parents as $original_parent_term_id => $original_parent_term) {
-          $duplicated_terms[$original_tid]['parent'][] = $duplicated_terms[$original_parent_term_id]['tid'];
+          $duplicated_terms[$original_tid]->parent[] = $duplicated_terms[$original_parent_term_id]->tid;
         }
-        taxonomy_term_save($duplicated_terms[$original_tid]);
+        $result = taxonomy_term_save($duplicated_terms[$original_tid]);
       }
     }
 
@@ -178,9 +178,8 @@ function taxonomy_csv_vocabulary_duplicate($vocabulary_id) {
 
     return $duplicated_vocabulary;
   }
-  else {
-    return taxonomy_csv_vocabulary_create();
-  }
+
+  return taxonomy_csv_vocabulary_create();
 }
 
 /**
@@ -194,11 +193,8 @@ function _taxonomy_csv_vocabulary_name_create($name = '') {
     drupal_substr($name, 0, 250);
 
   // Invent a unused vocabulary name.
-  if (!taxonomy_csv_vocabulary_name_check($name)
-      && !taxonomy_csv_vocabulary_machine_name_check(taxonomy_csv_vocabulary_machine_name_create($name))) {
-  }
-  // Else serialize name.
-  else {
+  if (taxonomy_csv_vocabulary_name_check($name)
+      || taxonomy_csv_vocabulary_machine_name_check(taxonomy_csv_vocabulary_machine_name_create($name))) {
     for (
       $i = 2;
       (taxonomy_csv_vocabulary_name_check("$name $i"))
@@ -255,6 +251,40 @@ function taxonomy_csv_vocabulary_get_id($name) {
  */
 function taxonomy_csv_vocabulary_load_name($name) {
   return reset(taxonomy_vocabulary_load_multiple(NULL, array('name' => $name)));
+}
+
+/**
+ * Check and update hierarchy flag of a given vocabulary.
+ *
+ * Drupal hierarchy check function bugs with vocabularies without hierarchy.
+ *
+ * @param $vocabulary
+ *   The vocabulary object to check and to update.
+ * @param $changed_term
+ *   (Optional) Useless. Kept for compatibility with taxonomy D7 function.
+ * @return
+ *   Updated hierarchy level.
+ */
+function _taxonomy_csv_check_vocabulary_hierarchy($vocabulary, $changed_term = '') {
+  $tree = taxonomy_get_tree($vocabulary->vid);
+  $hierarchy = 0;
+  foreach ($tree as $term) {
+    // Check this term's parent count.
+    if (count($term->parents) > 1) {
+      $hierarchy = 2;
+      break;
+    }
+    // taxonomy.module l. 464 can't detect level 0 with '0 !== array_shift'.
+    elseif (count($term->parents) == 1 && 0 != array_shift($term->parents)) {
+      $hierarchy = 1;
+    }
+  }
+  if ($hierarchy != $vocabulary->hierarchy) {
+    $vocabulary->hierarchy = $hierarchy;
+    taxonomy_vocabulary_save($vocabulary);
+  }
+
+  return $hierarchy;
 }
 
 /**

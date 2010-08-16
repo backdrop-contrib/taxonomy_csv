@@ -25,34 +25,34 @@
  * If not used in a form, don't forget to use batch_process().
  *
  * @param $options
- *   Array of options:
- *     file           : object file if file is already uploaded
- *     text           : csv text to import
- *     url            : url to distant or local csv file
- *     path           : path to local csv file
- *     import_format  : see _taxonomy_csv_values (default: 'alone_terms')
- *     delimiter      : 1 character csv delimiter (default: ',')
- *     enclosure      : 0 or 1 character csv enclosure (default: none or '"')
- *     vocabulary_target: 'autocreate' (default), 'duplicate' or 'existing'
- *     vocabulary_id  : vocabulary id to duplicate or to import into
- *     existing_items : see _taxonomy_csv_values (default: 'update')
- *     check_line     : boolean. check or not (default) format of lines
- *     check_utf8     : boolean. check or not (default) utf8 format
- *     locale_custom  : string. specific locale of imported file
- *     check_hierarchy: boolean. check (default) or not vocabulary hierarchy
- *     set_hierarchy  : if hierarchy isn't checked, set it (0, 1 or 2 (default))
- *     // Specific to relations import:
- *     relations_create_subrelations: boolean.
- *     relations_all_vocabularies   : boolean.
- *     // Level of result process infos.
- *     check_options  : boolean. check or not (default) this array of options
- *     result_display : boolean. display or not (default). Only used with UI.
- *     result_stats   : boolean. display or not (default) stats
- *     result_terms   : boolean. display or not (default) list of imported terms
- *     result_level   : log: 'first' (default), 'warnings', 'notices' or 'infos'
- *     result_type    : display log 'by_message' (default) or 'by_line'
+ *   An associative array of options:
+ *   - file           : object file if file is already uploaded
+ *   - text           : csv text to import
+ *   - url            : url to distant or local csv file
+ *   - path           : path to local csv file
+ *   - import_format  : see _taxonomy_csv_values (default: 'alone_terms')
+ *   - delimiter      : 1 character csv delimiter (default: ',')
+ *   - enclosure      : 0 or 1 character csv enclosure (default: none or '"')
+ *   - check_line     : boolean. check or not (default) format of lines
+ *   - check_utf8     : boolean. check or not (default) utf8 format
+ *   - locale_custom  : string. specific locale of imported file
+ *   - vocabulary_target: 'autocreate' (default), 'duplicate' or 'existing'
+ *   - vocabulary_id  : vocabulary id to duplicate or to import into
+ *   - check_hierarchy: boolean. check (default) or not vocabulary hierarchy
+ *   - set_hierarchy  : if hierarchy isn't checked, set it (0, 1 or 2 (default))
+ *   - existing_items : see _taxonomy_csv_values (default: 'update')
+ *   // Specific to relations import:
+ *   - relations_create_subrelations: boolean.
+ *   - relations_all_vocabularies   : boolean.
+ *   // Level of result process infos.
+ *   - check_options  : boolean. check or not (default) this array of options
+ *   - result_display : boolean. display or not (default). Only used with UI.
+ *   - result_stats   : boolean. display or not (default) stats
+ *   - result_terms   : boolean. display or not (default) list of imported terms
+ *   - result_level   : log: 'first' (default), 'warnings', 'notices' or 'infos'
+ *   - result_type    : display log 'by_message' (default) or 'by_line'
  *   Only one option is required: file or text or url or path. Other options
- *   have default values.
+ *   have default values. Warning: default values are different with UI.
  *
  * @return
  *   Array of errors or nothing (need to execute batch process; result is logged
@@ -123,7 +123,7 @@ function _taxonomy_csv_import_input_preload(&$options) {
   // Path import. With UI, path is already uploaded as a file.
   elseif (isset($options['path']) && $options['path'] != '') {
     // Load source local file.
-    $options['file'] = file_save_upload('path');
+    $options['file'] = file_save_upload($options['path']);
     // fopen and fseek need a real path.
     if ($options['file']) {
       $options['file']->filepath = drupal_realpath($options['file']->uri);
@@ -339,7 +339,15 @@ function _taxonomy_csv_vocabulary_import_process($options, &$context) {
     // Remember only wanted messages.
     if (($options['result_stats'] || $options['result_terms'])
         && $result['tid']) {
-      $context['results'][0]['imported_terms'][$line_number] = $result['tid'];
+      // Some formats use result to save other infos.
+      if (($options['import_format'] == TAXONOMY_CSV_FORMAT_DEFINITION_LINKS)
+          && isset($result['tid']['term'])) {
+        // Def_links saved all terms each times.
+        $context['results'][0]['imported_terms'][0] = array_values($result['tid']['term']);
+      }
+      else {
+        $context['results'][0]['imported_terms'][$line_number] = $result['tid'];
+      }
     }
     if ($options['result_level'] != 'first') {
       $list_messages = array();
@@ -377,20 +385,20 @@ function _taxonomy_csv_vocabulary_import_process($options, &$context) {
     ));
 
     // Check worst message of imported lines and update progress.
-    if (($worst_message >= TAXONOMY_CSV_PROCESS_WARNING)
-        && ($line_number < $context['sandbox']['max'])) {
-      // Count should be <= 0.99 to avoid to stop batch process before end.
-      $context['finished'] = round($line_number / $context['sandbox']['max'], 2) - 0.01;
+    if ($worst_message >= TAXONOMY_CSV_PROCESS_WARNING) {
+      // Count should be <= 0.99 to avoid batch stop before end (Drupal 7 bug).
+      $context['finished'] = floor($line_number / $context['sandbox']['max'] * 100) / 100;
     }
     else {
       $context['finished'] = 1;
     }
   }
+
   // With some formats, remember vocabularies to be checked.
   if (in_array($options['import_format'], array(
       TAXONOMY_CSV_FORMAT_DEFINITION_LINKS,
     ))) {
-    $context['results'][0]['last_items'] = $previous_items;
+    $context['results'][0]['vocabularies'] = $previous_items['tid']['vocabulary'];
   }
 }
 
@@ -450,8 +458,9 @@ function _taxonomy_csv_vocabulary_import_finished($success, $results, $operation
   }
 
   // Set result message in watchdog and eventually in user interface.
+  // Use of a $message variable is unrecommended, but simpler and working.
+  // See http://drupal.org/node/323101
   watchdog('taxonomy_csv', $message, NULL, $worst_level);
-
   if ($options['result_display']) {
     _taxonomy_csv_import_result($options, $worst_level, $message, $results);
   }
@@ -534,22 +543,22 @@ function _taxonomy_csv_import_vocabulary_prepare(&$options) {
  * @param $line
  *   Array which contains items of a csv line.
  * @param $options
- *   Array of import options:
- *     import_format : see _taxonomy_csv_values('list_import_format')
- *     vocabulary_id : vocabulary id to import into
- *     existing_items: see _taxonomy_csv_values('list_import_option')
- *     check_line    : boolean. Tweak to check (default) or not format of lines
- *     check_utf8    : boolean. Tweak to check (default) or not utf8 format
- *     // Specific to relations import:
- *     relations_create_subrelations: boolean.
- *     relations_all_vocabularies   : boolean.
+ *   An associative array of import options:
+ *   - import_format : see _taxonomy_csv_values('list_import_format')
+ *   - vocabulary_id : vocabulary id to import into
+ *   - existing_items: see _taxonomy_csv_values('list_import_option')
+ *   - check_line    : boolean. Tweak to check (default) or not format of lines
+ *   - check_utf8    : boolean. Tweak to check (default) or not utf8 format
+ *   // Specific to relations import:
+ *   - relations_create_subrelations: boolean.
+ *   - relations_all_vocabularies   : boolean.
  * @param $previous_items
- *   Optional. Cleaned and checked previous imported line names and tids array.
+ *   (Optional) Cleaned and checked previous imported line names and tids array.
  *   Needed with some contents as one term array structure or Taxonomy manager.
  *   Specificities:
- *     taxonomy_manager:
+ *   - taxonomy_manager:
  *       tid array is indexed with old tids.
- *     def_links:
+ *   - def_links:
  *       'name' and 'tid' arrays contain sub-arrays 'vocabulary' and 'term' with
  *       imported identifiant as key and name or tid/vid as value in order to
  *       allow duplicate names import and use of number identifiants.
@@ -629,7 +638,7 @@ function taxonomy_csv_line_import_process($line, $options, $previous_items = arr
  * @param $line
  *   Array of items to be processed.
  * @param &$messages
- *   Optional. By reference array of messages codes to be returned.
+ *   (Optional) By reference array of messages codes to be returned.
  *
  * @return Array of cleaned imported line.
  */

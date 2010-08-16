@@ -21,10 +21,10 @@
  * - 1. How to export (format of csv file) ?
  * - 2. Which vocabulary to export ?
  * - 3. How to export ?
- *       1. Csv delimiter
- *       2. Csv enclosure
- *       3. Csv end of line
- *       4. Specific options
+ *   - 1. Csv delimiter
+ *   - 2. Csv enclosure
+ *   - 3. Csv end of line
+ *   - 4. Specific options
  *
  * @ingroup forms
  * @see taxonomy_csv_form_export_validate()
@@ -73,15 +73,11 @@ function taxonomy_csv_form_export($form_state) {
   );
 
   // Build form.
-  $form = array(
-    '#attributes' => array(
-      'enctype' => 'multipart/form-data',
-    )
-  );
+  $form = array();
 
   $list_vocabularies = taxonomy_vocabulary_get_names();
 
-  if (!$list_vocabularies) {
+  if (count($list_vocabularies) == 0) {
     $form['info'] = array(
       '#type'  => 'item',
       '#markup' => t("As there isn't any vocabulary, nothing can be exported..."),
@@ -91,10 +87,20 @@ function taxonomy_csv_form_export($form_state) {
   }
   // Else there are vocabularies.
 
+  // Advertise that javascript is not enabled.
   if (!isset($_COOKIE['has_js'])) {
-    $message = '<strong>' . t('Javascript is not activated!') . '</strong><br />'
-      . t("As you see this notice, javascript is disabled on your browser. All fields are shown, but only those matching your choices needs to be set. Others won't be used. If you want specific examples and options, activate javascript or see <a href=\"!more_help_link\"> advanced help</a>.", array('!more_help_link' => url('admin/help/taxonomy_csv')));
-    drupal_set_message($message, 'warning');
+    $form['javascript'] = array(
+      '#type'        => 'fieldset',
+      '#title'       => t('WARNING'),
+      '#collapsible' => TRUE,
+      '#collapsed'   => FALSE,
+    );
+    $form['javascript']['info'] = array(
+      '#type'        => 'item',
+      '#title'       => t('Javascript is not activated!'),
+      '#description' => t("As you see this notice, javascript is disabled on your browser. All fields are shown, but only those matching your choices needs to be set. Others won't be used. If you want specific examples and options, activate javascript or see <a href=\"!more_help_link\"> advanced help</a>.", array('!more_help_link' => url('admin/help/taxonomy_csv'))),
+      '#required'    => TRUE,
+    );
   }
 
   $form['tab'] = array(
@@ -317,6 +323,19 @@ function taxonomy_csv_form_export_validate($form, &$form_state) {
   // 3, Make api checks and eventually update options by reference.
   $messages = array_merge($messages, _taxonomy_csv_export_check_options($options));
 
+  // Use form set error for api errors.
+  foreach (array(
+      'delimiter'   => 'export_delimiter',
+      'enclosure'   => 'export_enclosure',
+      'line_ending' => 'export_line_ending',
+      'order'       => 'export_order',
+    ) as $key => $value) {
+    if (isset($message[$key])) {
+      $message[$value] = $message[$key];
+      unset($message[$key]);
+    }
+  }
+
   // 4. Make non api checks.
   if (($options['export_delimiter'] == 'custom_delimiter')
       && (empty($options['export_delimiter_custom']))) {
@@ -339,12 +358,7 @@ function taxonomy_csv_form_export_validate($form, &$form_state) {
 
   // 5. Finish validatation of form.
   foreach ($messages as $item => $message) {
-    if (in_array($item, $options)) {
-      form_set_error($item, $message);
-    }
-    else {
-      drupal_set_message($message, 'error');
-    }
+    form_set_error($item, $message);
   }
 }
 
@@ -352,7 +366,7 @@ function taxonomy_csv_form_export_validate($form, &$form_state) {
  * Validate options of exported vocabulary.
  *
  * @param $options
- *   Array of options.
+ *   An associative array of options.
  *
  * @return
  *   Array of messages errors if any.

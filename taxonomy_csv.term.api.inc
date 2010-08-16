@@ -17,12 +17,12 @@
  * @param $term
  *   The term object to find. It's not necessarily a standard term object. It's
  *   an object which needs only a name and eventually a vid or a parent id. Of
- *   course, if tid is set, the found term is existing one.
+ *   course, if tid is set, the found term is the existing one.
  * @param $all_vocabularies
- *   Optional. Boolean. Search in all vocabularies or only in $term->vid
+ *   (Optional) Boolean. Search in all vocabularies or only in $term->vid
  *   vocabulary (default), which need to be set. Used with relations import.
  * @param $parent_tid
- *   Optional. The direct parent term id where to restrict search.
+ *   (Optional) The direct parent term id where to restrict search.
  *   Used for structure import. Default to NULL (no parent restriction).
  *
  * @return
@@ -80,7 +80,45 @@ function taxonomy_csv_term_find($term, $all_vocabularies = FALSE, $parent_tid = 
 }
 
 /**
- * Return an array of all parents term IDs of a given term id.
+ * Find duplicate terms in a vocabulary or in all vocabularies.
+ *
+ * @todo use taxonomy_term_load_multiple or regular Drupal 7 query.
+ *
+ * @param $vid
+ *  (Optional) Vocabulary to check in.
+ *
+ * @return
+ *  An array of term names, indexed by tid.
+ */
+function taxonomy_csv_term_find_duplicate($vid = 0) {
+  $terms = array();
+
+  $sql = '
+    SELECT t1.tid, t1.name
+    FROM {taxonomy_term_data} t1
+    LEFT OUTER JOIN {taxonomy_term_data} t2 ON t1.tid != t2.tid AND LOWER(t1.name) = LOWER(t2.name)
+    WHERE t2.tid IS NOT NULL
+  ';
+
+  $args = array();
+
+  if ($vid) {
+    $sql .= ' AND t1.vid = :vid AND t2.vid = :vid ';
+    $args[':vid'] = $vid;
+  }
+
+  $sql .= ' ORDER BY {t1.tid} ASC ';
+
+  $result = db_query($sql, $args);
+  foreach ($result as $term) {
+    $terms[$term->tid] = $term->name;
+  }
+
+  return $terms;
+}
+
+/**
+ * Return an array of all parents term ids of a given term id.
  */
 function taxonomy_csv_term_get_parents_tids($tid) {
   return array_keys(taxonomy_get_parents($tid));
@@ -94,7 +132,7 @@ function taxonomy_csv_term_get_parents_names($tid) {
 }
 
 /**
- * Return an array of all children term id of a given term id.
+ * Return an array of all children term ids of a given term id.
  */
 function taxonomy_csv_term_get_children_tids($tid) {
   return array_keys(taxonomy_get_children($tid));
@@ -119,7 +157,7 @@ function taxonomy_csv_term_get_children_names($tid) {
  * @param $field_name
  *   Field to get.
  * @param $langcode
- *   Optional. Language code to use.
+ *   (Optional) Language code to use.
  *
  * @return
  *   Result array of items.
@@ -237,7 +275,7 @@ function taxonomy_csv_term_get_relations_names($term_tid) {
  * @param $field_name
  *   Field to get.
  * @param $langcode
- *   Optional. Language code to use.
+ *   (Optional) Language code to use.
  *
  * @return
  *   Result array of items.
@@ -321,29 +359,58 @@ function _taxonomy_csv_term_format_regular($term) {
 }
 
 /**
+ * Save by reference an internally formatted term object.
+ *
+ * @param $term
+ *   A term object to save by reference. Term is an object containing:
+ *   - 'name'        ; term name string,
+ *   - 'vid'         ; the vocabulary id,
+ *   and eventually:
+ *   - 'tid'         ; term id in case of an update,
+ *   - 'description' ; description string,
+ *   - 'weight'      ; weight integer,
+ *   - 'parents'     ; array of first level parent tids,
+ *   - 'relations'   ; array of related tids,
+ *   - 'synonyms'    ; array of synonyms terms names strings,
+ * @return
+ *   Status value (SAVED_NEW or SAVED_UPDATED). Term is updated with its tid.
+ */
+function _taxonomy_csv_term_save(&$term) {
+  $term_to_save = _taxonomy_csv_term_format_regular($term);
+
+  $result = taxonomy_term_save($term_to_save);
+
+  // Update term.
+  $term->tid = $term_to_save->tid;
+
+  return $result;
+}
+
+/**
  * Calculate number of terms in a vocabulary or in all vocabularies.
  *
+ * @todo Regular query.
+ *
  * @param $vocabulary_id
- *   Optional. Id of the chosen vocabulary. If not specified, count terms in all
- *   vocabularies.
+ *   (Optional) Id of the chosen vocabulary. If not specified, count terms in
+ *   all vocabularies.
  *
  * @return
  *   Number of terms in specified vocabulary or in all vocabularies.
  */
 function taxonomy_csv_term_count_in_vocabulary($vocabulary_id = 0) {
-  if ($vocabulary_id) {
-    return count(taxonomy_term_load_multiple(
-      array(),
-      array('vid' => $vocabulary_id)
-    ));
-  }
-  // Else.
   // @todo Use taxonomy api or regular Drupal 7 query.
   $sql = "
     SELECT COUNT(*) AS count
     FROM {taxonomy_term_data}
   ";
+
   $args = array();
+  if ($vocabulary_id) {
+    $sql .= ' WHERE vid = :vid ';
+    $args[':vid'] = $vocabulary_id;
+  }
+
   $result = db_query($sql, $args);
   foreach ($result as $item) {
     return $item->count;

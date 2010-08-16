@@ -18,23 +18,23 @@
  *
  * Form contain five fieldsets:
  * - 1. What to import ?
- *     1. What is content of the source ?
- *     2. Vocabulary hierarchy set or check
+ *   - 1. What is content of the source ?
  * - 2. Where are items to import ?
- *     1. Source select
- *     2. Source file or text area
+ *   - 1. Source select
+ *   - 2. Source file or text area
  * - 3. How is formatted your source ?
- *     1. Source delimiter
- *     2. Source enclosure
- *     3. Line and utf8 checks
+ *   - 1. Source delimiter
+ *   - 2. Source enclosure
+ *   - 3. Line and utf8 checks
  * - 4. Which vocabulary to import into (destination) ?
- *     1. Destination type
- *     2. Vocabulary choice
+ *   - 1. Destination type
+ *   - 2. Vocabulary choice
+ *   - 3. Vocabulary hierarchy set or check
  * - 5. When a term exist, what to do with it ?
- *     1. Previous or existing terms
- *     2. Specific import options depending on source content
+ *   - 1. Previous or existing terms
+ *   - 2. Specific import options depending on source content
  * - 6. Advanced options
- *     1. How to be notified
+ *   - 1. How to be notified
  *
  * As what will become existing terms depends on what is imported, dynamic
  * options are used: only possible parameters are shown. All options are
@@ -84,12 +84,6 @@ function taxonomy_csv_form_import($form_state) {
 
   $list_import_option = _taxonomy_csv_values('list_import_option');
 
-  if (!isset($_COOKIE['has_js'])) {
-    $message = '<strong>' . t('Javascript is not activated!') . '</strong><br />'
-      . t("As you see this notice, javascript is disabled on your browser. All fields are shown, but only those matching your choices needs to be set. Others won't be used. If you want specific examples and options, activate javascript or see <a href=\"!more_help_link\"> advanced help</a>.", array('!more_help_link' => url('admin/help/taxonomy_csv')));
-    drupal_set_message($message, 'warning');
-  }
-
   // Build form.
 
   // Needed to upload file.
@@ -112,11 +106,12 @@ function taxonomy_csv_form_import($form_state) {
     'pathauto',
   );
   foreach ($issues_modules as $value) {
-    if (module_exists($value)) {
+    if (module_exists($value) && empty($form_state['post'])) {
       drupal_set_message(t('<strong>Warning</strong>: An incompatible module is running.') . '<br />'
-      . t('Memory or compatibility problems have been reported with these modules when under Drupal 6: !modules') . '<br />'
-      . t('It is advised to increase server and php memory temporary (no problem reported with 256 MB) or to disable these modules manually in !modules_section. Settings are not lost when you disable a module (and not uninstall it). After import process, you can decrease memory and reactivate modules.', array(
+      . t('Memory or compatibility problems have been reported with these modules when under Drupal 6: !modules', array(
         '!modules' => '"' . implode('", "', $issues_modules) . '"',
+      )) . '<br />'
+      . t('It is advised to increase server and php memory temporary (no problem reported with 256 MB) or to disable these modules manually in !modules_section. Settings are not lost when you disable a module (and not uninstall it). After import process, you can decrease memory and reactivate modules.', array(
         '!modules_section' => l(t("modules section"), 'admin/build/modules'),
       )), 'warning');
       break;
@@ -141,6 +136,22 @@ function taxonomy_csv_form_import($form_state) {
       )),
     '#required'    => TRUE,
   );
+
+  // Advertise that javascript is not enabled.
+  if (!isset($_COOKIE['has_js'])) {
+    $form['javascript'] = array(
+      '#type'        => 'fieldset',
+      '#title'       => t('WARNING'),
+      '#collapsible' => TRUE,
+      '#collapsed'   => FALSE,
+    );
+    $form['javascript']['info'] = array(
+      '#type'        => 'item',
+      '#title'       => t('Javascript is not activated!'),
+      '#description' => t("As you see this notice, javascript is disabled on your browser. All fields are shown, but only those matching your choices needs to be set. Others won't be used. If you want specific examples and options, activate javascript or see <a href=\"!more_help_link\"> advanced help</a>.", array('!more_help_link' => url('admin/help/taxonomy_csv'))),
+      '#required'    => TRUE,
+    );
+  }
 
   $form['tab'] = array(
     '#type'        => 'vertical_tabs',
@@ -199,14 +210,14 @@ function taxonomy_csv_form_import($form_state) {
 
     $form['tab']['format']['relations']['#description'] = t('Allow to create relations between the term in the first column and next terms of the line.');
 
-    $form['tab']['format']['fields']['#description'] = t('Import a full term definition') . '<br />'
+    $form['tab']['format']['synonyms']['#description'] = t('Allow to import synonyms of terms. Each line contains a term in the first column and next items are matching synonyms.');
+
+    $form['tab']['format']['definitions']['#description'] = t('Import a full term definition') . '<br />'
       . t('Format: term name, weight, description, list of synonyms.');
 
     $form['tab']['format']['descriptions']['#description'] = t('Allow to import descriptions of terms. The term is in the first column and the matching description is in the second column.');
 
     $form['tab']['format']['weights']['#description'] = t('Allow to import a weight of a term. The term is in the first column and the matching weight is in the second column.');
-
-    $form['tab']['format']['synonyms']['#description'] = t('Allow to import synonyms of terms. Each line contains a term in the first column and next items are matching synonyms.');
 
     $form['tab']['format']['taxonomy_manager']['#description'] = t('Allow to import a vocabulary exported with Taxonomy manager.') . '<br />'
       . t("Format: Each line contains: vocabulary id, term id, term name, term description and list of parents. In this format, order of all lines is important, because it's impossible to attach a parent to an item if this parent hasn't been imported in a previous line.");
@@ -214,35 +225,6 @@ function taxonomy_csv_form_import($form_state) {
   $form['tab']['format']['info'] = array(
     '#type'        => 'item',
     '#description' => t('See <a href="!more_help_link">advanced help</a> for more informations about import types.', array('!more_help_link' => url('admin/help/taxonomy_csv'))),
-  );
-
-  $form['tab']['format']['info_hierarchy'] = array(
-    '#type'        => 'item',
-    '#title'       => t('What is the type of vocabulary?'),
-  );
-  $form['tab']['format']['check_hierarchy'] = array(
-    '#type'          => 'checkbox',
-    '#title'         => t('Automatically check vocabulary hierarchy'),
-    '#default_value' => $list_previous_values['check_hierarchy'],
-    '#description'   => t('Warning: to calculate true hierarchy of vocabulary is memory intensive. Choose to check automatically only if your vocabulary is little.'),
-  );
-  $form['tab']['format']['set_hierarchy'] = array(
-    '#type'          => 'radios',
-    // '#title is needed to avoid a #states bug.
-    '#title'         => '',
-    '#options'       => array(
-      0 => t('no parent (flat)'),
-      1 => t('single parent (tree)'),
-      2 => t('multiple parents (polyhierarchy)'),
-    ),
-    '#default_value' => $list_previous_values['set_hierarchy'],
-    '#states' => array(
-      // @todo Change invisible with disabled when #states will work, and move
-      // it above, and directly include title.
-      'invisible' => array(
-        ':input[name=check_hierarchy]' => array('checked' => TRUE),
-      ),
-    ),
   );
 
   $form['tab']['import'] = array(
@@ -396,7 +378,7 @@ function taxonomy_csv_form_import($form_state) {
 
   $list_vocabularies = taxonomy_vocabulary_get_names();
 
-  if (!$list_vocabularies) {
+  if (count($list_vocabularies) == 0) {
     $form['tab']['destination']['#description'] .= '<br /><br />'
       . t("As there isn't any vocabulary, terms will be imported in a new automatically created vocabulary.");
 
@@ -415,13 +397,7 @@ function taxonomy_csv_form_import($form_state) {
       '#type'          => 'select',
       '#options'       => $list_vocabulary_target,
       '#default_value' => $list_previous_values['vocabulary_target'],
-      '#description'   => t('When you want to import a new taxonomy into an existing one, it is recommended to process in three steps in order to allow a good import.
-        <ul>
-          <li>First, check the import file with the < <em>Autocreate a new vocabulary</em> > option. Repeat this step while there are warnings and notices.</li>
-          <li>Second, check new and existing terms merge with the < <em>Duplicate an existing vocabulary</em> > option. This choice creates a duplicate of your target existing vocabulary and import your new terms into. Original nodes attachments are not duplicated.</li>
-          <li>Finally, you can import your file in the true vocabulary with the < <em>Import in an existing vocabulary</em> > option. This allows you to keep old links between existing terms and nodes.</li>
-        </ul>
-        If you only want to create a new vocabulary, the first choice is sufficient, unless when you have multiple files for one vocabulary.'),
+      '#description'   => t('Choose vocabulary where you want to import your items.'),
     );
 
     $form['tab']['destination']['vocabulary_id'] = array(
@@ -442,6 +418,35 @@ function taxonomy_csv_form_import($form_state) {
       $form['tab']['destination']['vocabulary_id']['#options'][$vocabulary->vid] = $vocabulary->name;
     }
   }
+
+  $form['tab']['destination']['info_hierarchy'] = array(
+    '#type'        => 'item',
+    '#title'       => t('What is the type of vocabulary?'),
+  );
+  $form['tab']['destination']['check_hierarchy'] = array(
+    '#type'          => 'checkbox',
+    '#title'         => t('Automatically check vocabulary hierarchy'),
+    '#default_value' => $list_previous_values['check_hierarchy'],
+    '#description'   => t('Warning: to calculate true hierarchy of vocabulary is memory intensive. Choose to check automatically only if your vocabulary is little.'),
+  );
+  $form['tab']['destination']['set_hierarchy'] = array(
+    '#type'          => 'radios',
+    // '#title is needed to avoid a #states bug.
+    '#title'         => '',
+    '#options'       => array(
+      0 => t('no parent (flat)'),
+      1 => t('single parent (tree)'),
+      2 => t('multiple parents (polyhierarchy)'),
+    ),
+    '#default_value' => $list_previous_values['set_hierarchy'],
+    '#states' => array(
+      // @todo Change invisible with disabled when #states will work, and move
+      // it above, and directly include title.
+      'invisible' => array(
+        ':input[name=check_hierarchy]' => array('checked' => TRUE),
+      ),
+    ),
+  );
 
   $form['tab']['import_options'] = array(
     '#type'        => 'fieldset',
@@ -476,7 +481,7 @@ function taxonomy_csv_form_import($form_state) {
     foreach ($list_import_format as $key => $value) {
       $form['tab']['import_options'][$key] = array(
         '#type'   => 'item',
-        '#markup'      => t('Help for import format:') . ' ' . $value,
+        '#markup' => t('Help for import format:') . ' ' . $value,
         '#states' => array(
           'visible' => array(
             ':input[name=import_format]' => array('value' => $key),
@@ -539,7 +544,7 @@ function taxonomy_csv_form_import($form_state) {
           <li>' . t('<em>"Ignore existings"</em>: term is always created.') . '</li>
         </ul>';
 
-    $form['tab']['import_options']['fields']['#description'] = t('This option indicates whether existing terms with the same name should be updated or ignored. If ignored, duplicates may be created.') . '<br />'
+    $form['tab']['import_options']['definitions']['#description'] = t('This option indicates whether existing terms with the same name should be updated or ignored. If ignored, duplicates may be created.') . '<br />'
       . '<ul>
           <li>' . t('<em>"Update and merge"</em>: update term or create it if not exists and merge eventual description with new one.') . '</li>
           <li>' . t('<em>"Update and replace"</em>: update term or create it if not exists and replace eventual description with new one.') . '</li>
@@ -578,6 +583,7 @@ function taxonomy_csv_form_import($form_state) {
         TAXONOMY_CSV_EXISTING_IGNORE,
         TAXONOMY_CSV_EXISTING_IGNORE_CREATE,
         TAXONOMY_CSV_EXISTING_IGNORE_ALL,
+        TAXONOMY_CSV_EXISTING_IGNORE_QUICK,
       ))),
       '#default_value' => $list_previous_values['existing_items'],
       // '#description' below in order to use same help with javascript.
@@ -742,6 +748,17 @@ function taxonomy_csv_form_import_validate($form, &$form_state) {
   // 3. Make api checks and eventually update options by reference.
   $messages = array_merge($messages, _taxonomy_csv_import_check_options($options));
 
+  // Use form set error for api errors.
+  foreach (array(
+      'delimiter'   => 'import_delimiter',
+      'enclosure'   => 'import_enclosure',
+    ) as $key => $value) {
+    if (isset($message[$key])) {
+      $message[$value] = $message[$key];
+      unset($message[$key]);
+    }
+  }
+
   // 4. Make non api checks.
   if (($options['import_delimiter'] == 'custom_delimiter')
       && (empty($options['import_delimiter_custom']))) {
@@ -764,12 +781,7 @@ function taxonomy_csv_form_import_validate($form, &$form_state) {
 
   // 5. Finish validatation of form.
   foreach ($messages as $item => $message) {
-    if (in_array($item, $options)) {
-      form_set_error($item, $message);
-    }
-    else {
-      drupal_set_message($message, 'error');
-    }
+    form_set_error($item, $message);
   }
 }
 
@@ -869,8 +881,6 @@ function taxonomy_csv_form_import_submit($form, &$form_state) {
   foreach (array(
       'import_format',
       'source_choice',
-      'check_hierarchy',
-      'set_hierarchy',
       'import_delimiter',
       'import_delimiter_custom',
       'import_enclosure',
@@ -880,6 +890,8 @@ function taxonomy_csv_form_import_submit($form, &$form_state) {
       'locale_custom',
       'vocabulary_target',
       'vocabulary_id',
+      'check_hierarchy',
+      'set_hierarchy',
       'existing_items',
       // Specific to relations import.
       'relations_create_subrelations',

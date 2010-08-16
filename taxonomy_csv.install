@@ -11,7 +11,7 @@
  */
 function taxonomy_csv_install() {
   // Make uploads easy for csv files.
-  variable_set('upload_extensions_default', variable_get('upload_extensions_default', '') . ' csv')
+  variable_set('upload_extensions_default', variable_get('upload_extensions_default', '') . ' csv');
 
   drupal_set_message(st('Taxonomy CSV import/export has been installed. You can now import and export taxonomies, structures or lists of terms under <a href="!link_import">Administer > Structure > Taxonomy > CSV import</a> and <a href="!link_export">CSV export</a>. More information is available under <a href="!link_help">Administer > Help > Taxonomy CSV import/export</a>.', array(
     '!link_import' => url('admin/structure/taxonomy/csv_import'),
@@ -29,8 +29,6 @@ function taxonomy_csv_uninstall() {
       // Import variables.
       'import_format',
       'source_choice',
-      'check_hierarchy',
-      'set_hierarchy',
       'import_delimiter',
       'import_delimiter_custom',
       'import_enclosure',
@@ -40,6 +38,8 @@ function taxonomy_csv_uninstall() {
       'locale_custom',
       'vocabulary_target',
       'vocabulary_id',
+      'check_hierarchy',
+      'set_hierarchy',
       'existing_items',
       'relations_create_subrelations',
       'relations_all_vocabularies',
