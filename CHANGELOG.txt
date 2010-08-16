@@ -10,9 +10,10 @@
 
 
 Taxonomy csv import/export 7.x-5.1, 2010-08-16
-Taxonomy csv import/export 6.x-5.1, 2010-08-16
+Taxonomy csv import/export 6.x-5.2, 2010-08-16
 ----------------------------------------------
 By Daniel Berthereau: Fixed error of commit to cvs and linked bugs.
+By Daniel Berthereau: Forget taxonomy_csv.css and taxonomy_csv.js (Drupal 6).
 By Daniel Berthereau: Merged all taxonomy-csv 6.x branches except 6.x-1.
 By Daniel Berthereau: Doxygened some help.
 
