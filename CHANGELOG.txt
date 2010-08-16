@@ -9,8 +9,17 @@
   ===========
 
 
-Taxonomy csv import/export 7.x-5.0-beta, 2010-08-13
----------------------------------------------------
+Taxonomy csv import/export 7.x-5.1, 2010-08-16
+Taxonomy csv import/export 6.x-5.1, 2010-08-16
+----------------------------------------------
+By Daniel Berthereau: Fixed error of commit to cvs and linked bugs.
+By Daniel Berthereau: Merged all taxonomy-csv 6.x branches except 6.x-1.
+By Daniel Berthereau: Doxygened some help.
+
+
+Taxonomy csv import/export 7.x-5.0, 2010-08-13
+Taxonomy csv import/export 6.x-5.0, 2010-08-13
+----------------------------------------------
 By Daniel Berthereau: Changed cvs HEAD from 6.x to 7.x release.
 By Daniel Berthereau: Merged all taxonomy-csv 7.x branches except 7.x-1.
 By Daniel Berthereau: Modularized and simplified code and reintegrated line api.

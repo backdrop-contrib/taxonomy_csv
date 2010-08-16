@@ -14,17 +14,17 @@
  * @param $options
  *   Array of available options. See taxonomy_csv_line_import_process.
  * @param $previous_items
- *   Optional. Cleaned and checked previous imported line names and tids array.
+ *   (Optional) Cleaned and checked previous imported line names and tids array.
  *   Needed with some contents as one term array structure or Taxonomy manager.
  *   Specificities:
- *     taxonomy_manager:
+ *   - taxonomy_manager:
  *       tid array is indexed with old tids.
- *     def_links:
+ *   - def_links:
  *       'name' and 'tid' arrays contain sub-arrays 'vocabulary' and 'term' with
  *       imported identifiant as key and name or tid/vid as value in order to
  *       allow duplicate names import and use of number identifiants.
  * @param &$messages
- *   Optional. By reference array of messages codes to be returned.
+ *   (Optional) By reference array of messages codes to be returned.
  *
  * @return
  *   Array of checked items of imported line.

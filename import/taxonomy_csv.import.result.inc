@@ -129,27 +129,28 @@ function _taxonomy_csv_info_vocabulary($options) {
   $vocabularies = (in_array($options['import_format'], array(
       TAXONOMY_CSV_FORMAT_DEFINITION_LINKS,
     ))) ?
-      $options['last_items']['tid']['vocabulary'] :
+      $options['vocabularies'] :
       array($options['vocabulary_id']);
   $messages[] = t('%count used or created.', array(
     '%count' => format_plural(count($vocabularies), 'A vocabulary has been', '@count vocabularies have been', array())
   ));
 
-  $message = '';
   foreach ($vocabularies as $vocabulary_id) {
+    $message = '';
     // Check or update hierarchy of vocabularies.
     $vocabulary = taxonomy_vocabulary_load($vocabulary_id);
-      if ($options['check_hierarchy']) {
-        $result = taxonomy_check_vocabulary_hierarchy($vocabulary, array('tid' => 0));
+    if ($options['check_hierarchy']) {
+      $result = _taxonomy_csv_check_vocabulary_hierarchy($vocabulary, '');
+    }
+    // Set vocabulary hierarchy only if needed.
+    else {
+      if ($options['set_hierarchy'] != $vocabulary->hierarchy) {
+        $vocabulary->hierarchy = $options['set_hierarchy'];
+        $result = taxonomy_vocabulary_save($vocabulary);
       }
-      else {
-        // Set vocabulary hierarchy only if needed.
-        if ($options['set_hierarchy'] != $vocabulary->hierarchy) {
-          $vocabulary->hierarchy = $options['set_hierarchy'];
-          $result = taxonomy_vocabulary_save($vocabulary);
-        }
-      }
-      $new_hierarchy[$vocabulary_id] = $vocabulary->hierarchy;
+      $result = $options['set_hierarchy'];
+    }
+    $new_hierarchy[$vocabulary_id] = $result;
 
     // Display general info about vocabulary.
     $message .= (in_array($options['import_format'], array(
@@ -222,12 +223,12 @@ function _taxonomy_csv_info_vocabulary_result($vocabulary, $vocabulary_target, $
   )) . '<br />';
   if (module_exists('taxonomy_manager')) {
     $message .= t('It is recommended to use <a href="!link" title="Taxonomy manager module">Administer > Structure > Taxonomy manager > Vocabularies</a> with big taxonomies because a memory error can occur with default Drupal "List terms" menu.', array(
-      '!link' => url("admin/structure/taxonomy_manager/voc/$vocabulary->vid")
+      '!link' => url("admin/structure/taxonomy_manager/voc/$vocabulary->vid"),
     ));
   }
   else {
     $message .= t('Warning: with default Drupal "List terms" function, a memory error can occur with big taxonomies, so use another manager as <a href="!link" title="Taxonomy manager">Taxonomy manager</a>.', array(
-      '!link' => url('http://drupal.org/project/taxonomy_manager')
+      '!link' => url('http://drupal.org/project/taxonomy_manager'),
     ));
   }
   return $message;
@@ -244,17 +245,18 @@ function _taxonomy_csv_info_terms($options) {
     foreach ($options['imported_terms'] as $imported_tids) {
       $tids = array_unique(array_merge($tids, $imported_tids));
     }
-    $terms = taxonomy_term_load_multiple($tids);
 
     $message = '';
     // Display basic stats.
     if ($options['result_stats']) {
       // Display total of imported terms.
-      $message .= t('Total created or updated terms : !count.', array('!count' => count($terms))) . '<br />';
+      $message .= t('Total created or updated terms : !count.', array('!count' => count($tids))) . '<br />';
     }
 
     // Display list of terms.
     if ($options['result_terms']) {
+      $terms = taxonomy_term_load_multiple($tids);
+
       $message .= '"';
       foreach ($terms as $term) {
         $message .= $term->name . '", "';

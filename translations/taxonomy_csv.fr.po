@@ -745,7 +745,7 @@ msgstr "1. Que voulez-vous exporter ?"
 #: export/taxonomy_csv.export.admin.inc:121
 msgid "See <a href=\"!more_help_link\">advanced help</a> for informations about formats."
 msgstr ""
-"Consulter l'<a href=\"!more_help_link\">l'aide avancée</a> pour "
+"Consulter l'<a href=\"!more_help_link\">aide avancée</a> pour "
 "davantage d'informations à propos des formats."
 
 #: export/taxonomy_csv.export.admin.inc:122
@@ -1016,11 +1016,9 @@ msgid "Notice: Chosen vocabulary has no term to export."
 msgstr "Remarque : le vocabulaire choisi ne contient aucun terme à exporter."
 
 #: export/taxonomy_csv.export.result.inc:47
-msgid "!term_count / !total_terms terms of chosen vocabularies have been exported to file !file (!filesize KB). Click on link to view it or right click to download it."
+msgid "!term_count / !total_terms terms of chosen vocabularies have been exported to file !file (!filesize KB) with the format \"!format\". Click on link to view it or right click to download it."
 msgstr ""
-"!term_count / !total_terms termes des vocabulaires choisis ont été "
-"exporté dans le fichier !file (!filesize Ko). Cliquer sur le lien "
-"pour le voir ou cliquer-droit pour le télécharger."
+"!term_count / !total_terms termes des vocabulaires choisis ont été exporté dans le fichier !file (!filesize Ko) avec le format \"!format\". Cliquer sur le lien pour le voir ou cliquer-droit pour le télécharger."
 
 #: export/taxonomy_csv.export.result.inc:63
 msgid "!count duplicate term names have been found in all vocabularies. Error can occur when you will import this list, except if you choose \"fields and links\" export format or import option \"ignore existing items\"."
@@ -1038,6 +1036,10 @@ msgstr "Aucun nom de terme en double n'a été trouvé."
 msgid "Autocreate a new vocabulary"
 msgstr "Autocréer un nouveau vocabulaire"
 
+#: import/taxonomy_csv.import.admin.inc:80
+msgid "Duplicate an existing vocabulary"
+msgstr "Dupliquer un vocabulaire existant"
+
 #: import/taxonomy_csv.import.admin.inc:82
 msgid "Import in an existing vocabulary"
 msgstr "Importer dans un vocabulaire existant"
@@ -1052,7 +1054,7 @@ msgstr "Des problèmes de mémoire ou d'incompatibilité ont été signalés ave
 
 #: import/taxonomy_csv.import.admin.inc:118
 msgid "It is advised to increase server and php memory temporary (no problem reported with 256 MB) or to disable these modules manually in !modules_section. Settings are not lost when you disable a module (and not uninstall it). After import process, you can decrease memory and reactivate modules."
-msgstr "Il est conseillé d'augmenter temporairement la mémoire du serveur et de php (aucun problème n'a été signalé avec 256 Mo) ou de désactiver ces modules manuellement dans !modules_section. Les paramètres seront pas perdus si vous désactiver le module (et non si vous le désinstaller). Après l'import, vous pourrez réduire la mémoire et réactiver les modules."
+msgstr "Il est conseillé d'augmenter temporairement la mémoire du serveur et de php (aucun problème n'a été signalé avec 256 Mo) ou de désactiver ces modules manuellement dans la !modules_section. Les paramètres seront pas perdus si vous désactiver le module (et non si vous le désinstaller). Après l'import, vous pourrez réduire la mémoire et réactiver les modules."
 
 #: import/taxonomy_csv.import.admin.inc:120
 msgid "modules section"
@@ -1178,6 +1180,13 @@ msgstr ""
 "Permet de définir des relations entre le terme de la première "
 "colonne et les termes des colonnes suivantes."
 
+#: import/taxonomy_csv.import.admin.inc:201
+msgid "Allow to import synonyms of terms. Each line contains a term in the first column and next items are matching synonyms."
+msgstr ""
+"Permet d'importer les synonymes des termes. Chaque ligne contient un "
+"terme dans la première colonne et les colonnes suivantes contiennent "
+"ses synonymes."
+
 #: import/taxonomy_csv.import.admin.inc:202
 msgid "Import a full term definition"
 msgstr "Importer toutes les propriétés d'un terme."
@@ -1199,13 +1208,6 @@ msgstr ""
 "Permet d'importer le poids d'un terme. Le terme est dans la première "
 "colonne et le poids correspondant dans la seconde colonne."
 
-#: import/taxonomy_csv.import.admin.inc:209
-msgid "Allow to import synonyms of terms. Each line contains a term in the first column and next items are matching synonyms."
-msgstr ""
-"Permet d'importer les synonymes des termes. Chaque ligne contient un "
-"terme dans la première colonne et les colonnes suivantes contiennent "
-"ses synonymes."
-
 #: import/taxonomy_csv.import.admin.inc:211
 msgid "Allow to import a vocabulary exported with Taxonomy manager."
 msgstr "Permet d'importer un vocabulaire exporté avec Taxonomy manager."
@@ -1224,30 +1226,6 @@ msgid "See <a href=\"!more_help_link\">advanced help</a> for more informations a
 msgstr ""
 "Consulter l'<a href=\"!more_help_link\">aide avancée</a> pour "
 "davantage d'informations à propos des formats d'import."
-
-#: import/taxonomy_csv.import.admin.inc:221
-msgid "What is the type of vocabulary?"
-msgstr "Quel est le type de vocabulaire ?"
-
-#: import/taxonomy_csv.import.admin.inc:225
-msgid "Automatically check vocabulary hierarchy"
-msgstr "Vérifier automatiquement le niveau hiérarchique du vocabulaire"
-
-#: import/taxonomy_csv.import.admin.inc:227
-msgid "Warning: to calculate true hierarchy of vocabulary is memory intensive. Choose to check automatically only if your vocabulary is little."
-msgstr "Attention : calculer le vrai niveau hiérarchique du vocabulaire demande beaucoup de mémoire. Choisissez la vérification automatique seulement si le vocabulaire est petit."
-
-#: import/taxonomy_csv.import.admin.inc:234 import/taxonomy_csv.import.result.inc:201
-msgid "no parent (flat)"
-msgstr "aucun parent (plat)"
-
-#: import/taxonomy_csv.import.admin.inc:235 import/taxonomy_csv.import.result.inc:202
-msgid "single parent (tree)"
-msgstr "parent unique (arborescence)"
-
-#: import/taxonomy_csv.import.admin.inc:236 import/taxonomy_csv.import.result.inc:203
-msgid "multiple parents (polyhierarchy)"
-msgstr "parents multiples (polyhiérarchie)"
 
 #: import/taxonomy_csv.import.admin.inc:250
 msgid "2. Where are items to import?"
@@ -1372,6 +1350,10 @@ msgstr "Définir manuellement le format local"
 msgid "To set locale can resolve some import issues. Choose the locale you use, for example 'en_DK.utf8', and it will be automatically set before import and reset after. Let empty when no problem occurs: import will use your default locale."
 msgstr "Définir la langue locale peut résoudre certains problèmes d'importation. Choisissez la langue à utiliser, par example 'fr_FR.utf8', et elle sera automatiquement utilisée avant l'import et retirée ensuite. Laissez vide en l'absence de problème : l'import utilisera la langue locale par défaut."
 
+#: import/taxonomy_csv.import.admin.inc:400
+msgid "Choose vocabulary where you want to import your items."
+msgstr "Choisissez le vocabulaire dans lequel importer vos termes."
+
 #: import/taxonomy_csv.import.admin.inc:401
 msgid "As there isn't any vocabulary, terms will be imported in a new automatically created vocabulary."
 msgstr ""
@@ -1400,6 +1382,30 @@ msgstr "[Choisir un vocabulaire existant]"
 #: import/taxonomy_csv.import.admin.inc:434
 msgid "The vocabulary you want to import the file into."
 msgstr "Le vocabulaire dans lequel vous voulez importer les termes."
+
+#: import/taxonomy_csv.import.admin.inc:221
+msgid "What is the type of vocabulary?"
+msgstr "Quel est le type de vocabulaire ?"
+
+#: import/taxonomy_csv.import.admin.inc:225
+msgid "Automatically check vocabulary hierarchy"
+msgstr "Vérifier automatiquement le niveau hiérarchique du vocabulaire"
+
+#: import/taxonomy_csv.import.admin.inc:227
+msgid "Warning: to calculate true hierarchy of vocabulary is memory intensive. Choose to check automatically only if your vocabulary is little."
+msgstr "Attention : calculer le vrai niveau hiérarchique du vocabulaire demande beaucoup de mémoire. Choisissez la vérification automatique seulement si le vocabulaire est petit."
+
+#: import/taxonomy_csv.import.admin.inc:234 import/taxonomy_csv.import.result.inc:201
+msgid "no parent (flat)"
+msgstr "aucun parent (plat)"
+
+#: import/taxonomy_csv.import.admin.inc:235 import/taxonomy_csv.import.result.inc:202
+msgid "single parent (tree)"
+msgstr "parent unique (arborescence)"
+
+#: import/taxonomy_csv.import.admin.inc:236 import/taxonomy_csv.import.result.inc:203
+msgid "multiple parents (polyhierarchy)"
+msgstr "parents multiples (polyhiérarchie)"
 
 #: import/taxonomy_csv.import.admin.inc:448
 msgid "5. When a term exists, what to do with it?"

@@ -51,10 +51,10 @@ define('TAXONOMY_CSV_PROCESS_DEBUG',   700); // Internal use only.
 
 /**
  * Information about import process. Use too default Drupal constants:
- *   SAVED_NEW     = 1
- *   SAVED_UPDATED = 2
+ * - SAVED_NEW     = 1
+ * - SAVED_UPDATED = 2
  * Possibly use of:
- *   SAVED_DELETED = 3
+ * - SAVED_DELETED = 3
  */
 define('TAXONOMY_CSV_ERROR',       0);
 define('TAXONOMY_CSV_NEW_UPDATED', 4);
@@ -65,14 +65,14 @@ define('TAXONOMY_CSV_UNCHANGED',   5);
  *
  * @param $list
  *   A string matching list to be returned:
- *     'list_import_format',
- *     'list_export_format',
- *     'list_import_default_values_ui',
- *     'list_import_default_values_api',
- *     'list_export_default_values_ui',
- *     'list_export_default_values_api',
- *     'list_import_option',
- *     'list_import_format_allowed_import_option'.
+ *   - 'list_import_format',
+ *   - 'list_export_format',
+ *   - 'list_import_default_values_ui',
+ *   - 'list_import_default_values_api',
+ *   - 'list_export_default_values_ui',
+ *   - 'list_export_default_values_api',
+ *   - 'list_import_option',
+ *   - 'list_import_format_allowed_import_option'.
  *
  * @return wanted content.
  */
@@ -92,7 +92,7 @@ function _taxonomy_csv_values($list) {
         TAXONOMY_CSV_FORMAT_DEFINITIONS      => t('Full term definitions'),
         TAXONOMY_CSV_FORMAT_DESCRIPTIONS     => t('Term descriptions'),
         TAXONOMY_CSV_FORMAT_WEIGHTS          => t('Term weights'),
-        // @todo
+        // @todo // Unused in Drupal 6.
         // TAXONOMY_CSV_FORMAT_FIELDS        => t('Fields'),
         TAXONOMY_CSV_FORMAT_TAXONOMY_MANAGER => t('Taxonomy manager'),
       );
@@ -112,7 +112,7 @@ function _taxonomy_csv_values($list) {
         TAXONOMY_CSV_FORMAT_DEFINITIONS      => t('Full term definitions'),
         TAXONOMY_CSV_FORMAT_DESCRIPTIONS     => t('Term descriptions'),
         TAXONOMY_CSV_FORMAT_WEIGHTS          => t('Term weights'),
-        // @todo
+        // @todo // Unused in Drupal 6.
         // TAXONOMY_CSV_FORMAT_FIELDS           => t('Fields'),
       );
 
@@ -120,8 +120,6 @@ function _taxonomy_csv_values($list) {
       return array(
         'import_format'                 => TAXONOMY_CSV_FORMAT_ALONE_TERMS,
         'source_choice'                 => 'text',
-        'check_hierarchy'               => FALSE,
-        'set_hierarchy'                 => 2, // Polyhierarchy.
         'import_delimiter'              => 'comma',
         'import_delimiter_custom'       => '',
         'import_enclosure'              => 'none',
@@ -131,6 +129,8 @@ function _taxonomy_csv_values($list) {
         'locale_custom'                 => '',
         'vocabulary_target'             => 'autocreate',
         'vocabulary_id'                 => 'choose_vocabulary',
+        'check_hierarchy'               => FALSE,
+        'set_hierarchy'                 => 2, // Polyhierarchy.
         'existing_items'                => TAXONOMY_CSV_EXISTING_UPDATE,
         // Specific to relations import.
         'relations_create_subrelations' => FALSE,
@@ -145,8 +145,6 @@ function _taxonomy_csv_values($list) {
     case 'list_import_default_values_api':
       return array(
         'import_format'                 => TAXONOMY_CSV_FORMAT_ALONE_TERMS,
-        'check_hierarchy'               => TRUE,
-        'set_hierarchy'                 => 2, // Polyhierarchy.
         'delimiter'                     => ',',
         'enclosure'                     => '',
         'check_line'                    => FALSE,
@@ -154,6 +152,8 @@ function _taxonomy_csv_values($list) {
         'locale_custom'                 => '',
         'vocabulary_target'             => 'autocreate',
         'vocabulary_id'                 => 'choose_vocabulary',
+        'check_hierarchy'               => TRUE,
+        'set_hierarchy'                 => 2, // Polyhierarchy.
         'existing_items'                => TAXONOMY_CSV_EXISTING_UPDATE,
         // Specific to relations import.
         'relations_create_subrelations' => FALSE,

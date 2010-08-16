@@ -22,20 +22,22 @@
  * If not used in a form, don't forget to use batch_process().
  *
  * @param $options
- *   Array of options:
- *     export_format : see _taxonomy_csv_values('list_export_format')
- *     vocabulary_id : vocabulary id to export (default: 0, which means all)
- *     delimiter     : one character csv delimiter (default: ',')
- *     enclosure     : zero or one character csv enclosure (default: '"')
- *     line_ending   : 'Unix' (default), 'Mac' or 'MS-DOS'
- *     order         : order of terms: 'name' (default), 'tid' or 'weight'
- *     Specific to def_links:
- *     def_links_terms_ids : 'name_if_needed' (default), 'name' or 'tid'
- *     def_links_vocabularies_ids : 'none' (default), 'name' or 'vid'
- *     // Level of result process infos.
- *     check_options : boolean. check or not (default) this array of options
- *     result_display: boolean. display or not (default). Only used with UI.
+ *   An associative array of options:
+ *   - export_format : see _taxonomy_csv_values('list_export_format')
+ *   - vocabulary_id : vocabulary id to export (default: 0, which means all)
+ *   - delimiter     : one character csv delimiter (default: ',')
+ *   - enclosure     : zero or one character csv enclosure (default: '"')
+ *   - line_ending   : 'Unix' (default), 'Mac' or 'MS-DOS'
+ *   - order         : order of terms: 'name' (default), 'tid' or 'weight'
+ *   //  Specific to def_links:
+ *   - def_links_terms_ids : 'name_if_needed' (default), 'name' or 'tid'
+ *   - def_links_vocabularies_ids : 'none' (default), 'name' or 'vid'
+ *   // Level of result process infos.
+ *   - check_options : boolean. check or not (default) this array of options
+ *   - result_display: boolean. display or not (default). Only used with UI.
+ *   - result_duplicates: boolean. display or not (default) duplicate terms.
  *   Only export_format is needed. Other options have default values.
+ *   Warning: default values are different with UI.
  *
  * @return
  *   Array of errors or file object to download (need to execute batch process;
@@ -158,6 +160,8 @@ function taxonomy_csv_vocabulary_export($options) {
  *
  * @todo Check if direct query and only tid save is really less memory
  * intensive (with core taxonomy cache or not).
+ * @todo Don't remember terms, but load them one by one in order to decrease
+ * memory usage.
  *
  * @param $options
  *   Array of batch options.
@@ -206,26 +210,12 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
     $context['sandbox']['terms'] = &$terms;
     unset($terms);
 
-    // @todo use taxonomy_term_load_multiple or regular Drupal 7 query.
-    // Prepare list of duplicate terms for def_links export.
+    // Prepare list of duplicate terms if needed.
     $context['results'][0]['duplicate_terms'] = array();
-    $sql = '
-      SELECT t1.tid, t1.name
-      FROM {taxonomy_term_data} t1
-      LEFT OUTER JOIN {taxonomy_term_data} t2 ON t1.tid != t2.tid AND LOWER(t1.name) = LOWER(t2.name)
-      WHERE t2.tid IS NOT NULL
-    ';
-    $args = array();
-    if ($options['vocabulary_id']) {
-      $sql .= ' AND t1.vid = :vid AND t2.vid = :vid ';
-      $args[':vid'] = $options['vocabulary_id'];
-    }
-    $sql .= '
-      ORDER BY {t1.tid} ASC
-    ';
-    $result = db_query($sql, $args);
-    foreach ($result as $term) {
-      $context['results'][0]['duplicate_terms'][$term->tid] = $term->name;
+    if (in_array($options['export_format'], array(
+        TAXONOMY_CSV_FORMAT_DEFINITION_LINKS,
+      ))) {
+      $context['results'][0]['duplicate_terms'] = taxonomy_csv_term_find_duplicate($options['vocabulary_id']);
     }
   }
   elseif (!is_resource($context['results'][0]['handle'])) {
@@ -288,9 +278,10 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
       '%term'        => $current_name,
     ));
 
-    // Check worst message of exported lines and update progress.
+    // Check worst message of exported terms and update progress.
     if ($worst_message >= TAXONOMY_CSV_PROCESS_WARNING) {
-      $context['finished'] = $term_number / $context['sandbox']['max'];
+      // Count should be <= 0.99 to avoid batch stop before end (Drupal 7 bug).
+      $context['finished'] = floor($term_number / $context['sandbox']['max'] * 100) / 100;
     }
     else {
       $context['finished'] = 1;
@@ -349,12 +340,9 @@ function _taxonomy_csv_vocabulary_export_finished($success, $results, $operation
   }
 
   // Set result message in watchdog and eventually in user interface.
-  watchdog(
-    'taxonomy_csv',
-    $message,
-    NULL,
-    $worst_level
-  );
+  // Use of a $message variable is unrecommended, but simpler and working.
+  // See http://drupal.org/node/323101
+  watchdog('taxonomy_csv', $message, NULL, $worst_level);
   if ($options['result_display']) {
     _taxonomy_csv_export_result($options, $worst_level, $message, $results);
   }
@@ -366,13 +354,13 @@ function _taxonomy_csv_vocabulary_export_finished($success, $results, $operation
  * @param $term
  *   Full term object to export.
  * @param $options
- *   Array of export options:
- *     export_format : see _taxonomy_csv_values('list_export_format')
- *     Specific to def_links:
- *     def_links_terms_ids : 'name_if_needed' (default), 'name' or 'tid'
- *     def_links_vocabularies_ids : 'none' (default), 'name' or 'vid'
+ *   An associative array of export options:
+ *   - export_format : see _taxonomy_csv_values('list_export_format')
+ *   //  Specific to def_links:
+ *   - def_links_terms_ids : 'name_if_needed' (default), 'name' or 'tid'
+ *   - def_links_vocabularies_ids : 'none' (default), 'name' or 'vid'
  * @param $duplicate_terms
- *   Optional. Array of duplicate terms names indexed by tid.
+ *   (Optional) Array of duplicate terms names indexed by tid.
  *   Duplicate terms are managed only with def_links.
  *
  * @return Result array:
@@ -401,14 +389,12 @@ function taxonomy_csv_line_export($term, $options, $duplicate_terms = array()) {
         // except for duplicate terms. For them, tid is appended to name.
         $terms = array(
           'main'      => array($term),
-          'synonyms'  => taxonomy_csv_term_get_synonyms($term),
           'parents'   => taxonomy_get_parents($term->tid),
           'children'  => taxonomy_get_children($term->tid),
-          'relations' => taxonomy_csv_term_get_relations($term),
+          'relations' => taxonomy_csv_term_get_relations($term->tid),
         );
         foreach (array(
             'main',
-            'synonyms',
             'parents',
             'children',
             'relations',
@@ -430,6 +416,9 @@ function taxonomy_csv_line_export($term, $options, $duplicate_terms = array()) {
             }
           }
         }
+
+        // Prepare synonyms.
+        $synonyms = taxonomy_csv_term_get_synonyms($term->tid);
 
         // Prepare main term vocabulary identifiant.
         // Vocabulary identifiant depends on def_links_vocabularies_ids.
@@ -467,12 +456,12 @@ function taxonomy_csv_line_export($term, $options, $duplicate_terms = array()) {
             $vid,
             $term->description,
             $term->weight,
-            count($ids['synonyms']),
+            count($synonyms),
             count($ids['parents']),
             count($ids['children']),
             count($ids['relations']),
           ),
-          $ids['synonyms'],
+          $synonyms,
           $ids['parents'],
           $ids['children'],
           $ids['relations'],
@@ -509,7 +498,7 @@ function taxonomy_csv_line_export($term, $options, $duplicate_terms = array()) {
           array(
             $term->name,
           ),
-          taxonomy_csv_term_get_relations_names($term)
+          taxonomy_csv_term_get_relations_names($term->tid)
         );
         break;
 
@@ -518,7 +507,7 @@ function taxonomy_csv_line_export($term, $options, $duplicate_terms = array()) {
           array(
             $term->name,
           ),
-          taxonomy_csv_term_get_synonyms($term)
+          taxonomy_csv_term_get_synonyms($term->tid)
         );
         break;
 
@@ -529,7 +518,7 @@ function taxonomy_csv_line_export($term, $options, $duplicate_terms = array()) {
             $term->weight,
             $term->description,
           ),
-          taxonomy_csv_term_get_synonyms($term)
+          taxonomy_csv_term_get_synonyms($term->tid)
         );
         break;
 
@@ -548,6 +537,7 @@ function taxonomy_csv_line_export($term, $options, $duplicate_terms = array()) {
         break;
 
       case TAXONOMY_CSV_FORMAT_FIELDS:
+        // @todo Extra fields.
         break;
 
       default:
