@@ -115,7 +115,7 @@ Code / security
  - --- --- use a smarter regexp delimiter than fgetcsv or explode
  x 642 742 fix: when a file is set, avoid UI bug when first option changes
  x 645 745 change Warning empty line by a simple info except if problem
- o         modularize code to simplify addition of new schemes
+ o 653 753 modularize code to simplify addition of new schemes
  o         modularize code to simplify integration of Taxonomy Builder API
  o         create a UI for continuous synchro with a database
  x 643 743 create API

@@ -32,6 +32,7 @@
 <body>
 <p>Ce module permet d'importer/exporter des taxinomies, des structures ou de simples listes de termes dans/depuis un vocabulaire à partir/vers d'un fichier <a href="http://fr.wikipedia.org/wiki/Comma-separated_values" title="Définition Wikipedia">CSV</a>, d'une url ou d'un texte copié-collé.</p>
 <p>Le format csv correspond à une simple liste de valeurs séparées par un séparateur, souvent une virgule(<strong><code>,</code></strong>) ou un point-virgule (<strong><code>;</code></strong>), et des caractères de délimitation, souvent les guillemets (<strong><code>"</code></strong>). Si vous ne savez pas comment créer un fichier CSV, vous pouvez utiliser <a href="http://www.openoffice.org" title="OpenOffice.org">OpenOffice Calc</a> ou un autre tableur pour exporter vos données dans un fichier CSV.</p>
+<p>Des formats d'import ou d'export spécifiques peuvent être ajoutés simplement par un mécanisme d'extensions (sinon, demander à l'auteur !).</p>
   <div class="toc">
     <h2 class="nonum"><a id="contents" name="contents">Sommaire</a></h2>
     <ol class="toc">
@@ -76,6 +77,9 @@
           </li>
           <li>
             <a href="#taxonomy_manager">Taxonomy manager</a>
+          </li>
+          <li>
+            <a href="#geotaxonomy">Geotaxonomy</a>
           </li>
         </ol>
       </li>
@@ -277,12 +281,26 @@
         <li><code>Baobab, 3</code></li>
       </ul></div>
   <h4 id="taxonomy_manager"><a href="#contents">13. Taxonomy manager</a></h4>
-    <p>Ce format est utilisé par <a href="http://drupal.org/project/taxonomy_manager" title="Module Taxonomy manager">Taxonomy manager</a> pour exporter des vocabulaires. Les colonnes sont : identifiant du vocabulaire, identifiant du terme, nom du terme, description du terme, parent 1 de premier niveau, ..., parent n de premier niveau. Example:</p>
+    <p>Ce format est utilisé par <a href="http://drupal.org/project/taxonomy_manager" title="Module Taxonomy manager">Taxonomy manager</a> pour exporter des vocabulaires. Les colonnes sont : identifiant du vocabulaire, identifiant du terme, nom du terme, description du terme, id du parent 1 de premier niveau, ..., id du parent n de premier niveau. Example:</p>
       <div class="codeblock"><ul>
-        <li><code>"1"; "25"; "Louis XVII"; "Roi de France"; "Louis XVI"; "Marie-Antoinette"</code></li>
+        <li><code>, 1, "Île-de-France", "Main region"</code></li>
+        <li><code>, 2, "Paris", "Capital of France", 1</code></li>
       </ul></div>
-    Dans ce format, l'ordre des lignes est important : il est impossible d'attacher un parent à un terme si ce parent n'a pas été importé dans une ligne précédente.<br />
-    Lorsqu'un vocabulaire est importé dans un vocabulaire existant, seule l'option "ignorer et créer" peut être utilisée.
+    <p>Dans ce format, l'ordre des lignes est important : il est impossible d'attacher un parent à un terme si ce parent n'a pas été importé dans une ligne précédente.</p><br />
+    <p>Lorsqu'un vocabulaire est importé dans un vocabulaire existant, seule l'option "ignorer et créer" peut être utilisée.</p>
+  <h4 id="geotaxonomy"><a href="#contents">14. Geotaxonomy</a></h4>
+    <p>Importe et exporte des termes de <a href="http://drupal.org/project/geotaxonomy"  title="Module Geotaxonomy">géotaxinomie</a>.</p>
+    <p>Format</p>
+    <div class="codeblock"><ul>
+    <code>nom, unique id, description, parent, parent unique id, poids, latitude, longitude, frontières haut, droite, bas, gauche</code>
+    </div>
+    <p>Exemple</p>
+    <div class="codeblock"><ul>
+      <li><code>"Paris", , "Capitale de la France", "Île-de-France", , 5, 48, 2, 10, 11, 12, 13</code></li>
+      <li><code>"Île-de-France", , "Région capitale", "France", , 3, 50, 0, 100, 110, 120, 130</code></li>
+    </ul></div>
+    <p>Seuls le nom et soit la latitude soit la longitude sont nécessaires pour procéder à l'importation. Indiquer un parent est recommandé afin d'aboutir à une structure hiérarchique.</p>
+    <p>Les identifiants peuvent être des nombres ou non, par exemple le nom du terme lui-même, mais ils doivent être uniques pour éviter les termes doublons. Seuls les doublons ont besoin d'un identifiant.</p>
 
 <h3 id="import"><a href="#contents">2. Import</a></h3>
   <p>Taxonomy CSV permet d'importer des structures et des propriêtés de termes.</p>

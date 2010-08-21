@@ -12,12 +12,12 @@
  * options.
  * taxonomy_csv.import.result.inc is invoked only if user wants result messages.
  */
-  $taxonomy_csv_path = drupal_get_path('module', 'taxonomy_csv');
-  require_once("$taxonomy_csv_path/taxonomy_csv.api.inc");
-  require_once("$taxonomy_csv_path/import/taxonomy_csv.import.parser.api.inc");
-  require_once("$taxonomy_csv_path/import/taxonomy_csv.import.line.api.inc");
-  require_once("$taxonomy_csv_path/taxonomy_csv.vocabulary.api.inc");
-  require_once("$taxonomy_csv_path/taxonomy_csv.term.api.inc");
+  $module_dir = drupal_get_path('module', 'taxonomy_csv');
+  require_once("$module_dir/taxonomy_csv.api.inc");
+  require_once("$module_dir/import/taxonomy_csv.import.parser.api.inc");
+  require_once("$module_dir/import/taxonomy_csv.import.line.api.inc");
+  require_once("$module_dir/taxonomy_csv.vocabulary.api.inc");
+  require_once("$module_dir/taxonomy_csv.term.api.inc");
 
 /**
  * Process the import of an input.
@@ -61,7 +61,7 @@
 function taxonomy_csv_import($options) {
   // Complete $options with default values if needed.
   // Default api and UI options are different.
-  $options += _taxonomy_csv_values('list_import_default_values_api');
+  $options += _taxonomy_csv_values('import_default_api');
 
   // Preload text or file in order to check access to temporary folder.
   $messages = _taxonomy_csv_import_input_preload($options);
@@ -216,8 +216,8 @@ function _taxonomy_csv_import_clean_utf8(&$file, $check_utf8 = TRUE) {
 function taxonomy_csv_vocabulary_import($options) {
   // Check options and return array of messages in case of errors.
   if ($options['check_options']) {
-    $taxonomy_csv_path = drupal_get_path('module', 'taxonomy_csv');
-    require_once("$taxonomy_csv_path/import/taxonomy_csv.import.admin.inc");
+    $module_dir = drupal_get_path('module', 'taxonomy_csv');
+    require_once("$module_dir/import/taxonomy_csv.import.admin.inc");
     $result = _taxonomy_csv_import_check_options($options);
     if (count($result)) {
       return $result;
@@ -339,11 +339,17 @@ function _taxonomy_csv_vocabulary_import_process($options, &$context) {
     // Remember only wanted messages.
     if (($options['result_stats'] || $options['result_terms'])
         && $result['tid']) {
-      // Some formats use result to save other infos.
+      // Some formats use $result to save other infos, so it needs to be cleaned
+      // before to be saved.
+      $format = taxonomy_csv_format_get($options['import_format']);
       if (($options['import_format'] == TAXONOMY_CSV_FORMAT_DEFINITION_LINKS)
           && isset($result['tid']['term'])) {
-        // Def_links saved all terms each times.
+        // Def_links saved all terms each times in a sub array.
         $context['results'][0]['imported_terms'][0] = array_values($result['tid']['term']);
+      }
+      elseif ($format && $format['import_previous']) {
+        // Don't remember previous previous items.
+        $context['results'][0]['imported_terms'][0] = array_values($result['tid']);
       }
       else {
         $context['results'][0]['imported_terms'][$line_number] = $result['tid'];
@@ -423,8 +429,8 @@ function _taxonomy_csv_vocabulary_import_finished($success, $results, $operation
 
   // Invoke import stats file if user wants to display texts for result.
   if ($options['result_display']) {
-    $taxonomy_csv_path = drupal_get_path('module', 'taxonomy_csv');
-    require_once("$taxonomy_csv_path/import/taxonomy_csv.import.result.inc");
+    $module_dir = drupal_get_path('module', 'taxonomy_csv');
+    require_once("$module_dir/import/taxonomy_csv.import.result.inc");
   }
 
   // Short summary information is different if batch succeeded or not.
@@ -518,7 +524,6 @@ function _taxonomy_csv_import_vocabulary_prepare(&$options) {
   $synonym_field = (in_array($options['import_format'], array(
       TAXONOMY_CSV_FORMAT_DEFINITIONS,
       TAXONOMY_CSV_FORMAT_SYNONYMS,
-      TAXONOMY_CSV_FORMAT_TAXONOMY_MANAGER,
     ))) ?
     array() :
     FALSE;
@@ -526,13 +531,18 @@ function _taxonomy_csv_import_vocabulary_prepare(&$options) {
   // Prepare default relations field if needed.
   $relation_field = (in_array($options['import_format'], array(
       TAXONOMY_CSV_FORMAT_RELATIONS,
-      TAXONOMY_CSV_FORMAT_TAXONOMY_MANAGER,
     ))) ?
     array() :
     FALSE;
 
   // Create thesaurus synonyms and relations fields if needed.
   $options['vocabulary'] = taxonomy_csv_thesaurus_create($vocabulary->name, $synonym_field, $relation_field);
+
+  // Check external formats. Use it only if it works.
+  $funcname = "_taxonomy_csv_import_vocabulary_prepare_{$options['import_format']}";
+  if (taxonomy_csv_format_check($options['import_format'], $funcname)) {
+    $result = $funcname($vocabulary);
+  }
 
   return $vocabulary->name;
 }
@@ -544,9 +554,9 @@ function _taxonomy_csv_import_vocabulary_prepare(&$options) {
  *   Array which contains items of a csv line.
  * @param $options
  *   An associative array of import options:
- *   - import_format : see _taxonomy_csv_values('list_import_format')
+ *   - import_format : see _taxonomy_csv_values('import_format')
  *   - vocabulary_id : vocabulary id to import into
- *   - existing_items: see _taxonomy_csv_values('list_import_option')
+ *   - existing_items: see _taxonomy_csv_values('import_option')
  *   - check_line    : boolean. Tweak to check (default) or not format of lines
  *   - check_utf8    : boolean. Tweak to check (default) or not utf8 format
  *   // Specific to relations import:
@@ -587,7 +597,7 @@ function taxonomy_csv_line_import_process($line, $options, $previous_items = arr
       $line_messages);
 
     // 2. Check items of line if no error occurs and if line is not empty.
-    if ((_taxonomy_csv_worst_message($result['msg']) >= TAXONOMY_CSV_PROCESS_WARNING)
+    if ((_taxonomy_csv_worst_message($line_messages) >= TAXONOMY_CSV_PROCESS_NOTICE)
         && ((count($line_messages) == 0) || ($line_messages[0] != 696))) {
       $line = _taxonomy_csv_line_import_check(
         $line,
@@ -597,7 +607,7 @@ function taxonomy_csv_line_import_process($line, $options, $previous_items = arr
       $line_messages = array_merge($line_messages, $items_messages);
 
       // 3. Process import items with full checked line.
-      if (_taxonomy_csv_worst_message($items_messages) >= TAXONOMY_CSV_PROCESS_WARNING) {
+      if (_taxonomy_csv_worst_message($items_messages) >= TAXONOMY_CSV_PROCESS_NOTICE) {
         $result = taxonomy_csv_line_import(
           $line,
           $options,

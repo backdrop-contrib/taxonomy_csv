@@ -11,8 +11,8 @@
  * taxonomy_csv.export.api.inc is invoked only when form is submitted.
  */
   // Invoke taxonomy_csv api (defines and functions).
-  $taxonomy_csv_path = drupal_get_path('module', 'taxonomy_csv');
-  require_once("$taxonomy_csv_path/taxonomy_csv.api.inc");
+  $module_dir = drupal_get_path('module', 'taxonomy_csv');
+  require_once("$module_dir/taxonomy_csv.api.inc");
 
 /**
  * Generates the taxonomy CSV export form.
@@ -35,7 +35,7 @@
 function taxonomy_csv_form_export($form_state) {
   // Remember previous values to use in particular when reloading form.
   // If not reloading form, use saved values if exist, else recommended ones.
-  $list_recommended_values = _taxonomy_csv_values('list_export_default_values_ui');
+  $list_recommended_values = _taxonomy_csv_values('export_default_ui');
   $list_previous_values = array();
   foreach ($list_recommended_values as $key => $value) {
     $list_previous_values[$key] = isset($form_state['values'][$key]) ?
@@ -43,7 +43,7 @@ function taxonomy_csv_form_export($form_state) {
         variable_get("taxonomy_csv_{$key}", $value);
   }
 
-  $list_export_format = _taxonomy_csv_values('list_export_format');
+  $list_export_format = _taxonomy_csv_values('export_format');
 
   $list_export_delimiter = array(
     'comma'            => t('« , » (Comma)'),
@@ -288,8 +288,8 @@ function taxonomy_csv_form_export($form_state) {
  */
 function taxonomy_csv_form_export_validate($form, &$form_state) {
   // Invoke taxonomy_csv api (defines and functions).
-  $taxonomy_csv_path = drupal_get_path('module', 'taxonomy_csv');
-  require_once("$taxonomy_csv_path/export/taxonomy_csv.export.api.inc");
+  $module_dir = drupal_get_path('module', 'taxonomy_csv');
+  require_once("$module_dir/export/taxonomy_csv.export.api.inc");
 
   $options = &$form_state['values'];
 
@@ -375,7 +375,7 @@ function taxonomy_csv_form_export_validate($form, &$form_state) {
 function _taxonomy_csv_export_check_options(&$options) {
   $messages = array();
 
-  $list_export_format = _taxonomy_csv_values('list_export_format');
+  $list_export_format = _taxonomy_csv_values('export_format');
   if (!array_key_exists($options['export_format'], $list_export_format)) {
     $messages['export_format'] = t('Export format "!export_format" is not managed.', array(
       '!export_format' => $list_export_format[$options['export_format']],
@@ -507,7 +507,7 @@ function _taxonomy_csv_form_export_default_values_validate($form, &$form_state) 
  * Restore recommended default values in the export form.
  */
 function _taxonomy_csv_form_export_default_values_submit($form, &$form_state) {
-  foreach (_taxonomy_csv_values('list_export_default_values_ui') as $option => $value) {
+  foreach (_taxonomy_csv_values('export_default_ui') as $option => $value) {
     variable_set("taxonomy_csv_$option", $value);
   }
   unset($form_state['values']);

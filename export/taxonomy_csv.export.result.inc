@@ -9,8 +9,8 @@
 /**
  * Invoke associated include file.
  */
-  $taxonomy_csv_path = drupal_get_path('module', 'taxonomy_csv');
-  require_once("$taxonomy_csv_path/taxonomy_csv.result.inc");
+  $module_dir = drupal_get_path('module', 'taxonomy_csv');
+  require_once("$module_dir/taxonomy_csv.result.inc");
 
 /**
  * Display result messages of export process.
@@ -41,7 +41,7 @@ function _taxonomy_csv_export_result($options, $worst_level, $summary, $results)
   }
   // Only summary is displayed in case of error.
   elseif ($worst_level >= WATCHDOG_WARNING) {
-    $list_format = _taxonomy_csv_values('list_export_format');
+    $list_format = _taxonomy_csv_values('export_format');
     // General infos.
     $message = t('!term_count / !total_terms terms of chosen vocabularies have been exported to file !file (!filesize KB) with the format "!format". Click on link to view it or right click to download it.', array(
       '!term_count'  => $options['current_term'],
