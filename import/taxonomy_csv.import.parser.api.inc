@@ -17,8 +17,6 @@
  *   (Optional) Cleaned and checked previous imported line names and tids array.
  *   Needed with some contents as one term array structure or Taxonomy manager.
  *   Specificities:
- *   - taxonomy_manager:
- *       tid array is indexed with old tids.
  *   - def_links:
  *       'name' and 'tid' arrays contain sub-arrays 'vocabulary' and 'term' with
  *       imported identifiant as key and name or tid/vid as value in order to
@@ -328,66 +326,15 @@ function _taxonomy_csv_line_import_check($line, $options, $previous_items = arra
       }
       break;
 
-    case TAXONOMY_CSV_FORMAT_TAXONOMY_MANAGER:
-      $checked_items = $line;
-      if (empty($line[0])) {
-        $messages[] = 550; // Notice no first column.
-      }
-      if (count($line) < 4) {
-        $messages[] = 450; // Warning some items lacks.
-        break;
-      }
-      if (empty($line[1]) || empty($line[2])
-          || ($line[1] == 0) || ($line[2] == '')) {
-        $messages[] = 481; // Warning no item in second or third column.
-        break;
-      }
-      if (count($line) == 4) {
-        $messages[] = 551; // Notice root term.
-        $checked_items[] = 0;
-      }
-      foreach ($checked_items as $key => $value) {
-        if (($key != 2) && ($key != 3) && !is_numeric($value)) {
-          $messages[] = 451; // Warning not a number.
-          break 2;
-        }
-      }
-      $list_parents = array_unique(array_slice($checked_items, 4));
-      sort($list_parents);
-      if (count($list_parents) != count(array_slice($checked_items, 4))) {
-        $messages[] = 531; // Notice duplicates, which are removed.
-      }
-      foreach ($list_parents as $value) {
-        if ($value == $checked_items[1]) {
-          $messages[] = 452; // Warning a term can't be a parent of itself.
-          break 2;
-        }
-      }
-      $checked_items = array_merge(array_slice($checked_items, 0, 4), $list_parents);
-      if (($list_parents[0] === 0) && (count($list_parents) > 1)) {
-        $messages[] = 453; // Warning: root term has a parent.
-        break;
-      }
-      // $previous_items keys contain all previous lines source tid.
-      if (isset($previous_items['tid'][$checked_items[1]])) {
-        $messages[] = 552; // Notice: term has been already imported.
-      }
-      foreach ($list_parents as $value) {
-        if (($value != 0) && !isset($previous_items['tid'][$value])) {
-          $messages[] = 352; // Error: parent tid hasn't been already imported.
-          break;
-        }
-      }
-      foreach (array_merge(array_slice($checked_items, 0, 3), array_slice($checked_items, 4)) as $name) {
-        if (drupal_strlen($name) > 255) {
-          $messages[] = 454; // Warning too long.
-          break;
-        }
-      }
-      break;
-
     default:
-      $messages[] = 306; // Error unknown source content.
+      // Check external formats. Use it only if it works.
+      $funcname = "_taxonomy_csv_line_import_check_{$options['import_format']}";
+      if (taxonomy_csv_format_check($options['import_format'], $funcname)) {
+        $checked_items = $funcname($line, $options, $previous_items, $messages);
+      }
+      else {
+        $messages[] = 306; // Error unknown source content.
+      }
   }
 
   return array_values($checked_items);

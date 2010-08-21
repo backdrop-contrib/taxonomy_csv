@@ -10,8 +10,8 @@
  * Invoke associated files.
  * taxonomy_csv.import.api.inc is invoked only when form is submitted.
  */
-  $taxonomy_csv_path = drupal_get_path('module', 'taxonomy_csv');
-  require_once("$taxonomy_csv_path/taxonomy_csv.api.inc");
+  $module_dir = drupal_get_path('module', 'taxonomy_csv');
+  require_once("$module_dir/taxonomy_csv.api.inc");
 
 /**
  * Generates the taxonomy CSV import form.
@@ -50,7 +50,7 @@ function taxonomy_csv_form_import($form_state) {
   // Remember previous values to use specially when reloading form.
   // If not reloading form, use saved values if exist, else recommended ones.
   // Warning: specific values 'text', 'path' and 'url are not saved here.
-  $list_recommended_values = _taxonomy_csv_values('list_import_default_values_ui');
+  $list_recommended_values = _taxonomy_csv_values('import_default_ui');
   $list_previous_values = array();
   foreach ($list_recommended_values as $key => $value) {
     $list_previous_values[$key] = isset($form_state['values'][$key]) ?
@@ -58,7 +58,9 @@ function taxonomy_csv_form_import($form_state) {
       variable_get("taxonomy_csv_{$key}", $value);
   }
 
-  $list_import_format = _taxonomy_csv_values('list_import_format');
+  $list_import_format = _taxonomy_csv_values('import_format');
+
+  $list_external_format = taxonomy_csv_formats_get();
 
   $list_import_delimiter = array(
     'comma'            => t('« , » (Comma)'),
@@ -82,7 +84,7 @@ function taxonomy_csv_form_import($form_state) {
     'existing'   => t('Import in an existing vocabulary'),
   );
 
-  $list_import_option = _taxonomy_csv_values('list_import_option');
+  $list_import_option = _taxonomy_csv_values('import_option');
 
   // Build form.
 
@@ -183,6 +185,15 @@ function taxonomy_csv_form_import($form_state) {
           ),
         ),
       );
+      // Complete generic form with specific help for external import formats.
+      if (in_array($key, array_keys($list_external_format))) {
+        $form['tab']['format'][$key]['#description'] = $list_external_format[$key]['description'] . '<br /><br />'
+        . '<strong><em>' . t('Format:') . '</em></strong><br />'
+        . '<code>' . $list_external_format[$key]['description_format'] . '</code><br />'
+        . '<strong><em>' . t('Example:') . '</em></strong><br />'
+        . '<code>' . $list_external_format[$key]['description_example'] . '</code><br />' . '<br />'
+        . $list_external_format[$key]['description_long'];
+      }
     }
 
     // Complete generic form with specific help for each import format.
@@ -218,9 +229,6 @@ function taxonomy_csv_form_import($form_state) {
     $form['tab']['format']['descriptions']['#description'] = t('Allow to import descriptions of terms. The term is in the first column and the matching description is in the second column.');
 
     $form['tab']['format']['weights']['#description'] = t('Allow to import a weight of a term. The term is in the first column and the matching weight is in the second column.');
-
-    $form['tab']['format']['taxonomy_manager']['#description'] = t('Allow to import a vocabulary exported with Taxonomy manager.') . '<br />'
-      . t("Format: Each line contains: vocabulary id, term id, term name, term description and list of parents. In this format, order of all lines is important, because it's impossible to attach a parent to an item if this parent hasn't been imported in a previous line.");
   }
   $form['tab']['format']['info'] = array(
     '#type'        => 'item',
@@ -457,11 +465,11 @@ function taxonomy_csv_form_import($form_state) {
   );
 
   if (isset($_COOKIE['has_js'])) {
-    $list_import_format_allowed_import_option = _taxonomy_csv_values('list_import_format_allowed_import_option');
+    $list_import_allowed = _taxonomy_csv_values('import_allowed');
     foreach ($list_import_format as $key => $value) {
       $form['tab']['import_options']["existing_items_$key"] = array(
         '#type'          => 'radios',
-        '#options'       => array_intersect_key($list_import_option, array_flip($list_import_format_allowed_import_option[$key])),
+        '#options'       => array_intersect_key($list_import_option, array_flip($list_import_allowed[$key])),
         '#default_value' => $list_previous_values['existing_items'],
         // '#description is needed to avoid a #states bug.
         '#description'   => '',
@@ -488,6 +496,11 @@ function taxonomy_csv_form_import($form_state) {
           ),
         ),
       );
+
+      // Complete generic form with specific help for external import formats.
+      if (in_array($key, array_keys($list_external_format))) {
+        $form['tab']['import_options'][$key]['#description'] = $list_external_format[$key]['import_options_help'];
+      }
     }
 
     // Complete generic form with specific help for each import format.
@@ -559,14 +572,6 @@ function taxonomy_csv_form_import($form_state) {
         </ul>';
 
     $form['tab']['import_options']['weights']['#description'] = t('This option indicates whether and how existing terms with the same name should be updated or ignored.');
-
-    $form['tab']['import_options']['taxonomy_manager']['#description'] = t("When a vocabulary is imported in an existing one, only third option (ignore existing terms) can be used.") . '<br />'
-      . t('This option indicates whether and how existing terms with the same name should be updated or ignored.') . '<br />'
-      . '<ul>
-          <li>' . t('<em>"Update and merge"</em>: update term or create it if not exists and merge eventual parents with new ones.') . '</li>
-          <li>' . t('<em>"Update and replace"</em>: update term or create it if not exists and replace eventual parents with new ones.') . '</li>
-          <li>' . t('<em>"Ignore and create"</em>: term is always created.') . '</li>
-        </ul>';
   }
   else {
     $form['tab']['import_options']['help_no_javascript'] = array(
@@ -621,6 +626,11 @@ function taxonomy_csv_form_import($form_state) {
     '#description'   => t("This checkbox allows to create relations with existing terms in other vocabularies if they don't exist in selected vocabulary."),
     '#disabled'      => TRUE,
   );
+
+  // External specific options.
+  // @todo when needed.
+  foreach ($list_external_format as $key => $value) {
+  }
 
   $form['tab']['advanced_options'] = array(
     '#type'        => 'fieldset',
@@ -698,8 +708,8 @@ function taxonomy_csv_form_import($form_state) {
  */
 function taxonomy_csv_form_import_validate($form, &$form_state) {
   // Invoke taxonomy_csv.import.api.
-  $taxonomy_csv_path = drupal_get_path('module', 'taxonomy_csv');
-  require_once("$taxonomy_csv_path/import/taxonomy_csv.import.api.inc");
+  $module_dir = drupal_get_path('module', 'taxonomy_csv');
+  require_once("$module_dir/import/taxonomy_csv.import.api.inc");
 
   $options = &$form_state['values'];
 
@@ -839,15 +849,15 @@ function _taxonomy_csv_import_check_options(&$options) {
     }
   }
 
-  $list_import_format = _taxonomy_csv_values('list_import_format');
-  $list_import_option = _taxonomy_csv_values('list_import_option');
-  $list_import_format_allowed_import_option = _taxonomy_csv_values('list_import_format_allowed_import_option');
+  $list_import_format = _taxonomy_csv_values('import_format');
+  $list_import_option = _taxonomy_csv_values('import_option');
+  $list_import_allowed = _taxonomy_csv_values('import_allowed');
   if (!array_key_exists($options['import_format'], $list_import_format)) {
     $messages['import_format'] = t('Source content "!import_format" is not managed.', array(
       '!import_format' => $list_import_format[$options['import_format']]
     ));
   }
-  elseif (!in_array($options['existing_items'], $list_import_format_allowed_import_option[$options['import_format']])) {
+  elseif (!in_array($options['existing_items'], $list_import_allowed[$options['import_format']])) {
     $messages['existing_items'] = t('Import option "%existing_items" cannot be used with source content "!import_format".', array(
       '%existing_items' => $list_import_option[$options['existing_items']],
       '!import_format'  => $list_import_format[$options['import_format']],
@@ -936,7 +946,7 @@ function _taxonomy_csv_form_import_default_values_validate($form, &$form_state) 
  * Restore recommended default values in the import form.
  */
 function _taxonomy_csv_form_import_default_values_submit($form, &$form_state) {
-  foreach (_taxonomy_csv_values('list_import_default_values_ui') as $option => $value) {
+  foreach (_taxonomy_csv_values('import_default_ui') as $option => $value) {
     variable_set("taxonomy_csv_$option", $value);
   }
   unset($form_state['values']);

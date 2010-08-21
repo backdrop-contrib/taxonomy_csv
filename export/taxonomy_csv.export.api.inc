@@ -12,9 +12,9 @@
  * options.
  * taxonomy_csv.export.result.inc is invoked only if user wants result messages.
  */
-  $taxonomy_csv_path = drupal_get_path('module', 'taxonomy_csv');
-  require_once("$taxonomy_csv_path/taxonomy_csv.api.inc");
-  require_once("$taxonomy_csv_path/taxonomy_csv.term.api.inc");
+  $module_dir = drupal_get_path('module', 'taxonomy_csv');
+  require_once("$module_dir/taxonomy_csv.api.inc");
+  require_once("$module_dir/taxonomy_csv.term.api.inc");
 
 /**
  * Process the export of a vocabulary.
@@ -23,7 +23,7 @@
  *
  * @param $options
  *   An associative array of options:
- *   - export_format : see _taxonomy_csv_values('list_export_format')
+ *   - export_format : see _taxonomy_csv_values('export_format')
  *   - vocabulary_id : vocabulary id to export (default: 0, which means all)
  *   - delimiter     : one character csv delimiter (default: ',')
  *   - enclosure     : zero or one character csv enclosure (default: '"')
@@ -46,7 +46,7 @@
 function taxonomy_csv_export($options) {
   // Complete $options with default values if needed.
   // Default api and UI options are different.
-  $options += _taxonomy_csv_values('list_export_default_values_api');
+  $options += _taxonomy_csv_values('export_default_api');
 
   // Presave a file in order to check access to temporary folder.
   $messages = _taxonomy_csv_export_output_presave($options);
@@ -118,8 +118,8 @@ function taxonomy_csv_vocabulary_export($options) {
   // Check options and return array of messages in case of errors.
   if ($options['check_options']) {
     // Invoke export admin file.
-    $taxonomy_csv_path = drupal_get_path('module', 'taxonomy_csv');
-    require_once("$taxonomy_csv_path/export/taxonomy_csv.export.admin.inc");
+    $module_dir = drupal_get_path('module', 'taxonomy_csv');
+    require_once("$module_dir/export/taxonomy_csv.export.admin.inc");
     $result = _taxonomy_csv_export_check_options($options);
     if (count($result)) {
       return $result;
@@ -239,23 +239,8 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
     $current_name = $term->name;
 
     // Process export of current term.
-    $result = taxonomy_csv_line_export($term, $options, $duplicate_terms);
-
-    // Check if separator, enclosure or line ending exist in line.
-    $check_line = implode('', $result['line']);
-    if ((strpos($check_line, $options['separator']) !== FALSE)
-        || (($options['enclosure'] != '')
-          && (strpos($check_line, $options['enclosure']) !== FALSE))
-        || (($options['enclosure'] == '')
-          && (strpos($check_line, $options['end_of_line']) !== FALSE))) {
-      $result['msg'][] = 313; // Error delimiter or enclosure.
-    }
-
-    // Save line to file.
-    $line = $options['enclosure'] . implode($options['separator'], $result['line']) . $options['enclosure'] . $options['end_of_line'];
-    if (fwrite($handle, $line) === FALSE) {
-      $result['msg'][] = 312; // Unable to write to file.
-    }
+    $result = taxonomy_csv_term_export($term, $options, $duplicate_terms);
+    $result['msg'] = taxonomy_csv_line_export($result['line'], $options, $handle, $result['msg']);
 
     // Remember worst message of exported terms.
     $worst_message_new = _taxonomy_csv_worst_message($result['msg']);
@@ -266,7 +251,7 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
     };
 
     // Remember messages. Currently useless because there isn't any warning or
-    // notice message. A result level can be added here as in import.
+    // notice message (only error). A result level can be added here if needed.
     if (count($result['msg'])) {
       $context['results'][$line_number] = $result['msg'];
     }
@@ -303,8 +288,8 @@ function _taxonomy_csv_vocabulary_export_finished($success, $results, $operation
 
   // Invoke export stats file if user wants to display results.
   if ($options['result_display']) {
-    $taxonomy_csv_path = drupal_get_path('module', 'taxonomy_csv');
-    require_once("$taxonomy_csv_path/export/taxonomy_csv.export.result.inc");
+    $module_dir = drupal_get_path('module', 'taxonomy_csv');
+    require_once("$module_dir/export/taxonomy_csv.export.result.inc");
   }
 
   // Short summary information is different if batch succeeded or not.
@@ -349,13 +334,52 @@ function _taxonomy_csv_vocabulary_export_finished($success, $results, $operation
 }
 
 /**
+ * Export a line.
+ *
+ * @param $line
+ *   Array to be exported to a line.
+ * @param $options
+ *   An associative array of export options:
+ *   - 'separator'  : string separator (formatted delimiter and enclosure).
+ *   - 'enclosure'  : item enclosure.
+ *   - 'end_of_line': end of line string.
+ * @param $handle
+ *   Handle of the open file where to save line.
+ * @param $result_message
+ *   (Optional) Array of messages.
+ *
+ * @return Result array:
+ *   Array of messages.
+ */
+function taxonomy_csv_line_export($line, $options, &$handle, $result = array()) {
+  // Check if separator, enclosure or line ending exist in line.
+  $check_line = implode('', $line);
+  if ((strpos($check_line, $options['separator']) !== FALSE)
+      || (($options['enclosure'] != '')
+        && (strpos($check_line, $options['enclosure']) !== FALSE))
+      || (($options['enclosure'] == '')
+        && (strpos($check_line, $options['end_of_line']) !== FALSE))) {
+    $result[] = 313; // Error delimiter or enclosure.
+  }
+  else {
+    // Save line to file.
+    $line = $options['enclosure'] . implode($options['separator'], $line) . $options['enclosure'] . $options['end_of_line'];
+    if (fwrite($handle, $line) === FALSE) {
+      $result[] = 312; // Unable to write to file.
+    }
+  }
+
+  return $result;
+}
+
+/**
  * Export a term to a line matching the options.
  *
  * @param $term
  *   Full term object to export.
  * @param $options
  *   An associative array of export options:
- *   - export_format : see _taxonomy_csv_values('list_export_format')
+ *   - export_format : see _taxonomy_csv_values('export_format')
  *   //  Specific to def_links:
  *   - def_links_terms_ids : 'name_if_needed' (default), 'name' or 'tid'
  *   - def_links_vocabularies_ids : 'none' (default), 'name' or 'vid'
@@ -367,7 +391,7 @@ function _taxonomy_csv_vocabulary_export_finished($success, $results, $operation
  *   'line' => array of exported items,
  *   'msg'  => array of messages arrays.
  */
-function taxonomy_csv_line_export($term, $options, $duplicate_terms = array()) {
+function taxonomy_csv_term_export($term, $options, $duplicate_terms = array()) {
   // Define default values.
   $result = array(
     'line' => array(),
@@ -541,7 +565,14 @@ function taxonomy_csv_line_export($term, $options, $duplicate_terms = array()) {
         break;
 
       default:
-        $result['msg'][] = 307; // Error unknown export format.
+        // Check external formats. Use it only if it works.
+        $funcname = "taxonomy_csv_term_export_{$options['export_format']}";
+        if (taxonomy_csv_format_check($options['export_format'], $funcname)) {
+          $result = $funcname($term, $options, $duplicate_terms);
+        }
+        else {
+          $result['msg'][] = 307; // Error unknown export format.
+        }
     }
   }
   else {

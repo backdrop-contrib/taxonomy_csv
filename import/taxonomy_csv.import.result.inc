@@ -9,8 +9,8 @@
 /**
  * Invoke associated include file.
  */
-  $taxonomy_csv_path = drupal_get_path('module', 'taxonomy_csv');
-  require_once("$taxonomy_csv_path/taxonomy_csv.result.inc");
+  $module_dir = drupal_get_path('module', 'taxonomy_csv');
+  require_once("$module_dir/taxonomy_csv.result.inc");
 
 /**
  * Display result messages of import process.
@@ -98,13 +98,13 @@ function _taxonomy_csv_info_chosen_options($options) {
   }
 
   // Content.
-  $list = _taxonomy_csv_values('list_import_format');
+  $list = _taxonomy_csv_values('import_format');
   $message .= '<br />' . t('Source content: "!import_format".', array(
     '!import_format' => $list[$options['import_format']],
   )) . '<br />';
 
   // Existing items.
-  $list = _taxonomy_csv_values('list_import_option');
+  $list = _taxonomy_csv_values('import_option');
   $message .= t('Existing terms choice: "!import_items".', array(
     '!import_items' => $list[$options['existing_items']],
   )) . '<br />';

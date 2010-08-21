@@ -13,19 +13,19 @@
  */
 function taxonomy_csv_format_taxonomy_manager() {
   return array(
-    'format'         => 'taxonomy_manager',
-    'name'           => t('Taxonomy manager'),
-    'needed_module'  => '',
-    'import_format'  => t('Taxonomy manager'),
-    'export_format'  => t('Taxonomy manager'),
-    'import_allowed' => array(
+    'format'          => 'taxonomy_manager',
+    'name'            => t('Taxonomy manager'),
+    'needed_module'   => '',
+    'import_format'   => t('Taxonomy manager'),
+    'export_format'   => t('Taxonomy manager'),
+    'import_allowed'  => array(
       TAXONOMY_CSV_EXISTING_UPDATE_MERGE,
       TAXONOMY_CSV_EXISTING_UPDATE_REPLACE,
       TAXONOMY_CSV_EXISTING_IGNORE_CREATE,
     ),
-    'import_previous'=> TRUE, // Because import remembers all previous_items.
-    'specific_fields'=> FALSE,
-    'description'    => t('Allow to import a vocabulary exported with <a href="!link">Taxonomy manager</a>.', array(
+    'import_previous' => TRUE, // Because import remembers all previous_items.
+    'specific_fields' => FALSE,
+    'description'     => t('Allow to import a vocabulary exported with <a href="!link">Taxonomy manager</a>.', array(
       '!link' => url('http://drupal.org/project/taxonomy_manager'),
     )),
     'description_format'  => t('vocabulary id, term id, term name, term description, list of first level parent ids'),

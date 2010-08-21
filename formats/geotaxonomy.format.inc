@@ -13,19 +13,19 @@
  */
 function taxonomy_csv_format_geotaxonomy() {
   return array(
-    'format'         => 'geotaxonomy',
-    'name'           => t('Geotaxonomy'),
-    'needed_module'  => 'geotaxonomy',
-    'import_format'  => t('Geotaxonomy'),
-    'export_format'  => t('Geotaxonomy'),
-    'import_allowed' => array(
+    'format'          => 'geotaxonomy',
+    'name'            => t('Geotaxonomy'),
+    'needed_module'   => 'geotaxonomy',
+    'import_format'   => t('Geotaxonomy'),
+    'export_format'   => t('Geotaxonomy'),
+    'import_allowed'  => array(
       TAXONOMY_CSV_EXISTING_UPDATE_MERGE,
       TAXONOMY_CSV_EXISTING_UPDATE_REPLACE,
       TAXONOMY_CSV_EXISTING_IGNORE_CREATE,
     ),
-    'import_previous'=> TRUE, // Because import remembers all previous_items.
-    'specific_fields'=> TRUE,
-    'description'    => t('Import <a href="!link">geotaxonomy</a> terms.', array(
+    'import_previous' => TRUE, // Because import remembers all previous_items.
+    'specific_fields' => TRUE,
+    'description'     => t('Import <a href="!link">geotaxonomy</a> terms.', array(
       '!link' => url('http://drupal.org/project/geotaxonomy'),
     )),
     'description_format'  => t('name, unique id, description, parent, parent unique id, weight, latitude, longitude, top, right, bottom, left boundaries'),
@@ -125,7 +125,7 @@ function _taxonomy_csv_line_import_check_geotaxonomy($line, $options, $previous_
           $checked_items[$key] = is_numeric($value) ?
             $value :
             NULL;
-         }
+        }
       }
   }
 
@@ -182,18 +182,18 @@ function taxonomy_csv_line_import_geotaxonomy($line, $options, $previous_items =
       $line = array_pad($line, 12, NULL);
 
       $term = (object) array(
-        'name'        => $line[0],
-        'vid'         => $options['vocabulary_id'],
-        'description' => $line[2],
-        'weight'      => $line[5],
-        'parents'     => array(isset($parent_tid) ? $parent_tid : 0),
+        'name'         => $line[0],
+        'vid'          => $options['vocabulary_id'],
+        'description'  => $line[2],
+        'weight'       => $line[5],
+        'parents'      => array(isset($parent_tid) ? $parent_tid : 0),
       // Geotaxonomy specific fields.
-        'lat'         => $line[6],
-        'lon'         => $line[7],
-        'bound_top'   => $line[8],
-        'bound_right' => $line[9],
-        'bound_bottom'=> $line[10],
-        'bound_left'  => $line[11],
+        'lat'          => $line[6],
+        'lon'          => $line[7],
+        'bound_top'    => $line[8],
+        'bound_right'  => $line[9],
+        'bound_bottom' => $line[10],
+        'bound_left'   => $line[11],
       );
       // Add unique ids only if they are set.
       if (isset($result['tid'][$unique_id])) {
@@ -302,8 +302,7 @@ function taxonomy_csv_term_get_full_geotaxonomy($term) {
 /**
  * Get specific fields of a geotaxonomy term.
  *
- * geotaxonomy_get_term($tid) doesn't return all fieds (parent_name...) and
- * empty fields aren't returned.
+ * geotaxonomy_get_term($tid) doesn't return all fieds (parent_name...).
  *
  * @param $tid
  *   The term id to get.

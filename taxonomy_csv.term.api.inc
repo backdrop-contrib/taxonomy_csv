@@ -7,6 +7,34 @@
  */
 
 /**
+ * Complete a base term object.
+ *
+ * @param $term
+ *   The base term object to complete.
+ *
+ * @return
+ *   Found full term object.
+ */
+function taxonomy_csv_term_get_full($term) {
+  if (isset($term->tid)) {
+    $term->parents   = taxonomy_csv_term_get_parents_tids($term->tid);
+
+    // Check vocabulary because if there are specific fields, term needs to be
+    // completed with them.
+    $vocabulary_formats = taxonomy_csv_format_check_vocabulary($term->vid);
+    foreach ($vocabulary_formats as $format) {
+      $funcname = "taxonomy_csv_term_get_full_$format";
+      $term = $funcname($term);
+    }
+
+    return _taxonomy_csv_term_format_internal($term);
+  }
+  // Else.
+
+  return FALSE;
+}
+
+/**
  * Find and load a term.
  *
  * @todo Use a regular Drupal 7 dbquery.
@@ -71,8 +99,7 @@ function taxonomy_csv_term_find($term, $all_vocabularies = FALSE, $parent_tid = 
 
   // Complete and internal format term.
   if (isset($found_term)) {
-    $found_term->parents = taxonomy_csv_term_get_parents_tids($found_term->tid);
-    return _taxonomy_csv_term_format_internal($found_term);
+    return taxonomy_csv_term_get_full($found_term);
   }
 
   // Not found, or error (neither tid nor name).
@@ -375,7 +402,7 @@ function _taxonomy_csv_term_format_regular($term) {
  * @return
  *   Status value (SAVED_NEW or SAVED_UPDATED). Term is updated with its tid.
  */
-function _taxonomy_csv_term_save(&$term) {
+function taxonomy_csv_term_save(&$term) {
   $term_to_save = _taxonomy_csv_term_format_regular($term);
 
   $result = taxonomy_term_save($term_to_save);

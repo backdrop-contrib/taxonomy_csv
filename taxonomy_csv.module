@@ -94,8 +94,8 @@ function taxonomy_csv_menu() {
  */
 function taxonomy_csv_form_import_prepare() {
   // Invoke taxonomy_csv api (defines and functions).
-  $taxonomy_csv_path = drupal_get_path('module', 'taxonomy_csv');
-  require_once("$taxonomy_csv_path/import/taxonomy_csv.import.admin.inc");
+  $module_dir = drupal_get_path('module', 'taxonomy_csv');
+  require_once("$module_dir/import/taxonomy_csv.import.admin.inc");
 
   return drupal_get_form('taxonomy_csv_form_import');
 }
@@ -105,8 +105,8 @@ function taxonomy_csv_form_import_prepare() {
  */
 function taxonomy_csv_form_export_prepare() {
   // Invoke taxonomy_csv api (defines and functions).
-  $taxonomy_csv_path = drupal_get_path('module', 'taxonomy_csv');
-  require_once("$taxonomy_csv_path/export/taxonomy_csv.export.admin.inc");
+  $module_dir = drupal_get_path('module', 'taxonomy_csv');
+  require_once("$module_dir/export/taxonomy_csv.export.admin.inc");
 
   return drupal_get_form('taxonomy_csv_form_export');
 }

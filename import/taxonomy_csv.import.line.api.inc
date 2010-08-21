@@ -13,9 +13,9 @@
  *   Array which contains items of a cleaned and checked csv line.
  * @param $options
  *   An associative array of import options:
- *   - import_format  : see _taxonomy_csv_values('list_import_format')
+ *   - import_format  : see _taxonomy_csv_values('import_format')
  *   - vocabulary_id  : vocabulary id to import into
- *   - existing_items : see _taxonomy_csv_values('list_import_option')
+ *   - existing_items : see _taxonomy_csv_values('import_option')
  *   // Specific to relations import:
  *   - relations_create_subrelations: boolean.
  *   - relations_all_vocabularies   : boolean.
@@ -23,8 +23,6 @@
  *   (Optional) Cleaned and checked previous imported line names and tids array.
  *   Needed with some contents as one term array structure or Taxonomy manager.
  *   Specificities:
- *   - taxonomy_manager:
- *       tid array is indexed with old tids.
  *   - def_links:
  *       'name' and 'tid' arrays contain sub-arrays 'vocabulary' and 'term' with
  *       imported identifiant as key and name or tid/vid as value in order to
@@ -117,7 +115,7 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array()) {
             }
             // Vocabulary doesn't exist.
             else {
-              $vocabulary = (array) taxonomy_csv_vocabulary_create($id);
+              $vocabulary = (array) taxonomy_csv_thesaurus_create($id);
               $result['msg'][] = 610; // Info new vocabulary.
             }
             // Remember imported vocabulary.
@@ -490,43 +488,15 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array()) {
         }
         break;
 
-      case TAXONOMY_CSV_FORMAT_TAXONOMY_MANAGER:
-        $term = (object) array(
-          'name' => $line[2],
-          'vid'  => $options['vocabulary_id'],
-        );
-        if ($line[3]) {
-          $term->description = $line[3];
-        }
-
-        // Complete with parents except root. All parents are already checked.
-        $list_parents = array_slice($line, 4);
-        if ($list_parents[0] != 0) {
-          foreach ($list_parents as $value) {
-            $term->parents[] = $previous_items['tid'][$value];
-          }
-        }
-
-        // Use tid if term is already imported.
-        if (isset($previous_items['tid'][$line[1]])) {
-          $term->tid = $previous_items['tid'][$line[1]];
+      default:
+        // Check external formats. Use it only if it works.
+        $funcname = "taxonomy_csv_line_import_{$options['import_format']}";
+        if (taxonomy_csv_format_check($options['import_format'], $funcname)) {
+          $result = $funcname($line, $options, $previous_items);
         }
         else {
-          // No tid is given, so it's always a new term.
-          $options['existing_items'] = TAXONOMY_CSV_EXISTING_IGNORE_CREATE;
+          $result['msg'][] = 306; // Error unknown import format.
         }
-
-        // Import term then store result. No check because only one term.
-        $current_result = taxonomy_csv_term_import($term, $options['existing_items']);
-        // Keep old index (names and tids).
-        $result = $previous_items;
-        $result['name'][$line[1]] = $current_result['name'];
-        $result['tid'][$line[1]]  = $current_result['tid'];
-        $result['msg'] = $current_result['msg'];
-        break;
-
-      default:
-        $result['msg'][] = 306; // Error unknown import format.
     }
   }
   else {
@@ -560,13 +530,16 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array()) {
  * @param $parent_tid
  *   (Optional) The direct parent term id where to restrict search.
  *   Used for structure import. Default to NULL (no parent restriction).
+ * @param $import_format
+ *   (Optional) Name of import format. Needed only with formats with specific
+ *   fields.
  *
  * @return array
  *    'name' => term name,
  *    'tid'  => term id,
  *    'msg'  => messages array.
  */
-function taxonomy_csv_term_import($term, $existing_items = TAXONOMY_CSV_EXISTING_IGNORE_CREATE, $all_vocabularies = FALSE, $parent_tid = NULL) {
+function taxonomy_csv_term_import($term, $existing_items = TAXONOMY_CSV_EXISTING_IGNORE_CREATE, $all_vocabularies = FALSE, $parent_tid = NULL, $import_format = '') {
   $messages = array();
 
   if ($term) {
@@ -576,33 +549,21 @@ function taxonomy_csv_term_import($term, $existing_items = TAXONOMY_CSV_EXISTING
       case TAXONOMY_CSV_EXISTING_UPDATE_MERGE:
         $existing_term = taxonomy_csv_term_find($term, $all_vocabularies, $parent_tid);
         if ($existing_term) {
-          // Get name is not case sensitive and a name can be updated.
-          if (isset($term->name)) {
-            $existing_term->name = $term->name;
+          // Unpdate only fields that are set. Other fields are not changed.
+          foreach ((array) $term as $key => $value) {
+            // Array fields : merge existing and new items.
+            if (is_array($value)) {
+              $term->$key = array_unique(array_merge($existing_term->$key, $term->$key));
+            }
+            // Else simply use new key: no merge is possible and useful for has been
+            // string, numeric or boolean fields.
+            // Description was an exception in previous version, but this
+            // exception is removed for simplicity and real use of this module.
+            // A option may be had if needed.
           }
-          if (isset($term->vid)) {
-            $existing_term->vid = $term->vid;
-          }
-          if (isset($term->parents)) {
-            $existing_term->parents = array_unique(array_merge($existing_term->parents, $term->parents));
-          }
-          if (isset($term->description)) {
-            $i = trim($existing_term->description);
-            $existing_term->description = (($i == '') || ($i == $term->description)) ?
-              $term->description :
-              $i . "\n" . $term->description;
-          }
-          // Weight is always replaced as it is a simple number.
-          if (isset($term->weight)) {
-            $existing_term->weight = $term->weight;
-          }
-          if (isset($term->synonyms)) {
-            $existing_term->synonyms = array_unique(array_merge($existing_term->synonyms, $term->synonyms));
-          }
-          if (isset($term->relations)) {
-            $existing_term->relations = array_unique(array_merge($existing_term->relations, $term->relations));
-          }
-          $term = $existing_term;
+          // Existing fields of existing term should be kept even if they have
+          // not been set in new term.
+          $term = (object) array_merge((array) $existing_term, (array) $term);
         }
         break;
 
@@ -611,20 +572,9 @@ function taxonomy_csv_term_import($term, $existing_items = TAXONOMY_CSV_EXISTING
       case TAXONOMY_CSV_EXISTING_UPDATE_REPLACE:
         $existing_term = taxonomy_csv_term_find($term, $all_vocabularies, $parent_tid);
         if ($existing_term) {
-          foreach (array(
-              'name',
-              'vid',
-              'description',
-              'weight',
-              'parents',
-              'synonyms',
-              'relations',
-            ) as $key) {
-            if (array_key_exists($key, $term)) {
-              $existing_term->$key = $term->$key;
-            }
-          }
-          $term = $existing_term;
+          // All fields are replaced by new ones. Other existing fields of
+          // existing term should be kept even if they are not set in new term.
+          $term = (object) array_merge((array) $existing_term, (array) $term);
         }
         break;
 
@@ -645,7 +595,13 @@ function taxonomy_csv_term_import($term, $existing_items = TAXONOMY_CSV_EXISTING
 
     // Save regularly formatted term.
     // Return either SAVED_NEW, SAVED_UPDATED or FALSE (no change).
-    $result = _taxonomy_csv_term_save($term);
+    $result = taxonomy_csv_term_save($term);
+
+    // If there are specific fields, save them.
+    $funcname = "taxonomy_csv_term_import_$import_format";
+    if (taxonomy_csv_format_check($import_format, $funcname)) {
+      $result_temp = $funcname($term);
+    }
 
     $messages[] = ($result == SAVED_NEW) ? 691 : 692; // Saved or updated.
   }

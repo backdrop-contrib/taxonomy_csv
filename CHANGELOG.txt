@@ -9,10 +9,19 @@
   ===========
 
 
+Taxonomy csv import/export 7.x-5.3, 2010-08-20
+Taxonomy csv import/export 6.x-5.3, 2010-08-20
+----------------------------------------------
+By Daniel Berthereau: Enabled plug-ins for specific formats.
+By Daniel Berthereau: Implemented geotaxonomy import/export format.
+By Daniel Berthereau: Simplified and standardized import process.
+
+
 Taxonomy csv import/export 7.x-5.1, 2010-08-16
-Taxonomy csv import/export 6.x-5.1, 2010-08-16
+Taxonomy csv import/export 6.x-5.2, 2010-08-16
 ----------------------------------------------
 By Daniel Berthereau: Fixed error of commit to cvs and linked bugs.
+By Daniel Berthereau: Forget taxonomy_csv.css and taxonomy_csv.js (Drupal 6).
 By Daniel Berthereau: Merged all taxonomy-csv 6.x branches except 6.x-1.
 By Daniel Berthereau: Doxygened some help.
 
