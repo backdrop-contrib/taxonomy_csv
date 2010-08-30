@@ -1048,8 +1048,8 @@ msgid "\"Île-de-France\", , \"Main region\", \"France\", , 3, 50, 0, 100, 110, 
 msgstr "\"Île-de-France\", , \"Région capitale\", \"France\", , 3, 50, 0, 100, 110, 120, 130"
 
 #: formats/geotaxonomy.format.inc:34
-msgid "Only name and either latitude or longitude are needed. To set a parent is recommended to get a hierarchical structure."
-msgstr "Seuls le nom et soit la latitude soit la longitude sont nécessaires pour procéder à l'importation. Indiquer un parent est recommandé afin d'aboutir à une structure hiérarchique."
+msgid "Only name, latitude and longitude are needed. To set a parent is recommended to get a hierarchical structure."
+msgstr "Seuls le nom, la latitude et la longitude sont nécessaires. Indiquer un parent est recommandé afin d'aboutir à une structure hiérarchique."
 
 #: formats/geotaxonomy.format.inc:35
 msgid "Ids may be numbers or not, for example the name itself, but they need to be unique to avoid duplicate terms. Only duplicate names need to have an id."
@@ -1386,6 +1386,10 @@ msgstr "Vérifier le format UTF-8"
 #: import/taxonomy_csv.import.admin.inc:351
 msgid "File needs to be UTF-8 formatted. You can disable this check if you are sure that your file is encoded correctly. Desactivation is needed with some server configurations too. This option is not used with a textarea import."
 msgstr "Les fichiers doivent être formatés en UTF-8. Vous pouvez désactiver ce contrôle si vous êtes sûr que le fichier est correctement encodé. Cette désactivation est également nécessaire pour certaines configurations de serveurs. Cette vérification n'est pas utilisée pour l'importation par zone de texte."
+
+#: import/taxonomy_csv.import.admin.inc:352
+msgid "ISO-8859-1 and ISO-8859-15 files are automatically converted."
+msgstr "Les fichiers ISO-8859-1 et ISO-8859-15 sont automatiquement convertis."
 
 #: import/taxonomy_csv.import.admin.inc:364
 msgid "This checkbox is currently disabled, because iconv, GNU recode or mbstring for PHP are not installed on your server."

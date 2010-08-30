@@ -173,23 +173,32 @@ function _taxonomy_csv_import_input_preload(&$options) {
  */
 function _taxonomy_csv_import_clean_utf8(&$file, $check_utf8 = TRUE) {
   $content = file_get_contents($file->filepath, TRUE);
+  $flag = FALSE;
 
   // Check encoding.
   if ($check_utf8) {
     if (!function_exists('mb_detect_encoding')) {
       return FALSE;
     }
-    $enc = mb_detect_encoding($content, 'UTF-8', TRUE);
-    if ($enc === FALSE) {
-      return FALSE;
+    $enc = mb_detect_encoding($content, 'UTF-8, ISO-8859-1, ISO-8859-15', TRUE);
+    if ($enc != 'UTF-8') {
+      $content = drupal_convert_to_utf8($content, $enc);
+      if (!$content) {
+        $messages[] = 320; // Error convert.
+        return FALSE;
+      }
+      $flag = TRUE;
     }
   }
 
   // Skip eventual UTF-8 byte order mark.
   if (strncmp($content, "\xEF\xBB\xBF", 3) === 0) {
     $content = substr($content, 3);
+    $flag = TRUE;
+  }
 
-    // Update content in file.
+  // Update content in file if needed.
+  if ($flag) {
     $filename = file_unmanaged_save_data(
       $content,
       $file->uri,

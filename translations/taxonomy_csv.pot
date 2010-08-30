@@ -925,7 +925,7 @@ msgid "\"Île-de-France\", , \"Main region\", \"France\", , 3, 50, 0, 100, 110, 
 msgstr ""
 
 #: formats/geotaxonomy.format.inc:34
-msgid "Only name and either latitude or longitude are needed. To set a parent is recommended to get a hierarchical structure."
+msgid "Only name, latitude and longitude are needed. To set a parent is recommended to get a hierarchical structure."
 msgstr ""
 
 #: formats/geotaxonomy.format.inc:35
@@ -1194,6 +1194,10 @@ msgstr ""
 
 #: import/taxonomy_csv.import.admin.inc:351
 msgid "File needs to be UTF-8 formatted. You can disable this check if you are sure that your file is encoded correctly. Desactivation is needed with some server configurations too. This option is not used with a textarea import."
+msgstr ""
+
+#: import/taxonomy_csv.import.admin.inc:352
+msgid "ISO-8859-1 and ISO-8859-15 files are automatically converted."
 msgstr ""
 
 #: import/taxonomy_csv.import.admin.inc:364

@@ -293,14 +293,14 @@
     <p>Import and export <a href="http://drupal.org/project/geotaxonomy" title="Module Geotaxonomy">geotaxonomy</a> terms.</p>
     <p>Format</p>
     <div class="codeblock"><ul>
-	  <code>name, unique id, description, parent, parent unique id, weight, latitude, longitude, top, right, bottom, left boundaries</code>
+	  <code>name, latitude, longitude, parent, top, right, bottom, left boundaries</code>
     </ul></div>
     <p>Exemple</p>
     <div class="codeblock"><ul>
-      <li><code>"Paris", , "Capital of France", "Île-de-France", , 5, 48, 2, 10, 11, 12, 13</code></li>
-      <li><code>"Île-de-France", , "Main region", "France", , 3, 50, 0, 100, 110, 120, 130</code></li>
+      <li><code>"Paris", 5, 48, "Île-de-France"</code></li>
+      <li><code>"Île-de-France", 3, 50, "France"</code></li>
     </ul></div>
-    <p>Only name and either latitude or longitude are needed. To set a parent is recommended to get a hierarchical structure.</p>
+    <p>Only name, latitude and longitude are needed. To set a parent is recommended to get a hierarchical structure.</p>
     <p>Ids may be numbers or not, for example the name itself, but they need to be unique to avoid duplicate terms. Only duplicate names need to have an id.</p>
 
 <h3 id="import"><a href="#contents">2. Import</a></h3>

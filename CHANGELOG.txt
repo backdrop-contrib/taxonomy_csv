@@ -9,12 +9,18 @@
   ===========
 
 
-Taxonomy csv import/export 7.x-5.3, 2010-08-20
-Taxonomy csv import/export 6.x-5.3, 2010-08-20
+Taxonomy csv import/export 6.x-5.3, 2010-08-30
 ----------------------------------------------
+By Daniel Berthereau: Reimplemented utf8 conversion for obsolete Windows users.
+By Daniel Berthereau: Simplified format for geotaxonomy import/export.
+
+
+Taxonomy csv import/export 7.x-5.3, 2010-08-20
+Taxonomy csv import/export 6.x-5.3-dev, 2010-08-20
+--------------------------------------------------
 By Daniel Berthereau: Enabled plug-ins for specific formats.
 By Daniel Berthereau: Implemented geotaxonomy import/export format.
-By Daniel Berthereau: Simplified and standardized import process.
+By Daniel Berthereau: Simplified and standardized import process. 
 
 
 Taxonomy csv import/export 7.x-5.1, 2010-08-16

@@ -28,11 +28,10 @@ function taxonomy_csv_format_geotaxonomy() {
     'description'     => t('Import <a href="!link">geotaxonomy</a> terms.', array(
       '!link' => url('http://drupal.org/project/geotaxonomy'),
     )),
-    'description_format'  => t('name, unique id, description, parent, parent unique id, weight, latitude, longitude, top, right, bottom, left boundaries'),
-    'description_example' => t('"Paris", , "Capital of France", "Île-de-France", , 5, 48, 2, 10, 11, 12, 13') . '<br />'
-      . t('"Île-de-France", , "Main region", "France", , 3, 50, 0, 100, 110, 120, 130'),
-    'description_long'    => t('Only name and either latitude or longitude are needed. To set a parent is recommended to get a hierarchical structure.') . '<br />'
-      . t('Ids may be numbers or not, for example the name itself, but they need to be unique to avoid duplicate terms. Only duplicate names need to have an id.'),
+    'description_format'  => t('name, latitude, longitude, parent, top, right, bottom, left boundaries'),
+    'description_example' => t('"Paris", 5, 48, "Île-de-France"') . '<br />'
+      . t('"Île-de-France", 3, 50, "France"'),
+    'description_long'    => t('Only name, latitude and longitude are needed. To set a parent is recommended to get a hierarchical structure.'),
     'import_options_help' => t('"Merge" and "Replace" are very similar, because geotaxonomy items are unique: there are only one latitude, longitude, etc. Difference is for parents. With "Merge", existing parents will be kept. With "Replace", they will be removed.'),
   );
 }
@@ -85,46 +84,30 @@ function _taxonomy_csv_line_import_check_geotaxonomy($line, $options, $previous_
         $messages[] = 480; // Warning no first column.
         break;
       }
-      if (count($line) < 7) {
+      if (count($line) < 3) {
         $messages[] = 450; // Warning some items lacks.
         break;
       }
-      if (!is_numeric($line[5])) {
+      if (!is_numeric($line[1]) || !is_numeric($line[2])) {
         $messages[] = 451; // Warning item are not numbers.
         break;
       }
-      if (empty($line[6])
-          && (!isset($line[7]) || empty($line[7]))) {
-        $messages[] = 482; // Warning no item in some columns.
-        break;
+      if (count($line) > 8) {
+        $messages[] = 564; // Notice too many items.
       }
-      if (!is_numeric($line[6])
-          && (!isset($line[7]) || !is_numeric($line[7]))) {
-        $messages[] = 451; // Warning some items are not numbers.
-        break;
-      }
-      foreach (array($line[0], $line[1], $line[3], $line[4]) as $name) {
-        if (drupal_strlen($name) > 255) {
-          $messages[] = 454; // Warning too long.
+      // Complete line with NULL if needed and check numeric values.
+      $line = array_pad($line, 8, NULL);
+      $checked_items = $line = array_slice($line, 0, 8);
+      foreach (array_slice($line, 4) as $value) {
+        if (!is_numeric($value) && !is_null($value)) {
+          $messages[] = 451; // Warning item are not numbers.
           break 2;
         }
       }
-      // @todo To be confirmed.
-      if (($line[0] == $line[3])
-          && ($line[1] == $line[4])) {
-        $messages[] = 452; // Warning a term can't be a parent of itself.
-        break;
-      }
-      if (count($line) > 12) {
-        $messages[] = 564; // Notice too many items.
-        $checked_items = array_slice($line, 12);
-      }
-      // Clean line of non numeric values.
-      foreach ($checked_items as $key => $value) {
-        if ($key > 5) {
-          $checked_items[$key] = is_numeric($value) ?
-            $value :
-            NULL;
+      foreach (array($line[0], $line[3]) as $name) {
+        if (drupal_strlen($name) > 255) {
+          $messages[] = 454; // Warning too long.
+          break 2;
         }
       }
   }
@@ -155,7 +138,7 @@ function taxonomy_csv_line_import_geotaxonomy($line, $options, $previous_items =
 
       // First, import parent if needed using a recursive call and check result.
       if (!empty($line[3])) {
-        $parent_unique_id = empty($line[4]) ? $line[3] : $line[4];
+        $parent_unique_id = $line[3];
 
         // Import a new term if it is not already imported.
         if (!isset($previous_items['tid'][$parent_unique_id])) {
@@ -176,37 +159,30 @@ function taxonomy_csv_line_import_geotaxonomy($line, $options, $previous_items =
       }
 
       // Second, import (save or update) main term.
-      $unique_id = empty($line[1]) ? $line[0] : $line[1];
+      $unique_id = $line[0];
 
       // Complete line with NULL if needed.
-      $line = array_pad($line, 12, NULL);
+      $line = array_pad($line, 8, NULL);
 
       $term = (object) array(
         'name'         => $line[0],
         'vid'          => $options['vocabulary_id'],
-        'description'  => $line[2],
-        'weight'       => $line[5],
         'parents'      => array(isset($parent_tid) ? $parent_tid : 0),
+        'synonyms'     => array($line[1], $line[2]),
       // Geotaxonomy specific fields.
-        'lat'          => $line[6],
-        'lon'          => $line[7],
-        'bound_top'    => $line[8],
-        'bound_right'  => $line[9],
-        'bound_bottom' => $line[10],
-        'bound_left'   => $line[11],
+        'lat'          => $line[1],
+        'lon'          => $line[2],
+        'bound_top'    => $line[4],
+        'bound_right'  => $line[5],
+        'bound_bottom' => $line[6],
+        'bound_left'   => $line[7],
       );
       // Add unique ids only if they are set.
       if (isset($result['tid'][$unique_id])) {
         $term->tid = $result['tid'][$unique_id];
       }
-      if (isset($line[1])) {
-        $term->external_id = $line[1];
-      }
       if (isset($line[3])) {
         $term->parent_name = $line[3];
-      }
-      if (isset($line[4])) {
-        $term->parent_external_id = $line[4];
       }
 
       // Import term then store result. No check because only one term.
@@ -248,13 +224,9 @@ function taxonomy_csv_term_export_geotaxonomy($term, $options = array(), $duplic
   // Doesn't manage duplicate terms because two specific fields do this.
   $result['line'] = array(
     $term->name,
-    $fields['external_id'],
-    $term->description,
-    $fields['parent_name'],
-    $fields['parent_external_id'],
-    $term->weight,
     $fields['lat'],
     $fields['lon'],
+    $fields['parent_name'],
     $fields['bound_top'],
     $fields['bound_right'],
     $fields['bound_bottom'],
