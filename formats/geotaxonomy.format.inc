@@ -29,8 +29,8 @@ function taxonomy_csv_format_geotaxonomy() {
       '!link' => url('http://drupal.org/project/geotaxonomy'),
     )),
     'description_format'  => t('name, latitude, longitude, parent, top, right, bottom, left boundaries'),
-    'description_example' => t('"Paris", 5, 48, "Île-de-France"') . '<br />'
-      . t('"Île-de-France", 3, 50, "France"'),
+    'description_example' => t('"Paris", 48.833, 2.333, "Île-de-France"') . '<br />'
+      . t('"Île-de-France", 47, 2, "France"'),
     'description_long'    => t('Only name, latitude and longitude are needed. To set a parent is recommended to get a hierarchical structure.'),
     'import_options_help' => t('"Merge" and "Replace" are very similar, because geotaxonomy items are unique: there are only one latitude, longitude, etc. Difference is for parents. With "Merge", existing parents will be kept. With "Replace", they will be removed.'),
   );

@@ -1036,16 +1036,16 @@ msgid "Import <a href=\"!link\">geotaxonomy</a> terms."
 msgstr "Importer des termes de <a href=\"!link\">géotaxinomie</a> ."
 
 #: formats/geotaxonomy.format.inc:31
-msgid "name, unique id, description, parent, parent unique id, weight, latitude, longitude, top, right, bottom, left boundaries"
-msgstr "nom, unique id, description, parent, parent unique id, poids, latitude, longitude, frontières haut, droite, bas, gauche"
+msgid "name, latitude, longitude, parent, top, right, bottom, left boundaries"
+msgstr "nom, latitude, longitude, parent, frontières haut, droite, bas, gauche"
 
 #: formats/geotaxonomy.format.inc:32
-msgid "\"Paris\", , \"Capital of France\", \"Île-de-France\", , 5, 48, 2, 10, 11, 12, 13"
-msgstr "\"Paris\", , \"Capitale de la France\", \"Île-de-France\", , 5, 48, 2, 10, 11, 12, 13"
+msgid "\"Paris\", 48.833, 2.333, \"Île-de-France\""
+msgstr "\"Paris\", 48.833, 2.333, \"Île-de-France\""
 
 #: formats/geotaxonomy.format.inc:33
-msgid "\"Île-de-France\", , \"Main region\", \"France\", , 3, 50, 0, 100, 110, 120, 130"
-msgstr "\"Île-de-France\", , \"Région capitale\", \"France\", , 3, 50, 0, 100, 110, 120, 130"
+msgid "\"Île-de-France\", 47, 2, \"France\""
+msgstr "\"Île-de-France\", 47, 2, \"France\""
 
 #: formats/geotaxonomy.format.inc:34
 msgid "Only name, latitude and longitude are needed. To set a parent is recommended to get a hierarchical structure."

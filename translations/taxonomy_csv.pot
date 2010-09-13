@@ -913,15 +913,15 @@ msgid "Import <a href=\"!link\">geotaxonomy</a> terms."
 msgstr ""
 
 #: formats/geotaxonomy.format.inc:31
-msgid "name, unique id, description, parent, parent unique id, weight, latitude, longitude, top, right, bottom, left boundaries"
+msgid "name, latitude, longitude, parent, top, right, bottom, left boundaries"
 msgstr ""
 
 #: formats/geotaxonomy.format.inc:32
-msgid "\"Paris\", , \"Capital of France\", \"Île-de-France\", , 5, 48, 2, 10, 11, 12, 13"
+msgid "\"Paris\", 48.833, 2.333, \"Île-de-France\""
 msgstr ""
 
 #: formats/geotaxonomy.format.inc:33
-msgid "\"Île-de-France\", , \"Main region\", \"France\", , 3, 50, 0, 100, 110, 120, 130"
+msgid "\"Île-de-France\", 47, 2, \"France\""
 msgstr ""
 
 #: formats/geotaxonomy.format.inc:34
