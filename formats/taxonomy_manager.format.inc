@@ -113,12 +113,13 @@ function _taxonomy_csv_line_import_check_taxonomy_manager($line, $options, $prev
  * @param $previous_items
  *   Specificity: tid and name arrays are indexed with old tids.
  */
-function taxonomy_csv_line_import_taxonomy_manager($line, $options, $previous_items = array()) {
+function taxonomy_csv_line_import_taxonomy_manager($line, $options, $previous_items = array(), $terms_count = 0) {
   // Define default values.
   $result = array(
     'name' => array(),
     'tid'  => array(),
     'msg'  => array(),
+    'terms_count' => $terms_count,
   );
 
   $term = (object) array(
@@ -126,6 +127,12 @@ function taxonomy_csv_line_import_taxonomy_manager($line, $options, $previous_it
     'vid'         => $options['vocabulary_id'],
     'description' => $line[3],
   );
+  // Weight is not set with the name and vid above in order to keep
+  // existing one if it exists.
+  ++$terms_count;
+  if ($options['keep_order']) {
+    $term->weight = $terms_count;
+  }
 
   // Complete with parents except root. All parents are already checked.
   $list_parents = array_slice($line, 4);
@@ -151,6 +158,7 @@ function taxonomy_csv_line_import_taxonomy_manager($line, $options, $previous_it
   $result['name'][$line[1]] = $current_result['name'];
   $result['tid'][$line[1]]  = $current_result['tid'];
   $result['msg'] = $current_result['msg'];
+  $result['terms_count'] = $terms_count;
 
   return $result;
 }

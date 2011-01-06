@@ -121,8 +121,10 @@ function _taxonomy_csv_values($list) {
     case 'import_default_ui':
       return array(
         'import_format'                 => TAXONOMY_CSV_FORMAT_ALONE_TERMS,
+        'keep_order'                    => FALSE,
         'source_choice'                 => 'text',
         'import_delimiter'              => 'comma',
+        'import_delimiter_soft_tab_width' => '2',
         'import_delimiter_custom'       => '',
         'import_enclosure'              => 'none',
         'import_enclosure_custom'       => '',
@@ -131,7 +133,7 @@ function _taxonomy_csv_values($list) {
         'locale_custom'                 => '',
         'vocabulary_target'             => 'autocreate',
         'vocabulary_id'                 => 'choose_vocabulary',
-        'check_hierarchy'               => FALSE,
+        'check_hierarchy'               => TRUE,
         'set_hierarchy'                 => 2, // Polyhierarchy.
         'existing_items'                => TAXONOMY_CSV_EXISTING_UPDATE,
         // Specific to relations import.
@@ -147,6 +149,7 @@ function _taxonomy_csv_values($list) {
     case 'import_default_api':
       return array(
         'import_format'                 => TAXONOMY_CSV_FORMAT_ALONE_TERMS,
+        'keep_order'                    => FALSE,
         'delimiter'                     => ',',
         'enclosure'                     => '',
         'check_line'                    => FALSE,
@@ -172,6 +175,7 @@ function _taxonomy_csv_values($list) {
     case 'export_default_ui':
       return array(
         'export_format'                 => TAXONOMY_CSV_FORMAT_ALONE_TERMS,
+        'export_vocabulary_id'          => 0,
         'export_delimiter'              => 'comma',
         'export_delimiter_custom'       => '',
         'export_enclosure'              => 'none',

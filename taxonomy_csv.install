@@ -13,11 +13,11 @@ function taxonomy_csv_install() {
   // Make uploads easy for csv files.
   variable_set('upload_extensions_default', variable_get('upload_extensions_default', '') . ' csv');
 
-  drupal_set_message(st('Taxonomy CSV import/export has been installed. You can now import and export taxonomies, structures or lists of terms under <a href="!link_import">Administer > Structure > Taxonomy > CSV import</a> and <a href="!link_export">CSV export</a>. More information is available under <a href="!link_help">Administer > Help > Taxonomy CSV import/export</a>.', array(
+  drupal_set_message(filter_xss(st('Taxonomy CSV import/export has been installed. You can now import and export taxonomies, structures or lists of terms under <a href="!link_import">Administer > Structure > Taxonomy > CSV import</a> and <a href="!link_export">CSV export</a>. More information is available under <a href="!link_help">Administer > Help > Taxonomy CSV import/export</a>.', array(
     '!link_import' => url('admin/structure/taxonomy/csv_import'),
     '!link_export' => url('admin/structure/taxonomy/csv_export'),
     '!link_help'   => url('admin/help/taxonomy_csv'),
-  )));
+  ))));
 }
 
 /**
@@ -28,8 +28,10 @@ function taxonomy_csv_uninstall() {
   foreach (array(
       // Import variables.
       'import_format',
+      'keep_order',
       'source_choice',
       'import_delimiter',
+      'import_delimiter_soft_tab_width',
       'import_delimiter_custom',
       'import_enclosure',
       'import_enclosure_custom',
@@ -49,6 +51,7 @@ function taxonomy_csv_uninstall() {
       'result_type',
       // Export variables.
       'export_format',
+      'export_vocabulary_id',
       'export_delimiter',
       'export_delimiter_custom',
       'export_enclosure',

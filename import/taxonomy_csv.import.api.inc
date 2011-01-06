@@ -31,6 +31,7 @@
  *   - url            : url to distant or local csv file
  *   - path           : path to local csv file
  *   - import_format  : see _taxonomy_csv_values (default: 'alone_terms')
+ *   - keep_order     : boolean. keep order of imported terms or not (default)
  *   - delimiter      : 1 character csv delimiter (default: ',')
  *   - enclosure      : 0 or 1 character csv enclosure (default: none or '"')
  *   - check_line     : boolean. check or not (default) format of lines
@@ -82,7 +83,7 @@ function taxonomy_csv_import($options) {
  * unifies input and avoids some memory crashes.
  *
  * @param $options
- *   Array of options. Need only 'file', 'text', 'url' or 'path'.
+ *   Array of options.
  *
  * @return
  *   Array of messages errors if any.
@@ -213,6 +214,40 @@ function _taxonomy_csv_import_clean_utf8(&$file, $check_utf8 = TRUE) {
 }
 
 /**
+ * Helper to check if delimiter is a soft tab and to prepare file if needed.
+ *
+ * @param $file
+ *   By reference file object to check.
+ *
+ * @param $delimiter
+ *   String. Soft tab delimiter to switch with a true tab.
+ *
+ * @return
+ *   TRUE if delimiter isn't a soft tab or if file has been updated.
+ *   FALSE if file can't be updated with a true tab (currently not used).
+ */
+function _taxonomy_csv_import_soft_tab(&$file, $delimiter) {
+  if (drupal_strlen($delimiter) > 1) {
+    $content = file_get_contents($file->filepath, TRUE);
+
+    // Switch soft tab delimiter with a true tab.
+    $content = str_replace($delimiter, "\t", $content);
+
+    // Save updated file.
+    $filename = file_unmanaged_save_data(
+      $content,
+      $file->uri,
+      'FILE_EXISTS_REPLACE');
+    $file = (object) array(
+      'filename' => basename($filename),
+      'filepath' => drupal_realpath($filename),
+      'filesize' => filesize($filename),
+    );
+  }
+  return TRUE;
+}
+
+/**
  * Prepare the import of a vocabulary.
  * If not used in a form, don't forget to use batch_process().
  *
@@ -234,6 +269,12 @@ function taxonomy_csv_vocabulary_import($options) {
   }
 
   // Complete $options.
+  // Switch soft tab delimiter with a true one if needed.
+  if (drupal_strlen($options['delimiter']) > 1) {
+    $result = _taxonomy_csv_import_soft_tab($options['file'], $options['delimiter']);
+    $options['delimiter'] = "\t";
+  }
+
   // Calculates number of lines to be imported. File is already checked.
   $options['total_lines'] = count(file($options['file']->filepath));
 
@@ -302,6 +343,7 @@ function _taxonomy_csv_vocabulary_import_process($options, &$context) {
       'name' => array(),
       'tid'  => array(),
     );
+    $context['sandbox']['terms_count'] = 0;
   }
   elseif (!is_resource($context['results'][0]['handle'])) {
     // Recall file and set pointer in case of memory or time out.
@@ -315,6 +357,7 @@ function _taxonomy_csv_vocabulary_import_process($options, &$context) {
   $handle         = &$context['results'][0]['handle'];
   $line_number    = &$context['results'][0]['current_line'];
   $previous_items = &$context['sandbox']['previous_items'];
+  $terms_count    = &$context['sandbox']['terms_count'];
 
   // To set locale is needed with fgetcsv and it's needed each time this
   // function is called. See http:/php.net/manual/en/function.fgetcsv.php.
@@ -326,17 +369,18 @@ function _taxonomy_csv_vocabulary_import_process($options, &$context) {
   $line = fgetcsv($handle, 4096, $options['delimiter'], $options['enclosure']);
 
   if ($line) {
-    $line_number++;
+    ++$line_number;
 
     // Remember pointer in case of memory or time out.
     $context['sandbox']['handle_pointer'] = ftell($handle);
 
     // Process import of current line.
-    $result = taxonomy_csv_line_import_process($line, $options, $previous_items);
+    $result = taxonomy_csv_line_import_process($line, $options, $previous_items, $terms_count);
 
     // Remember processed line.
     $previous_items['name'] = $result['name'];
     $previous_items['tid']  = $result['tid'];
+    $terms_count            = $result['terms_count'];
 
     // Remember worst message of imported lines.
     $worst_message_new = _taxonomy_csv_worst_message($result['msg']);
@@ -564,6 +608,7 @@ function _taxonomy_csv_import_vocabulary_prepare(&$options) {
  * @param $options
  *   An associative array of import options:
  *   - import_format : see _taxonomy_csv_values('import_format')
+ *   - keep_order    : boolean. keep order of imported terms or not (default)
  *   - vocabulary_id : vocabulary id to import into
  *   - existing_items: see _taxonomy_csv_values('import_option')
  *   - check_line    : boolean. Tweak to check (default) or not format of lines
@@ -581,15 +626,19 @@ function _taxonomy_csv_import_vocabulary_prepare(&$options) {
  *       'name' and 'tid' arrays contain sub-arrays 'vocabulary' and 'term' with
  *       imported identifiant as key and name or tid/vid as value in order to
  *       allow duplicate names import and use of number identifiants.
+ * @param $terms_count
+ *   (Optional integer) Total of imported terms (duplicate included) is needed
+ *   to set weight of terms and to keep order of items, if wished.
  *
  * @return Result array:
  *   'name' => array of imported terms names,
  *   'tid'  => array of imported terms tids,
  *   'msg'  => messages arrays:
  *     term position => array of status messages of term,
- *     'line'        => array of status messages of line.
+ *     'line'        => array of status messages of line,
+ *   'terms_count' => Total of imported terms.
  */
-function taxonomy_csv_line_import_process($line, $options, $previous_items = array()) {
+function taxonomy_csv_line_import_process($line, $options, $previous_items = array(), $terms_count = 0) {
   // Define default values.
   $line_messages = array();
   $items_messages = array();
@@ -597,6 +646,7 @@ function taxonomy_csv_line_import_process($line, $options, $previous_items = arr
     'name' => array(),
     'tid'  => array(),
     'msg'  => array(),
+    'terms_count' => $terms_count,
   );
 
   // 1. Validate and clean line.
@@ -620,7 +670,8 @@ function taxonomy_csv_line_import_process($line, $options, $previous_items = arr
         $result = taxonomy_csv_line_import(
           $line,
           $options,
-          $previous_items);
+          $previous_items,
+          $terms_count);
         // Add line level message of bad or successful import.
         $line_messages[] = (_taxonomy_csv_worst_message($result['msg']) >= TAXONOMY_CSV_PROCESS_NOTICE) ? 699 : 499;
       }
@@ -631,7 +682,8 @@ function taxonomy_csv_line_import_process($line, $options, $previous_items = arr
     $result = taxonomy_csv_line_import(
       array_values(array_map('trim', $line)),
       $options,
-      $previous_items);
+      $previous_items,
+      $terms_count);
     // Add line level message of bad or successful import.
     $line_messages[] = (_taxonomy_csv_worst_message($result['msg']) >= TAXONOMY_CSV_PROCESS_NOTICE) ? 699 : 499;
   }

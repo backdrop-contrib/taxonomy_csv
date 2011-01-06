@@ -9,6 +9,20 @@
   ===========
 
 
+Taxonomy csv import/export 7.x-5.5, 2011-01-07
+Taxonomy csv import/export 6.x-5.5, 2011-01-07
+----------------------------------------------
+By Daniel Berthereau: Added soft tab (two spaces or more) delimiter.
+By Daniel Berthereau: Added option to keep order of terms by specifying weight.
+#1006436 by John Voskuilen: Fixed export with Microsoft DOS end of line.
+#1006466 by John Voskuilen: Harmonized import of Full term definition and links.
+
+
+Taxonomy csv import/export 6.x-5.4, 2010-09-14
+----------------------------------------------
+#910788 by Brad Bulger: Fixed error when vocabulary isn't checked after import.
+
+
 Taxonomy csv import/export 7.x-5.4-dev, 2010-09-13
 --------------------------------------------------
 #896132 by Matthias Hutterer: Fixed parents & children names broken by D7 HEAD.

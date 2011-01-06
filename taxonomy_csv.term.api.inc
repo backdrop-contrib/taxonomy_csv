@@ -156,7 +156,7 @@ function taxonomy_csv_term_get_parents_tids($tid) {
  */
 function taxonomy_csv_term_get_parents_names($tid) {
   $names = array();
-  foreach(taxonomy_get_parents($tid) as $parent) {
+  foreach (taxonomy_get_parents($tid) as $parent) {
     $names[] = $parent->name;
   }
   return $names;
