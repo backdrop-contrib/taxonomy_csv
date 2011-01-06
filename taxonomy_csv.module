@@ -50,7 +50,8 @@ function taxonomy_csv_help($path, $arg) {
       return $output;
 
     case 'admin/structure/taxonomy/csv_export':
-      $output = '<p>' . t('Use this form to export a taxonomy, a structure or a list of terms to a simple <a href="!link" title="Wikipedia definition">CSV</a> file.', array('!link' => url('http://en.wikipedia.org/wiki/Comma-separated_values')))
+      $output = '<p>' . t('Use this form to export a taxonomy, a structure or a list of terms to a simple <a href="!link" title="Wikipedia definition">CSV</a> file.', array('!link' => url('http://en.wikipedia.org/wiki/Comma-separated_values'))) . '<br />'
+      . t('Set vocabulary to export in first tab, format to use in second tab and order of terms in third tab.')
       . theme('more_help_link', array('url' => 'admin/help/taxonomy_csv')) . '</p>';
       return $output;
 

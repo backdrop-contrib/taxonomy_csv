@@ -18,11 +18,12 @@
  *
  * Form contain five fieldsets:
  * - 1. What to import ?
- *   - 1. What is content of the source ?
+ *   - 1. Content of the source
+ *   - 2. Keep order of terms by adding a weight
  * - 2. Where are items to import ?
  *   - 1. Source select
  *   - 2. Source file or text area
- * - 3. How is formatted your source ?
+ * - 3. How is your source formatted ?
  *   - 1. Source delimiter
  *   - 2. Source enclosure
  *   - 3. Line and utf8 checks
@@ -68,6 +69,7 @@ function taxonomy_csv_form_import($form_state) {
     'tabulation'       => t('«   » (Tabulation)'),
     'space'            => t('«   » (Space)'),
     'currency_sign'    => t('« ¤ » (Currency sign)'),
+    'soft_tab'         => t('«    » (Soft tab: two spaces or more)'),
     'custom_delimiter' => t('Custom delimiter'),
   );
 
@@ -121,22 +123,19 @@ function taxonomy_csv_form_import($form_state) {
   }
 
   // Advertise as it's a developpement release.
-  $form['beta'] = array(
+  $form['drupal_7_info'] = array(
     '#type'        => 'fieldset',
-    '#title'       => t('WARNING'),
+    '#title'       => t('Warning'),
     '#collapsible' => TRUE,
     '#collapsed'   => FALSE,
-  );
-  $form['beta']['info'] = array(
-    '#type'        => 'item',
-    '#title'       => t('This module is under development.'),
-    '#description' =>  t('* This release works on Drupal 7.x-dev release of the 13 August 2010.') . '<br />'
-      . t('* In Drupal 7, <a href="!link_synonym">synonyms</a> and <a href="!link_related">related terms</a> have been removed and replaced by fields. Comments on this replacement and on the integration in Taxonomy CSV (use schemas or fields, functions, options...) are <a href="!link_comment">welcomed</a>.', array(
+    '#description' => '<strong>' . t('Vocabulary management has changed between Drupal 6 and Drupal 7.') . '</strong>' . '<br />'
+      . t('In Drupal 7, <a href="!link_synonym">synonyms</a> and <a href="!link_related">related terms</a> have been removed and replaced by fields.', array(
         '!link_synonym' => url('http://drupal.org/node/224333#no-synonyms-taxonomy'),
         '!link_related' => url('http://drupal.org/node/224333#related_terms'),
+      )) . '<br />'
+      . t('Comments on this replacement and on the integration in Taxonomy CSV (use schemas or fields, functions, options...) are <a href="!link_comment">welcomed</a>.', array(
         '!link_comment' => url('http://drupal.org/project/taxonomy_csv'),
       )),
-    '#required'    => TRUE,
   );
 
   // Advertise that javascript is not enabled.
@@ -235,6 +234,20 @@ function taxonomy_csv_form_import($form_state) {
     '#description' => t('See <a href="!more_help_link">advanced help</a> for more informations about import types.', array('!more_help_link' => url('admin/help/taxonomy_csv'))),
   );
 
+  $form['tab']['format']['keep_order'] = array(
+    '#type'          => 'checkbox',
+    '#title'         => t('Keep order of terms'),
+    '#default_value' => $list_previous_values['keep_order'],
+    '#description'   => t('If checked, a weight will be added to each term, so order of lines will be preserved. In unchecked, order will be alphabetic.') . '<br />' .
+    t('Note: With polyhierarchical vocabulary (multiple parents for a term) and duplicate terms, unpredictable results may occur, because weight of a term is incremented each time it appears and a term can only have one weight, without context.') . '<br />' .
+    t('This option is not available with some formats as Weight and Definitions.'),
+    '#states' => array(
+      'invisible' => array(
+        ':input[name=import_format]' => array('value' => 'weights'),
+      ),
+    ),
+  );
+
   $form['tab']['import'] = array(
     '#type'        => 'fieldset',
     '#title'       => t('2. Where are items to import?'),
@@ -290,7 +303,7 @@ function taxonomy_csv_form_import($form_state) {
 
   $form['tab']['csv_format'] = array(
     '#type'        => 'fieldset',
-    '#title'       => t('3. How is formatted your source?'),
+    '#title'       => t('3. How is your source formatted?'),
     '#description' => t('Notice: either you import terms by a file or by a text area, the csv format is the same. Default delimiter is a comma ("<strong><code> , </code></strong>"). Default enclosure is none, but quotation mark ("<strong><code> " </code></strong>") is automatically managed.'),
     '#collapsible' => TRUE,
     '#collapsed'   => FALSE,
@@ -304,12 +317,35 @@ function taxonomy_csv_form_import($form_state) {
     '#description'   => t("Choose the delimiter used in the CSV file you want to import. Tabulation can't be used with text area import."),
   );
 
+  $form['tab']['csv_format']['import_delimiter_soft_tab_width'] = array(
+    '#type'          => 'select',
+    '#title'         => t('Soft tab width'),
+    '#options'       => array(
+      2 => 2,
+      3 => 3,
+      4 => 4,
+      5 => 5,
+      6 => 6,
+      7 => 7,
+      8 => 8,
+      9 => 9,
+    ),
+    '#default_value' => $list_previous_values['import_delimiter_soft_tab_width'],
+    '#description'   => t("Specify number of spaces of the soft tab delimiter. These spaces will be replaced with a true tab."),
+    '#states' => array(
+      'visible' => array(
+        ':input[name=import_delimiter]' => array('value' => 'soft_tab'),
+      ),
+    ),
+  );
+
   $form['tab']['csv_format']['import_delimiter_custom'] = array(
     '#type'          => 'textfield',
-    '#title'         => '',
+    '#title'         => 'Custom delimiter',
     '#default_value' => $list_previous_values['import_delimiter_custom'],
     '#size'          => 2,
     '#maxlength'     => 1,
+    '#description'   => t('Specify your custom delimiter.'),
     '#states' => array(
       'visible' => array(
         ':input[name=import_delimiter]' => array('value' => 'custom_delimiter'),
@@ -327,10 +363,11 @@ function taxonomy_csv_form_import($form_state) {
 
   $form['tab']['csv_format']['import_enclosure_custom'] = array(
     '#type'          => 'textfield',
-    '#title'         => '',
+    '#title'         => 'Custom enclosure',
     '#default_value' => $list_previous_values['import_enclosure_custom'],
     '#size'          => 2,
     '#maxlength'     => 1,
+    '#description'   => t('Specify your custom enclosure.'),
     '#states' => array(
       'visible' => array(
         ':input[name=import_enclosure]' => array('value' => 'custom_enclosure'),
@@ -348,7 +385,8 @@ function taxonomy_csv_form_import($form_state) {
   $form['tab']['csv_format']['check_utf8'] = array(
     '#type'          => 'checkbox',
     '#title'         => t('Check UTF-8 format'),
-    '#description'   => t('File needs to be UTF-8 formatted. You can disable this check if you are sure that your file is encoded correctly. Desactivation is needed with some server configurations too. This option is not used with a textarea import.'),
+    '#description'   => t('File needs to be UTF-8 formatted. You can disable this check if you are sure that your file is encoded correctly. Desactivation is needed with some server configurations too. This option is not used with a textarea import.') . ' '
+      . t('ISO-8859-1 and ISO-8859-15 files are automatically converted.'),
     '#states' => array(
       'invisible' => array(
         ':input[name=source_choice]' => array('value' => 'text'),
@@ -514,8 +552,8 @@ function taxonomy_csv_form_import($form_state) {
 
     $form['tab']['import_options']['flat']['#description'] = t('This option indicates whether existing terms with the same name should be updated or ignored. If ignored, duplicates may be created.');
 
-    $form['tab']['import_options']['tree_structure']['#description'] = t('This option indicates whether and how existing terms with the same name should be updated or ignored.<br />
-      This option is used with last term of the line.') . '<br />'
+    $form['tab']['import_options']['tree_structure']['#description'] = t('This option indicates whether and how existing terms with the same name should be updated or ignored.') . '<br />'
+      . t('This option is used with last term of the line.') . '<br />'
       . '<ul>
           <li>' . t('<em>"Update and replace"</em>: each parent replaces eventual older ones.') . '</li>
           <li>' . t('<em>"Ignore and create"</em>: child is always created and eventually its parents if they don\'t exist.') . ' ' . t('It is recommended if you use duplicate terms.') . '</li>
@@ -732,6 +770,7 @@ function taxonomy_csv_form_import_validate($form, &$form_state) {
     'tabulation'       => "\t",
     'space'            => ' ',
     'currency_sign'    => '¤',
+    'soft_tab'         => str_repeat(' ', $options['import_delimiter_soft_tab_width']),
     'custom_delimiter' => $options['import_delimiter_custom'],
   );
   $options['delimiter'] = $delimiter[$options['import_delimiter']];
@@ -791,7 +830,7 @@ function taxonomy_csv_form_import_validate($form, &$form_state) {
 
   // 5. Finish validatation of form.
   foreach ($messages as $item => $message) {
-    form_set_error($item, $message);
+    form_set_error(check_plain($item), filter_xss($message));
   }
 }
 
@@ -808,9 +847,12 @@ function taxonomy_csv_form_import_validate($form, &$form_state) {
 function _taxonomy_csv_import_check_options(&$options) {
   $messages = array();
 
-  // Delimiter or enclosure greater than one character are useless with fgetcsv.
-  if (drupal_strlen($options['delimiter']) != 1) {
-    $messages['delimiter'] = t('Delimiter should be a one character string.');
+  // Delimiter or enclosure greater than one character are useless with fgetcsv,
+  // except with soft tab.
+  if ($options['delimiter'] == ''
+      || ((drupal_strlen($options['delimiter']) > 1) && (trim($options['delimiter'], ' ')) != '')
+    ) {
+    $messages['delimiter'] = t('Delimiter should be a one character string or a soft tab (two spaces or more).');
   }
   if (drupal_strlen($options['enclosure']) == 0) {
     // With fgetcsv, empty enclosure bugs, so use default quote enclosure.
@@ -890,8 +932,10 @@ function taxonomy_csv_form_import_submit($form, &$form_state) {
   // Remember last preferences and prepare only options to be sent to Api.
   foreach (array(
       'import_format',
+      'keep_order',
       'source_choice',
       'import_delimiter',
+      'import_delimiter_soft_tab_width',
       'import_delimiter_custom',
       'import_enclosure',
       'import_enclosure_custom',
@@ -921,6 +965,7 @@ function taxonomy_csv_form_import_submit($form, &$form_state) {
     unset($form_state['values']['text']);
   }
   unset($options['import_delimiter']);
+  unset($options['import_delimiter_soft_tab_width']);
   unset($options['import_delimiter_custom']);
   unset($options['import_enclosure']);
   unset($options['import_enclosure_custom']);

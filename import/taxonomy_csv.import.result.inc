@@ -223,7 +223,7 @@ function _taxonomy_csv_info_vocabulary_result($vocabulary, $vocabulary_target, $
   )) . '<br />';
   if (module_exists('taxonomy_manager')) {
     $message .= t('It is recommended to use <a href="!link" title="Taxonomy manager module">Administer > Structure > Taxonomy manager > Vocabularies</a> with big taxonomies because a memory error can occur with default Drupal "List terms" menu.', array(
-      '!link' => url("admin/structure/taxonomy_manager/voc/$vocabulary->vid"),
+      '!link' => url("admin/structure/taxonomy_manager/voc/$vocabulary->machine_name"),
     ));
   }
   else {
@@ -261,7 +261,7 @@ function _taxonomy_csv_info_terms($options) {
       foreach ($terms as $term) {
         $message .= $term->name . '", "';
       }
-      $message = substr($message, 0, strlen($message) - 3) . '.';
+      $message = drupal_substr($message, 0, drupal_strlen($message) - 3) . '.';
     }
   }
   else {

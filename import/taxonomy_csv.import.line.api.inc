@@ -14,6 +14,7 @@
  * @param $options
  *   An associative array of import options:
  *   - import_format  : see _taxonomy_csv_values('import_format')
+ *   - keep_order     : boolean. keep order of imported terms or not (default)
  *   - vocabulary_id  : vocabulary id to import into
  *   - existing_items : see _taxonomy_csv_values('import_option')
  *   // Specific to relations import:
@@ -27,18 +28,23 @@
  *       'name' and 'tid' arrays contain sub-arrays 'vocabulary' and 'term' with
  *       imported identifiant as key and name or tid/vid as value in order to
  *       allow duplicate names import and use of number identifiants.
+ * @param $terms_count
+ *   (Optional integer) Total of imported terms (duplicate included) is needed
+ *   to set weight of terms and to keep order of items, if wished.
  *
  * @return Result array:
  *   'name' => array of imported terms names,
  *   'tid'  => array of imported terms tids,
- *   'msg'  => array of message codes.
+ *   'msg'  => array of message codes,
+ *   'terms_count' => number of imported terms.
  */
-function taxonomy_csv_line_import($line, $options, $previous_items = array()) {
+function taxonomy_csv_line_import($line, $options, $previous_items = array(), $terms_count = 0) {
   // Define default values.
   $result = array(
     'name' => array(),
     'tid'  => array(),
     'msg'  => array(),
+    'terms_count' => $terms_count,
   );
 
   // Only count check because function variables are already checked.
@@ -53,6 +59,13 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array()) {
           'name' => $line[0],
           'vid'  => $options['vocabulary_id'],
         );
+        // Weight is not set with the name and vid above in order to keep
+        // existing one if it exists. It's replaced below with Weights and
+        // definitions formats.
+        ++$terms_count;
+        if ($options['keep_order']) {
+          $term->weight = $terms_count;
+        }
 
         switch ($options['import_format']) {
           case TAXONOMY_CSV_FORMAT_DEFINITIONS:
@@ -78,6 +91,7 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array()) {
         $result['name'][] = $current_result['name'];
         $result['tid'][]  = $current_result['tid'];
         $result['msg'] = $current_result['msg'];
+        $result['terms_count'] = $terms_count;
         break;
 
       case TAXONOMY_CSV_FORMAT_DEFINITION_LINKS:
@@ -107,16 +121,49 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array()) {
           // Empty vocabulary identifiant is saved too.
           // Vocabulary is unknown.
           if (!isset($result['name']['vocabulary'][$id])) {
-            $vid = taxonomy_csv_vocabulary_get_id($id);
-            // Vocabulary exists.
-            if ($vid) {
-              $vocabulary['name'] = $id;
-              $vocabulary['vid']  = $vid;
-            }
-            // Vocabulary doesn't exist.
-            else {
-              $vocabulary = (array) taxonomy_csv_thesaurus_create($id);
-              $result['msg'][] = 610; // Info new vocabulary.
+            // Simple test if vocabulary id of imported term is a vid or a name.
+            $vid = ($id != '' && is_numeric($id) && ctype_digit($id)) ?
+              // $id is a vocabulary id.
+              $id :
+              // $id is a vocabulary name.
+              taxonomy_csv_vocabulary_get_id($id);
+
+            // Create, duplicate or use an existing vocabulary.
+            switch ($options['vocabulary_target']) {
+              case 'autocreate':
+                $vocabulary = (array) taxonomy_csv_thesaurus_create($id);
+                $result['msg'][] = 610; // Info new vocabulary.
+
+                // Check external formats. Use it only if it works.
+                $funcname = "_taxonomy_csv_import_vocabulary_prepare_{$options['import_format']}";
+                if (taxonomy_csv_format_check($options['import_format'], $funcname)) {
+                  $funcname($vocabulary);
+                }
+                break;
+
+              case 'duplicate':
+                $vocabulary = (array) taxonomy_csv_vocabulary_duplicate($id);
+                $result['msg'][] = 610; // Info new vocabulary.
+                break;
+
+              case 'existing':
+              default:
+                // Vocabulary exists.
+                if ($vid) {
+                  $vocabulary = (array) taxonomy_vocabulary_load($vid);
+                }
+                // Vocabulary doesn't exist.
+                else {
+                  $vocabulary = (array) taxonomy_csv_thesaurus_create($id);
+                  $result['msg'][] = 610; // Info new vocabulary.
+
+                  // Check external formats. Use it only if it works.
+                  $funcname = "_taxonomy_csv_import_vocabulary_prepare_{$options['import_format']}";
+                  if (taxonomy_csv_format_check($options['import_format'], $funcname)) {
+                    $funcname($vocabulary);
+                  }
+                }
+                break;
             }
             // Remember imported vocabulary.
             $result['name']['vocabulary'][$id] = $vocabulary['name'];
@@ -288,11 +335,19 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array()) {
             'name' => $term_name,
             'vid'  => $options['vocabulary_id'],
           );
+          // Weight is not set with the name and vid above in order to keep
+          // existing one if it exists.
+          ++$terms_count;
+          if ($options['keep_order']) {
+            $term->weight = $terms_count;
+          }
+
           // Import term then store and check result.
           $current_result = taxonomy_csv_term_import($term, $options['existing_items']);
           $result['name'][] = $current_result['name'];
           $result['tid'][]  = $current_result['tid'];
           $result['msg'] = array_merge($result['msg'], $current_result['msg']);
+          $result['terms_count'] = $terms_count;
           if (_taxonomy_csv_worst_message($current_result['msg']) < TAXONOMY_CSV_PROCESS_NOTICE) {
             break;
           }
@@ -344,6 +399,12 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array()) {
             'vid'     => $options['vocabulary_id'],
             'parents' => array($parent_tid),
           );
+          // Weight is not set with the name and vid above in order to keep
+          // existing one if it exists.
+          ++$terms_count;
+          if ($options['keep_order']) {
+            $term->weight = $terms_count;
+          }
 
           switch ($options['import_format']) {
             case TAXONOMY_CSV_FORMAT_TREE_STRUCTURE:
@@ -365,6 +426,7 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array()) {
           $result['name'][] = $parent_name = $current_result['name'];
           $result['tid'][]  = $parent_tid  = $current_result['tid'];
           $result['msg'] = array_merge($result['msg'], $current_result['msg']);
+          $result['terms_count'] = $terms_count;
           if (_taxonomy_csv_worst_message($current_result['msg']) < TAXONOMY_CSV_PROCESS_NOTICE) {
             break;
           }
@@ -376,7 +438,8 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array()) {
         if (count($line) > 1) {
           $options_temp = $options;
           $options_temp['import_format'] = TAXONOMY_CSV_FORMAT_FLAT;
-          $result = taxonomy_csv_line_import(array_slice($line, 1), $options_temp);
+          $result = taxonomy_csv_line_import(array_slice($line, 1), $options_temp, $terms_count);
+          $terms_count = $result['terms_count'];
           if (_taxonomy_csv_worst_message($result['msg']) < TAXONOMY_CSV_PROCESS_NOTICE) {
             break;
           }
@@ -389,19 +452,28 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array()) {
           'vid'     => $options['vocabulary_id'],
           'parents' => $result['tid'],
         );
+        // Weight is not set with the name and vid above in order to keep
+        // existing one if it exists.
+        ++$terms_count;
+        if ($options['keep_order']) {
+          $term->weight = $terms_count;
+        }
+
         $current_result = taxonomy_csv_term_import($term, $options['existing_items']);
         // No check because only one term.
         // Use array_unshift in order to keep $line order of items.
         array_unshift($result['name'], $current_result['name']);
         array_unshift($result['tid'], $current_result['tid']);
         $result['msg'] = array_merge($result['msg'], $current_result['msg']);
+        $result['terms_count'] = $terms_count;
         break;
 
       case TAXONOMY_CSV_FORMAT_CHILDREN:
         // First, import main term then store and check result.
         $options_temp = $options;
         $options_temp['import_format'] = TAXONOMY_CSV_FORMAT_ALONE_TERMS;
-        $result = taxonomy_csv_line_import(array($line[0]), $options_temp);
+        $result = taxonomy_csv_line_import(array($line[0]), $options_temp, $terms_count);
+        $terms_count = $result['terms_count'];
         if (_taxonomy_csv_worst_message($result['msg']) < TAXONOMY_CSV_PROCESS_NOTICE) {
           break;
         }
@@ -415,6 +487,12 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array()) {
             'vid'     => $options['vocabulary_id'],
             'parents' => array($parent_tid),
           );
+          // Weight is not set with the name and vid above in order to keep
+          // existing one if it exists.
+          ++$terms_count;
+          if ($options['keep_order']) {
+            $term->weight = $terms_count;
+          }
 
           // Import term then store and check result.
           // Don't check tid == parent_tid because duplicates have been removed.
@@ -422,6 +500,7 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array()) {
           $result['name'][] = $current_result['name'];
           $result['tid'][]  = $current_result['tid'];
           $result['msg'] = array_merge($result['msg'], $current_result['msg']);
+          $result['terms_count'] = $terms_count;
           if (_taxonomy_csv_worst_message($current_result['msg']) < TAXONOMY_CSV_PROCESS_NOTICE) {
             break;
           }
@@ -444,6 +523,12 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array()) {
             'vid'       => $options['vocabulary_id'],
             'relations' => array_slice($previous_relations, 0, ($options['relations_create_subrelations']) ? $key : $key != 0),
           );
+          // Weight is not set with the name and vid above in order to keep
+          // existing one if it exists.
+          ++$terms_count;
+          if ($options['keep_order']) {
+            $term->weight = $terms_count;
+          }
 
           // @todo Set an 'ignore all' option.
           // For second and next terms, update merge related terms in order to
@@ -456,6 +541,7 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array()) {
           $result['name'][] = $current_result['name'];
           $result['tid'][]  = $current_result['tid'];
           $result['msg'] = array_merge($result['msg'], $current_result['msg']);
+          $result['terms_count'] = $terms_count;
           if (_taxonomy_csv_worst_message($current_result['msg']) < TAXONOMY_CSV_PROCESS_NOTICE) {
             break;
           }
@@ -492,7 +578,7 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array()) {
         // Check external formats. Use it only if it works.
         $funcname = "taxonomy_csv_line_import_{$options['import_format']}";
         if (taxonomy_csv_format_check($options['import_format'], $funcname)) {
-          $result = $funcname($line, $options, $previous_items);
+          $result = $funcname($line, $options, $previous_items, $terms_count);
         }
         else {
           $result['msg'][] = 306; // Error unknown import format.

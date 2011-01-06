@@ -155,7 +155,11 @@ function taxonomy_csv_term_get_parents_tids($tid) {
  * Return an array of all parents term names of a given term id.
  */
 function taxonomy_csv_term_get_parents_names($tid) {
-  return array_keys(taxonomy_get_parents($tid, 'name'));
+  $names = array();
+  foreach (taxonomy_get_parents($tid) as $parent) {
+    $names[] = $parent->name;
+  }
+  return $names;
 }
 
 /**
@@ -169,7 +173,11 @@ function taxonomy_csv_term_get_children_tids($tid) {
  * Return an array of all children term names of a given term id.
  */
 function taxonomy_csv_term_get_children_names($tid) {
-  return array_keys(taxonomy_get_children($tid, 0, 'name'));
+  $names = array();
+  foreach (taxonomy_get_children($tid) as $child) {
+    $names[] = $child->name;
+  }
+  return $names;
 }
 
 /**

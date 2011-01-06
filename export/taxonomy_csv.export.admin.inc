@@ -18,13 +18,12 @@
  * Generates the taxonomy CSV export form.
  *
  * Form contain three fieldsets:
- * - 1. How to export (format of csv file) ?
- * - 2. Which vocabulary to export ?
- * - 3. How to export ?
+ * - 1. Which vocabulary to export ?
+ * - 2. How to export (format of csv file) ?
  *   - 1. Csv delimiter
  *   - 2. Csv enclosure
  *   - 3. Csv end of line
- *   - 4. Specific options
+ * - 3. Order and specific options
  *
  * @ingroup forms
  * @see taxonomy_csv_form_export_validate()
@@ -63,7 +62,7 @@ function taxonomy_csv_form_export($form_state) {
   $list_export_line_ending = array(
     'Unix'             => t('Unix / Linux'),
     'Mac'              => t('Apple Mac'),
-    'MS-DOS'           => t('Microsoft DOS'),
+    'MSDOS'            => t('Microsoft DOS'),
   );
 
   $list_export_order = array(
@@ -128,17 +127,17 @@ function taxonomy_csv_form_export($form_state) {
     . t('Only "fields and links" format manages duplicate term names. In all case, you will be notified if a duplicate is found.'),
   );
 
-  $form['tab']['content']['vocabulary_id'] = array(
+  $form['tab']['content']['export_vocabulary_id'] = array(
     '#type'          => 'select',
     '#title'         => t('Vocabulary to export'),
     '#options'       => array(
       0 => t('All vocabularies'),
     ),
-    '#default_value' => 0,
+    '#default_value' => $list_previous_values['export_vocabulary_id'],
     '#description'   => t('The vocabulary you want to export.'),
   );
   foreach ($list_vocabularies as $vocabulary) {
-      $form['tab']['content']['vocabulary_id']['#options'][$vocabulary->vid] = $vocabulary->name;
+      $form['tab']['content']['export_vocabulary_id']['#options'][$vocabulary->vid] = $vocabulary->name;
   }
 
   $form['tab']['csv_format'] = array(
@@ -158,10 +157,11 @@ function taxonomy_csv_form_export($form_state) {
 
   $form['tab']['csv_format']['export_delimiter_custom'] = array(
     '#type'          => 'textfield',
-    '#title'         => '',
+    '#title'         => 'Custom delimiter',
     '#default_value' => $list_previous_values['export_delimiter_custom'],
     '#size'          => 2,
     '#maxlength'     => 1,
+    '#description'   => t('Specify your custom delimiter.'),
     '#states' => array(
       'visible' => array(
         ':input[name=export_delimiter]' => array('value' => 'custom_delimiter'),
@@ -179,10 +179,11 @@ function taxonomy_csv_form_export($form_state) {
 
   $form['tab']['csv_format']['export_enclosure_custom'] = array(
     '#type'          => 'textfield',
-    '#title'         => '',
+    '#title'         => 'Custom enclosure',
     '#default_value' => $list_previous_values['export_enclosure_custom'],
     '#size'          => 2,
     '#maxlength'     => 1,
+    '#description'   => t('Specify your custom enclosure.'),
     '#states' => array(
       'visible' => array(
         ':input[name=export_enclosure]' => array('value' => 'custom_enclosure'),
@@ -294,6 +295,8 @@ function taxonomy_csv_form_export_validate($form, &$form_state) {
   $options = &$form_state['values'];
 
   // 1. Presave a file in order to check it.
+  // Define vocabulary id (use simple api name of it).
+  $options['vocabulary_id'] = $options['export_vocabulary_id'];
   $messages = _taxonomy_csv_export_output_presave($options);
 
   // 2, Simplify values to be compatible with api checks.
@@ -325,10 +328,11 @@ function taxonomy_csv_form_export_validate($form, &$form_state) {
 
   // Use form set error for api errors.
   foreach (array(
-      'delimiter'   => 'export_delimiter',
-      'enclosure'   => 'export_enclosure',
-      'line_ending' => 'export_line_ending',
-      'order'       => 'export_order',
+      'vocabulary_id' => 'export_vocabulary_id',
+      'delimiter'     => 'export_delimiter',
+      'enclosure'     => 'export_enclosure',
+      'line_ending'   => 'export_line_ending',
+      'order'         => 'export_order',
     ) as $key => $value) {
     if (isset($message[$key])) {
       $message[$value] = $message[$key];
@@ -358,7 +362,7 @@ function taxonomy_csv_form_export_validate($form, &$form_state) {
 
   // 5. Finish validatation of form.
   foreach ($messages as $item => $message) {
-    form_set_error($item, $message);
+    form_set_error(check_plain($item), filter_xss($message));
   }
 }
 
@@ -464,6 +468,7 @@ function taxonomy_csv_form_export_submit($form, &$form_state) {
   // Remember last preferences and prepare only options to be sent to api.
   foreach (array(
       'export_format',
+      'export_vocabulary_id',
       'export_delimiter',
       'export_delimiter_custom',
       'export_enclosure',
@@ -478,6 +483,7 @@ function taxonomy_csv_form_export_submit($form, &$form_state) {
     $options[$option] = $form_state['values'][$option];
   }
   // Finish to prepare $options. Unset useless options for api.
+  unset($options['export_vocabulary_id']);
   unset($options['export_delimiter']);
   unset($options['export_delimiter_custom']);
   unset($options['export_enclosure']);

@@ -11,7 +11,7 @@
  *
  * As drupal_set_message uses only three types, a mapping is needing when we
  * have only a watchdog level.
- * @see bootstrap.inc.
+ * @see bootstrap.inc
  *
  * @param $watchdog_level
  *   Integer. Watchdog level as defined in bootstrap.inc.
@@ -160,7 +160,7 @@ function _taxonomy_csv_message_text($message_code) {
       310 => t("You choose to import a taxonomy by a file, but you don't set its name or its size is greater than the server's limit.") . $error,
       311 => t('Size of your file is null.') . $error,
       312 => t('Unable to write to file.') . $error,
-      313 => t('Current line contains delimiter, enclosure or unprotected line ending. You need to change them if you want to import correctly a taxonomy.'),
+      313 => t('Current line contains delimiter, enclosure or unprotected line ending. Change the content of the term, or set appropriate format settings in second tab.'),
       320 => t("Your file can't be converted to utf-8. Please install iconv, GNU recode or mbstring for PHP or convert your file to utf-8 and disable 'Enable utf-8 conversion' option.") . $error,
       321 => t('Despite your option, your file is not recognize as an UTF-8 encoded one. Convert it before submit it.') . $error,
       340 => t("Vocabulary doesn't exist."),
@@ -207,7 +207,7 @@ function _taxonomy_csv_message_text($message_code) {
       511 => t('To change vocabulary of a term is not recommended.'),
       512 => t("Line contains items matching first column term. A term can't be related to itself and a synonym may be different to it.") . ' ' . t('Duplicates will be ignored.'),
       530 => t('Line contains empty items. They will be ignored.'),
-      531 => t('Line contains duplicate items.') . ' ' . t('Duplicates will be ignored.'),
+      531 => t('Line contains duplicate items or repeated soft tabs.') . ' ' . t('Duplicates or repeated soft tabs will be ignored.'),
       532 => t('Line contains duplicate items.') . ' ' . t('Duplicates are allowed.'),
       533 => t("Line contains items matching term name. A term can't be related, parent, child or synonym to itself.") . ' ' . t('Duplicates will be ignored.'),
       535 => t('Line contains duplicate synonyms.') . ' ' . t('Duplicates will be ignored.'),

@@ -292,14 +292,14 @@
     <p>Importe et exporte des termes de <a href="http://drupal.org/project/geotaxonomy"  title="Module Geotaxonomy">géotaxinomie</a>.</p>
     <p>Format</p>
     <div class="codeblock"><ul>
-    <code>nom, unique id, description, parent, parent unique id, poids, latitude, longitude, frontières haut, droite, bas, gauche</code>
+    <code>nom, latitude, longitude, parent, frontières haut, droite, bas, gauche</code>
     </ul></div>
     <p>Exemple</p>
     <div class="codeblock"><ul>
-      <li><code>"Paris", , "Capitale de la France", "Île-de-France", , 5, 48, 2, 10, 11, 12, 13</code></li>
-      <li><code>"Île-de-France", , "Région capitale", "France", , 3, 50, 0, 100, 110, 120, 130</code></li>
+      <li><code>"Paris", 48.833, 2.333, "Île-de-France"</code></li>
+      <li><code>"Île-de-France", 47, 2, "France"</code></li>
     </ul></div>
-    <p>Seuls le nom et soit la latitude soit la longitude sont nécessaires pour procéder à l'importation. Indiquer un parent est recommandé afin d'aboutir à une structure hiérarchique.</p>
+    <p>Seuls le nom, la latitude et la longitude sont nécessaires. Indiquer un parent est recommandé afin d'aboutir à une structure hiérarchique.</p>
     <p>Les identifiants peuvent être des nombres ou non, par exemple le nom du terme lui-même, mais ils doivent être uniques pour éviter les termes doublons. Seuls les doublons ont besoin d'un identifiant.</p>
 
 <h3 id="import"><a href="#contents">2. Import</a></h3>
