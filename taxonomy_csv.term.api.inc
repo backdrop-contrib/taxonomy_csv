@@ -134,7 +134,7 @@ function taxonomy_csv_term_find_duplicate($vid = 0) {
     $args[':vid'] = $vid;
   }
 
-  $sql .= ' ORDER BY {t1.tid} ASC ';
+  $sql .= ' ORDER BY t1.tid ASC ';
 
   $result = db_query($sql, $args);
   foreach ($result as $term) {
