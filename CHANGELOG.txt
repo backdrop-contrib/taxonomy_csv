@@ -9,6 +9,12 @@
   ===========
 
 
+Taxonomy csv import/export 7.x-5.6, 2011-01-07
+Taxonomy csv import/export 6.x-5.6, 2011-01-07
+----------------------------------------------
+#1017708 by EliteMonk: Fixed query with database prefix.
+
+
 Taxonomy csv import/export 7.x-5.5, 2011-01-07
 Taxonomy csv import/export 6.x-5.5, 2011-01-07
 ----------------------------------------------
