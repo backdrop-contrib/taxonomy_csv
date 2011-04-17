@@ -753,7 +753,7 @@ function taxonomy_csv_form_import_validate($form, &$form_state) {
   // 1. Preload text or file in order to check it.
   // When source is path, need to preload here.
   if ($options['source_choice'] == 'path') {
-    $options['file'] = file_save_upload('path');
+    $options['file'] = file_save_upload('path', array('file_validate_extensions' => array('csv', 'txt')));
     // fopen and fseek need a real path.
     if ($options['file']) {
       $options['file']->filepath = drupal_realpath($options['file']->uri);
