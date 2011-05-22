@@ -125,7 +125,7 @@ function _taxonomy_csv_import_input_preload(&$options) {
   // Path import. With UI, path is already uploaded as a file.
   elseif (isset($options['path']) && $options['path'] != '') {
     // Load source local file. No check for extension with API.
-    $file = file_save_upload($options['path']);
+    $file = file_save_upload($options['path'], array('file_validate_extensions' => array('csv txt')));
     // fopen and fseek need a real path.
     if (!empty($file)) {
       $file->filepath = drupal_realpath($file->uri);
@@ -335,16 +335,17 @@ function _taxonomy_csv_vocabulary_import_process($options, &$context) {
 
   // First callback to prepare SESSION.
   if (empty($_SESSION['taxonomy_csv_import'])) {
-    $_SESSION['taxonomy_csv_import'] = array();
-    $_SESSION['taxonomy_csv_import']['language'] = 'und'; // Undetermined.
-    $_SESSION['taxonomy_csv_import']['custom_format'] = $options['custom_format'];
-    $_SESSION['taxonomy_csv_import']['vocabulary'] = taxonomy_vocabulary_load($options['vocabulary_id']);
+    $_SESSION['taxonomy_csv_import'] = array(
+      'options'    => $options,
+      'language'   => 'und', // Undetermined.
+      'vocabulary' => taxonomy_vocabulary_load($options['vocabulary_id']),
+      'messages'   => array(),
+    );
     $_SESSION['taxonomy_csv_import']['instances'] = field_info_instances('taxonomy_term', $_SESSION['taxonomy_csv_import']['vocabulary']->machine_name);
     $_SESSION['taxonomy_csv_import']['fields'] = array();
     foreach ($_SESSION['taxonomy_csv_import']['instances'] as $key => $value) {
       $_SESSION['taxonomy_csv_import']['fields'][$key] = field_info_field($key);
     }
-    $_SESSION['taxonomy_csv_import']['messages'] = array();
   }
 
   // First callback to prepare batch context.

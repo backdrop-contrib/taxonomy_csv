@@ -239,6 +239,13 @@ function taxonomy_csv_term_get_field_terms($term_tid, $field_name) {
 }
 
 /**
+    // Keep all true custom fields.
+    $options['custom_fields'] = $custom_fields;
+  }
+  // Custom format is use only for custom fields import.
+  else {
+    $options['custom_fields'] = array();
+
  * Return an array of all names of a term reference field of a given term ID.
  *
  * @param $term_tid
@@ -428,14 +435,17 @@ function taxonomy_csv_term_save(&$term) {
  */
 function taxonomy_csv_taxonomy_term_presave($term) {
   // Check if is an import is in progress.
-  if (!empty($term) && !empty($_SESSION['taxonomy_csv_import'])) {
+  if (!empty($term)
+      && !empty($_SESSION['taxonomy_csv_import'])
+      && ($_SESSION['taxonomy_csv_import']['options']['import_format'] == TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS)
+    ) {
     // Call back session datas.
-    $language = $_SESSION['taxonomy_csv_import']['language'];
-    $custom_format = $_SESSION['taxonomy_csv_import']['custom_format'];
-    $vocabulary = $_SESSION['taxonomy_csv_import']['vocabulary'];
-    $instances = $_SESSION['taxonomy_csv_import']['instances'];
-    $fields = $_SESSION['taxonomy_csv_import']['fields'];
-    $line = $_SESSION['taxonomy_csv_import']['line'];
+    $language      = $_SESSION['taxonomy_csv_import']['language'];
+    $custom_format = $_SESSION['taxonomy_csv_import']['options']['custom_format'];
+    $vocabulary    = $_SESSION['taxonomy_csv_import']['vocabulary'];
+    $instances     = $_SESSION['taxonomy_csv_import']['instances'];
+    $fields        = $_SESSION['taxonomy_csv_import']['fields'];
+    $line          = $_SESSION['taxonomy_csv_import']['line'];
 
     $message = array();
 
