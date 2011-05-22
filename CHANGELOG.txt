@@ -7,6 +7,9 @@
 == CHANGELOG ==
   ===========
 
+Taxonomy csv import/export 6.x-5.7-dev, 2011-05-22
+----------------------------------------------
+By Daniel Berthereau: Fixed some UI bugs and updated help.
 
 Taxonomy csv import/export 7.x-5.7-dev, 2011-05-22
 --------------------------------------------------

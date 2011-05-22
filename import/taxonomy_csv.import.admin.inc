@@ -784,14 +784,12 @@ function taxonomy_csv_form_import_validate($form, &$form_state) {
       $options['url'] = '';
 
       // When source is path, need to preload here.
-      if ($options['source_choice'] == 'file') {
-        $file = file_save_upload('file', array('file_validate_extensions' => array('csv', 'txt')));
-        // fopen and fseek need a real path.
-        if (!empty($file)) {
-          $file->filepath = drupal_realpath($file->uri);
-          if (!empty($file->filepath)) {
-            $options['file'] = $file;
-          }
+      $file = file_save_upload('file', array('file_validate_extensions' => array('csv txt')));
+      // fopen and fseek need a real path.
+      if (!empty($file)) {
+        $file->filepath = drupal_realpath($file->uri);
+        if (!empty($file->filepath)) {
+          $options['file'] = $file;
         }
       }
       break;
@@ -1106,10 +1104,16 @@ function taxonomy_csv_form_import_submit($form, &$form_state) {
   unset($options['import_enclosure']);
   unset($options['import_enclosure_custom']);
   unset($options['import_custom_fields']);
-  $options['custom_format'] = $form_state['values']['custom_format'];
+  if ($options['import_format'] == TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS) {
+    $options['custom_format'] = $form_state['values']['custom_format'];
+    $options['custom_fields'] = $form_state['values']['custom_fields'];
+  }
+  else {
+    unset($options['custom_format']);
+    unset($options['custom_fields']);
+  }
   $options['delimiter'] = $form_state['values']['delimiter'];
   $options['enclosure'] = $form_state['values']['enclosure'];
-  $options['custom_fields'] = $form_state['values']['custom_fields'];
   $options['file'] = $form_state['values']['file'];
   $options['url']  = $form_state['values']['url'];
   $options['check_options'] = FALSE; // Already done.
