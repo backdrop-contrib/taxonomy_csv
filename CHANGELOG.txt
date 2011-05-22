@@ -8,7 +8,12 @@
   ===========
 
 
-#1040894 by Carsten Müller: Support for file extension .csv and .txt (D7).
+Taxonomy csv import/export 7.x-5.7-dev, 2011-05-22
+--------------------------------------------------
+By Daniel Berthereau: Fixed some UI bugs and updated help.
+By Daniel Berthereau: Added autocreation of custom fields.
+#1027068 by Carsten Müller and Roberto Mariani: Support custom fields.
+#1040894 by Carsten Müller: Support for file extension .csv and .txt.
 
 
 Taxonomy csv import/export 7.x-5.6, 2011-01-07

@@ -11,6 +11,7 @@
  * Available internal import/export schemas.
  */
 define('TAXONOMY_CSV_FORMAT_ALONE_TERMS',       'alone_terms');
+define('TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS',     'custom_fields');
 define('TAXONOMY_CSV_FORMAT_DEFINITION_LINKS',  'def_links');
 define('TAXONOMY_CSV_FORMAT_FLAT',              'flat');
 define('TAXONOMY_CSV_FORMAT_TREE_STRUCTURE',    'tree_structure');
@@ -81,6 +82,7 @@ function _taxonomy_csv_values($list) {
     case 'import_format':
       $items = array(
         TAXONOMY_CSV_FORMAT_ALONE_TERMS      => t('Term names (ignore additional columns)'),
+        TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS    => t('Custom fields'),
         TAXONOMY_CSV_FORMAT_DEFINITION_LINKS => t('Full term definition and links'),
         TAXONOMY_CSV_FORMAT_FLAT             => t('Terms (flat vocabulary)'),
         TAXONOMY_CSV_FORMAT_TREE_STRUCTURE   => t('Hierarchical tree structure or one term by line structure'),
@@ -92,14 +94,14 @@ function _taxonomy_csv_values($list) {
         TAXONOMY_CSV_FORMAT_DEFINITIONS      => t('Full term definitions'),
         TAXONOMY_CSV_FORMAT_DESCRIPTIONS     => t('Term descriptions'),
         TAXONOMY_CSV_FORMAT_WEIGHTS          => t('Term weights'),
-        // @todo // Unused in Drupal 6.
-        // TAXONOMY_CSV_FORMAT_FIELDS        => t('Fields'),
       );
       break;
 
     case 'export_format':
       $items = array(
         TAXONOMY_CSV_FORMAT_ALONE_TERMS      => t('Term names'),
+        // @todo
+        // TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS    => t('Custom fields'),
         TAXONOMY_CSV_FORMAT_DEFINITION_LINKS => t('Full term definition and links'),
         // @todo, but useless: use alone_terms.
         // TAXONOMY_CSV_FORMAT_FLAT             => t('Terms (flat vocabulary)'),
@@ -112,14 +114,13 @@ function _taxonomy_csv_values($list) {
         TAXONOMY_CSV_FORMAT_DEFINITIONS      => t('Full term definitions'),
         TAXONOMY_CSV_FORMAT_DESCRIPTIONS     => t('Term descriptions'),
         TAXONOMY_CSV_FORMAT_WEIGHTS          => t('Term weights'),
-        // @todo // Unused in Drupal 6.
-        // TAXONOMY_CSV_FORMAT_FIELDS           => t('Fields'),
       );
       break;
 
     case 'import_default_ui':
       return array(
         'import_format'                 => TAXONOMY_CSV_FORMAT_ALONE_TERMS,
+        'import_custom_format'          => 'name',
         'keep_order'                    => FALSE,
         'source_choice'                 => 'text',
         'import_delimiter'              => 'comma',
@@ -132,6 +133,7 @@ function _taxonomy_csv_values($list) {
         'locale_custom'                 => '',
         'vocabulary_target'             => 'autocreate',
         'vocabulary_id'                 => 'choose_vocabulary',
+        'import_custom_fields'          => '',
         'check_hierarchy'               => TRUE,
         'set_hierarchy'                 => 2, // Polyhierarchy.
         'existing_items'                => TAXONOMY_CSV_EXISTING_UPDATE,
@@ -148,6 +150,7 @@ function _taxonomy_csv_values($list) {
     case 'import_default_api':
       return array(
         'import_format'                 => TAXONOMY_CSV_FORMAT_ALONE_TERMS,
+        'custom_format'                 => array(0 => 'name'),
         'keep_order'                    => FALSE,
         'delimiter'                     => ',',
         'enclosure'                     => '',
@@ -156,6 +159,7 @@ function _taxonomy_csv_values($list) {
         'locale_custom'                 => '',
         'vocabulary_target'             => 'autocreate',
         'vocabulary_id'                 => 'choose_vocabulary',
+        'custom_fields'                 => array(),
         'check_hierarchy'               => TRUE,
         'set_hierarchy'                 => 2, // Polyhierarchy.
         'existing_items'                => TAXONOMY_CSV_EXISTING_UPDATE,
@@ -174,6 +178,7 @@ function _taxonomy_csv_values($list) {
     case 'export_default_ui':
       return array(
         'export_format'                 => TAXONOMY_CSV_FORMAT_ALONE_TERMS,
+        'export_custom_format'          => 'name',
         'export_vocabulary_id'          => 0,
         'export_delimiter'              => 'comma',
         'export_delimiter_custom'       => '',
@@ -190,6 +195,7 @@ function _taxonomy_csv_values($list) {
     case 'export_default_api':
       return array(
         'export_format'                 => TAXONOMY_CSV_FORMAT_ALONE_TERMS,
+        'custom_format'                 => array(0 => 'name'),
         'vocabulary_id'                 => 0,
         'delimiter'                     => ',',
         'enclosure'                     => '"',
@@ -218,6 +224,11 @@ function _taxonomy_csv_values($list) {
       $items = array(
         TAXONOMY_CSV_FORMAT_ALONE_TERMS      => array(
           TAXONOMY_CSV_EXISTING_UPDATE,
+          TAXONOMY_CSV_EXISTING_IGNORE_QUICK,
+        ),
+        TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS    => array(
+          TAXONOMY_CSV_EXISTING_UPDATE_MERGE,
+          TAXONOMY_CSV_EXISTING_UPDATE_REPLACE,
           TAXONOMY_CSV_EXISTING_IGNORE_QUICK,
         ),
         TAXONOMY_CSV_FORMAT_DEFINITION_LINKS => array(

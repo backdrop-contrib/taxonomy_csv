@@ -1,4 +1,3 @@
-<!-- $Id: taxonomy_csv.help.fr.html,v 3.6 2011/01/06 18:16:45 danielkm Exp $ -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr" lang="fr" dir="ltr">
@@ -27,11 +26,14 @@
       background-color: rgb(238, 238, 238);
       margin: 6px 96px 12px 24px;
     }
+    code {
+      white-space: pre;
+    }
   --></style>
 </head>
 <body>
 <p>Ce module permet d'importer/exporter des taxinomies, des structures ou de simples listes de termes dans/depuis un vocabulaire à partir/vers d'un fichier <a href="http://fr.wikipedia.org/wiki/Comma-separated_values" title="Définition Wikipedia">CSV</a>, d'une url ou d'un texte copié-collé.</p>
-<p>Le format csv correspond à une simple liste de valeurs séparées par un séparateur, souvent une virgule(<strong><code>,</code></strong>) ou un point-virgule (<strong><code>;</code></strong>), et des caractères de délimitation, souvent les guillemets (<strong><code>"</code></strong>). Si vous ne savez pas comment créer un fichier CSV, vous pouvez utiliser <a href="http://www.openoffice.org" title="OpenOffice.org">OpenOffice Calc</a> ou un autre tableur pour exporter vos données dans un fichier CSV.</p>
+<p>Le format csv correspond à une simple liste de valeurs séparées par un séparateur, souvent une virgule(<strong><code>,</code></strong>) ou un point-virgule (<strong><code>;</code></strong>), et des caractères de délimitation, souvent les guillemets (<strong><code>"</code></strong>). Si vous ne savez pas comment créer un fichier CSV, vous pouvez utiliser <a href="http://www.libreoffice.org" title="LibreOffice.org">LibreOffice Calc</a> ou un autre tableur pour exporter vos données dans un fichier CSV.</p>
 <p>Des formats d'import ou d'export spécifiques peuvent être ajoutés simplement par un mécanisme d'extensions (sinon, demander à l'auteur !).</p>
   <div class="toc">
     <h2 class="nonum"><a id="contents" name="contents">Sommaire</a></h2>
@@ -41,6 +43,9 @@
         <ol class="toc">
           <li>
             <a href="#alone_terms">Termes seuls</a>
+          </li>
+          <li>
+            <a href="#custom_fields">Champs personnalisés (Drupal 7 Fields)</a>
           </li>
           <li>
             <a href="#def_links">Champs et liens des termes</a>
@@ -135,7 +140,46 @@
         <li><code>Or</code></li>
         <li><code>Bois</code></li>
       </ul></div>
-  <h4 id="def_links"><a href="#contents">2. Champs et liens des termes</a></h4>
+  <h4 id="custom_fields"><a href="#contents">2. Champs personnalisés (Drupal 7 Fields)</a></h4>
+    <p>Les termes sont importés avec un schéma csv fourni par l'utilisateur.</p>
+    <p>Le schéma csv doit contenir chaque entête de colonne du vocabulaire à importer. L'entête de colonne est le nom (pas l'étiquette) du champ dans lequel importer les éléments. Cela peut être un champ par défaut (name, description, weight) ou un champ personnalisé.</p>
+    <p>Par exemple, vous voulez importer une liste de constructeurs automobiles et vous voulez que chaque constructeur ait des champs personnalisés indiquant la nationalité et la date de création (<a href="http://drupal.org/node/1027068#comment-4152194">origine de l'exemple, fictif</a>):</p>
+    <div class="codeblock"><ul>
+      <li><code>[Terme de taxinomie - [Champ personnalisé] - [Champ personnalisé]</code></li>
+      <li><code>Constructeur auto   - Pays                 - Date d'origine      </code></li>
+      <li><code>-----------------------------------------------------------------</code></li>
+      <li><code>Ford            - US             - 1900</code></li>
+      <li><code>Renault         - France         - 1901</code></li>
+      <li><code>Toyota          - Japon          - 1902</code></li>
+      <li><code>Nissan          - Japon          - 1903</code></li>
+      <li><code>Daimler Benz    - Allemagne      - 1904</code></li>
+    </ul></div>
+    <p>Le format des champs personnalisés sera alors :</p>
+    <div class="codeblock">
+      <code>name, field_pays, field_date_origine</code>
+    </div>
+    <p>ou de façon plus générique :</p>
+    <div class="codeblock">
+      <code>name, field_monchampperso_1_machinename, field_monchampperso_2_machinename...</code>
+    </div>
+    <p>Les champs personnalisés sont créés automatiquement s'ils n'existent pas et is sont ensuite attachés au vocabulaire.</p>
+    <p>Actuellement, les champs personnalisés disponibles sont texte ('text'), reference à un autre terme ('taxonomy_term_reference') et même fichier ('file').</p>
+    <p>Le format par défaut est 'text'. Si vous voulez en utiliser un autre, vous devez l'indiquer avec le sympbole '|' dans la section 'Vocabulaire' du formulaire, sauf si le champ existe déjà.</p>
+    <p>Par exemple, vous voulez importer ces éléments (<a href="http://drupal.org/node/1027068#comment-4194716">origine de l'exemple</a>):</p>
+    <div class="codeblock"><ul>
+      <li><code>nom par défault 1,nom tax gtin 1,description 1, /home/robertom/file1.pdf, statut 1</code></li>
+      <li><code>nom par défault 2,nom tax gtin 2,description 2, /home/robertom/file2.pdf, statut 2</code></li>
+      <li><code>nom par défault 3,nom tax gtin 3,description 3, /home/robertom/file3.pdf, statut 3</code></li>
+    </ul></div>
+    <p>Le format personnalisé pourra être :</p>
+    <div class="codeblock"><ul>
+      <li><code>name, field_nom_interne, description, field_fichier, field_statut</code></li>
+    </ul></div>
+    <p>Les champs personnalisés seront :</p>
+    <div class="codeblock"><ul>
+      <li><code>field_fichier|file</code></li>
+    </ul></div>
+  <h4 id="def_links"><a href="#contents">3. Champs et liens des termes</a></h4>
     <p>Cette option permet d'importer la définition complète d'un terme ainsi que ses liens avec les autres termes.</p>
     <p>Le format est : nom du terme, identifiant du terme, identifiant du vocabulaire, description, poids, nombre de synonymes, nombre de parents de premier niveau, nombre d'enfants de premier niveau, nombre de termes associés, liste des synonymes, liste des identifiants des parents de premier niveau, liste des identifiants des enfants de premier niveau, liste des identifiants des termes associés, liste des identifiants des vocabulaires des termes associés.</p>
     <p>Seul le nom doit être défini, les autres valeurs pouvant être vides. Les identifiants ne sont pas les numéros internes des terme ou des vocabulaires, mais des identifiants uniques. Ils peuvent être des noms ou des nombres. Dans la plupart des cas, vous pouvez simplement utiliser les véritables noms. En fait, les identifiants doivent être spécifiques seulement pour les nomùs de termes doublons de manière à identifier chaque élément. De ce fait, pour les doublons, vous pouvez utiliser le nom plus un nombre. L'identifiant du terme principal est nécessaire seulement lorsque le terme est un doublon.</p>
@@ -146,13 +190,13 @@
       </ul></div>
     <p>Avec ce format, le vocabulaire de destination est determiné par la source. Si la troisième colonne est vide, un nouveau vocabulaire sera créé. S'il s'agit d'un nom ou d'un nombre, un vocabulaire sera créé s'il n'existe pas. Ce processus est également utilisé pour les termes associés. Si le vocabulaire d'un terme associé n'est pas défini, le vocabulaire du terme principal est utilisé. Attention : il est déconseillé de modifier le vocabulaire d'un terme qui a des liens.</p>
     <p>Une option plus simple, <a href="#fields"><code>Définitions complètes de termes</code></a>, permet d'importer les seules définitions.</p>
-  <h4 id="flat"><a href="#contents">3. Termes (vocabulaire plat)</a></h4>
+  <h4 id="flat"><a href="#contents">4. Termes (vocabulaire plat)</a></h4>
     <p>Cette option permet d'importer un ensemble de termes de manière à créer un vocabulaire plat. Tous les éléments du fichier seront importés en tant que termes. Exemple :</p>
       <div class="codeblock"><ul>
         <li><code>Vétements, Arbres, Maisons</code></li>
         <li><code>Paris, Drupal</code></li>
       </ul></div>
-  <h4 id="tree_structure"><a href="#contents">4. Structure hiérarchique ou en tableau d'un terme par ligne</a></h4>
+  <h4 id="tree_structure"><a href="#contents">5. Structure hiérarchique ou en tableau d'un terme par ligne</a></h4>
     <p>Cette option permet de créer la structure arborescente d'un vocabulaire (géographie, classification...). Pour importer une hiérarchie à plusieurs parents, il est préférable d'utiliser les importations "Polyhiérarchie", "Enfants de premier niveau" ou "Parents de premier niveau".<br />
     Votre fichier peut être écrit selon deux schémas et un mixte.<br />
     <h5 id="tree_structure_full_line"><a href="#contents">Premier schéma: tous les ancètres d'un terme</a></h5>
@@ -213,7 +257,7 @@
           <li><code>Monde, Europe, France, Paris</code></li>
         </ul></div>
       Les lignes complètes, avec un seul terme ou partielles peuvent être mélangées, mais l'ordre est pris en compte deux lignes par deux, sauf lorsque toutes les lignes sont complètes. Dans cet exemple, si les cinquième et sixième lignes sont interverties, &lt; <code>Séoul</code> &gt; deviendrait un enfant de &lt; <code>Japon</code> &gt;.
-  <h4 id="polyhierarchy"><a href="#contents">5. Structure polyhiérarchique</a></h4>
+  <h4 id="polyhierarchy"><a href="#contents">6. Structure polyhiérarchique</a></h4>
     <p>Cette option permet de créer une structure polyhiérarchique telle qu'une généalogie.<br />
     Le format est le même que le précédent : chaque terme est l'enfant du précédent : parent, enfant, petit-enfant... et ainsi de suite.<br />
     Cependant, quatre points différent. Premièrement, le premier élément ne doit pas forcément être une racine. Deuxièmement, les doublons sont toujours fusionnés, sauf lorsque l'un est parent direct de l'autre, ceci étant interdit dans Drupal. De ce fait, dans le cas d'un vocabulaire monohierarchique sans doublons non-direct, comme l'exemple géographique ci-dessus, le résultat est le même qu'avec l'option précédente. Troisièmement, les lignes peuvent également être partielles, mais dans certains cas de doublons, le résultat sera différent. Enfin, la polyhierarchie peut être récursive.<br />
@@ -228,7 +272,7 @@
         <li><code>Grand-Mère 2, Oncle</code></li>
         <li><code>Père, Fils 3</code></li>
       </ul></div>
-  <h4 id="parents"><a href="#contents">6. Parents de premier niveau</a></h4>
+  <h4 id="parents"><a href="#contents">7. Parents de premier niveau</a></h4>
     <p>Cette option permet d'importer un vocabulaire dans lequel les termes peuvent avoir plusieurs parents, comme dans une généalogie (polyhierarchy).<br />
     Le premier élément est importé en tant que terme et les suivants en tant que parents de premier niveau du terme. Par exemple, des lignes peuvent être :</p>
       <div class="codeblock"><ul>
@@ -240,7 +284,7 @@
         <li><code>Père, Grand-Mère 2, Grand-Père 2</code></li>
         <li><code>Oncle, Grand-Mère 2, Grand-Père 2</code></li>
       </ul></div>
-  <h4 id="children"><a href="#contents">7. Enfants de premier niveau</a></h4>
+  <h4 id="children"><a href="#contents">8. Enfants de premier niveau</a></h4>
     <p>Cette option permet d'importer un vocabulaire dans lequel les termes peuvent avoir plusieurs parents, comme dans une généalogie (polyhierarchy).<br />
     Le premier élément est importé en tant que terme et les suivants en tant qu'enfants de premier niveau du terme. Par exemple, des lignes peuvent être :</p>
       <div class="codeblock"><ul>
@@ -252,35 +296,35 @@
         <li><code>Grand-Père 2, Père, Oncle</code></li>
       </ul></div>
       Les trois exemples précédents correspondent au même vocabulaire lorsque l'option des termes existants est "mettre à jour et fusionner", ce qui est l'option recommandée.
-  <h4 id="relations"><a href="#contents">8. Termes associés (termes connexes)</a></h4>
+  <h4 id="relations"><a href="#contents">9. Termes associés (termes connexes)</a></h4>
     <p>Attention : sous Drupal 7, les termes associés ont été supprimés et remplacés par les champs (fields). Cette option est donc disponible seulement avec Drupal 6. Pour disposer de la même fonctionnalité, il faut créer un champ 'relations'.<br />
     Cette option permet de créer des liens entre les termes comme les "voir aussi" dans une encyclopédie. La deuxième colonne et les suivantes seront importées en tant que termes connexes du terme de la première colonne. Par exemple, une ligne pourrait être :</p>
       <div class="codeblock"><ul>
         <li><code>Baobab, Madagascar, Fantôme</code></li>
       </ul></div>
     Ainsi, &lt; <code>Baobab</code> &gt; renverra à &lt; <code>Madagascar</code> &gt; et à &lt; <code>Fantôme</code> &gt;. Une option permet de créer également les sous-relations, en l'occurrence entre &lt; <code>Madagascar</code> &gt; et &lt; <code>Fantôme</code> &gt; (voir ci-dessous).
-  <h4 id="synonyms"><a href="#contents">12. Termes synonymes</a></h4>
+  <h4 id="synonyms"><a href="#contents">10. Termes synonymes</a></h4>
     <p>La deuxième colonne et les suivantes seront importées comme termes synonymes du terme de la première colonne. Exemple :</p>
       <div class="codeblock"><ul>
         <li><code>"Royaume Uni","Grande-Bretagne","Angleterre"</code></li>
       </ul></div>
-  <h4 id="fields"><a href="#contents">9. Définitions complètes de termes</a></h4>
+  <h4 id="fields"><a href="#contents">11. Définitions complètes de termes</a></h4>
     <p>Cette option permet d'importer des définitions complètes de termes.Le format est : nom, poids, description, liste des synonymes éventuels. Exemple :</p>
       <div class="codeblock"><ul>
         <li><code>Rue, 1, "Une voie urbaine", Avenue, Route</code></li>
       </ul></div>
     Un autre choix, <a href="#def_links"><code>Champs et liens des termes</code></a>, permet d'importer non seulement les définitions, mais également les liens.
-  <h4 id="descriptions"><a href="#contents">10. Descriptions des termes</a></h4>
+  <h4 id="descriptions"><a href="#contents">12. Descriptions des termes</a></h4>
     <p>La seconde colonne sera importée comme description du terme défini dans la première colonne. Exemple :</p>
       <div class="codeblock"><ul>
         <li><code>"Baobab","Un arbre africain"</code></li>
       </ul></div>
-  <h4 id="weights"><a href="#contents">11. Poids des termes</a></h4>
+  <h4 id="weights"><a href="#contents">13. Poids des termes</a></h4>
     <p>La seconde colonne sera importée comme poids du terme défini dans la première colonne. Exemple :</p>
       <div class="codeblock"><ul>
         <li><code>Baobab, 3</code></li>
       </ul></div>
-  <h4 id="taxonomy_manager"><a href="#contents">13. Taxonomy manager</a></h4>
+  <h4 id="taxonomy_manager"><a href="#contents">14. Taxonomy manager</a></h4>
     <p>Ce format est utilisé par <a href="http://drupal.org/project/taxonomy_manager" title="Module Taxonomy manager">Taxonomy manager</a> pour exporter des vocabulaires. Les colonnes sont : identifiant du vocabulaire, identifiant du terme, nom du terme, description du terme, id du parent 1 de premier niveau, ..., id du parent n de premier niveau. Example:</p>
       <div class="codeblock"><ul>
         <li><code>, 1, "Île-de-France", "Main region"</code></li>
@@ -288,7 +332,7 @@
       </ul></div>
     <p>Dans ce format, l'ordre des lignes est important : il est impossible d'attacher un parent à un terme si ce parent n'a pas été importé dans une ligne précédente.</p><br />
     <p>Lorsqu'un vocabulaire est importé dans un vocabulaire existant, seule l'option "ignorer et créer" peut être utilisée.</p>
-  <h4 id="geotaxonomy"><a href="#contents">14. Geotaxonomy</a></h4>
+  <h4 id="geotaxonomy"><a href="#contents">15. Geotaxonomy</a></h4>
     <p>Importe et exporte des termes de <a href="http://drupal.org/project/geotaxonomy"  title="Module Geotaxonomy">géotaxinomie</a>.</p>
     <p>Format</p>
     <div class="codeblock"><ul>
@@ -409,20 +453,20 @@
     $csv_lines .=  "\n". ',"Royaume-Uni", "Lyon"';<br />
     $csv_lines .=  "\n". ',"Portugal", "Lisbonne"';<br />
     $result = taxonomy_csv_import(<br />
-    &nbsp;&nbsp;array(<br />
-    &nbsp;&nbsp;&nbsp;&nbsp;'text'           => $csv_lines,<br />
-    &nbsp;&nbsp;&nbsp;&nbsp;'import_format'  => 'tree_structure',<br />
-    &nbsp;&nbsp;&nbsp;&nbsp;'existing_items' => 'update_replace',<br />
+      array(<br />
+        'text'           => $csv_lines,<br />
+        'import_format'  => 'tree_structure',<br />
+        'existing_items' => 'update_replace',<br />
     ));<br />
   </code></div>
   <p>Ou comme cela (import au niveau d'une ligne) :</p>
   <div class="codeblock"><code>
     $result = taxonomy_csv_line_import(<br />
-    &nbsp;&nbsp;array("Europe", "France", "Paris"),<br />
-    &nbsp;&nbsp;array(<br />
-    &nbsp;&nbsp;&nbsp;&nbsp;'import_format' => 'tree_structure',<br />
-    &nbsp;&nbsp;&nbsp;&nbsp;'vocabulary_id' => 2,<br />
-    &nbsp;&nbsp;&nbsp;&nbsp;'existing_items' => 'update_replace',<br />
+      array("Europe", "France", "Paris"),<br />
+      array(<br />
+        'import_format' => 'tree_structure',<br />
+        'vocabulary_id' => 2,<br />
+        'existing_items' => 'update_replace',<br />
     ));<br />
   </code></div>
   <p>Les formats d'importation sont présentés dans les commentaires et <a href='#formats'>ci-dessus</a>. Certains peuvent être indisponibles.</p>

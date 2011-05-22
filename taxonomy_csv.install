@@ -27,6 +27,7 @@ function taxonomy_csv_uninstall() {
   foreach (array(
       // Import variables.
       'import_format',
+      'import_custom_format',
       'keep_order',
       'source_choice',
       'import_delimiter',
@@ -39,6 +40,7 @@ function taxonomy_csv_uninstall() {
       'locale_custom',
       'vocabulary_target',
       'vocabulary_id',
+      'import_custom_fields',
       'check_hierarchy',
       'set_hierarchy',
       'existing_items',
@@ -50,6 +52,7 @@ function taxonomy_csv_uninstall() {
       'result_type',
       // Export variables.
       'export_format',
+      'export_custom_format',
       'export_vocabulary_id',
       'export_delimiter',
       'export_delimiter_custom',
