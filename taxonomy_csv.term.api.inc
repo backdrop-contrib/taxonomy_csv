@@ -447,7 +447,7 @@ function taxonomy_csv_taxonomy_term_presave($term) {
     $fields        = $_SESSION['taxonomy_csv_import']['fields'];
     $line          = $_SESSION['taxonomy_csv_import']['line'];
 
-    $message = array();
+    $messages = array();
 
     // Import fields according custom format.
     foreach ($custom_format as $key => $field_name) {
