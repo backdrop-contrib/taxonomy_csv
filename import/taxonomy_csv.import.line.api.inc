@@ -147,6 +147,11 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array(), $t
           'relations'   => array(),
         );
 
+        // Set default vocabulary if no vocabulary is used.
+        if ($line[2] == '') {
+          $line[2] = $options['vocabulary_id'];
+        }
+
         // 3. Prepare links. Zero character ids have been already removed.
         $parents_names  = array_slice($line, 9 + $line[5], $line[6]);
         $children_names = array_slice($line, 9 + $line[5] + $line[6], $line[7]);
@@ -154,7 +159,10 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array(), $t
         $related_vocs   = array_slice($line, 9 + $line[5] + $line[6] + $line[7] + $line[8], $line[8]);
 
         // 4. Check if main and related vocabularies are already in memory.
-        $vocabularies = array_unique(array_merge(array($line[2]), $related_vocs));
+        $vocabularies = $related_vocs;
+        $vocabularies[] = $line[2];
+        $vocabularies = array_unique($vocabularies);
+
         foreach ($vocabularies as $id) {
           // Empty vocabulary identifiant is saved too.
           // Vocabulary is unknown.
@@ -185,6 +193,10 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array(), $t
                 break;
 
               case 'existing':
+              // Even with 'existing' choice, vocabularies have to be created
+              // when a related term belongs to another vocabulary.
+              // Currently not advised with multiple vocabularies in Drupal 7.
+
               default:
                 // Vocabulary exists.
                 if ($vid) {

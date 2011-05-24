@@ -617,7 +617,7 @@ function _taxonomy_csv_import_vocabulary_prepare(&$options) {
     array() :
     FALSE;
 
-  // Create thesaurus synonyms and relations fields if needed.
+  // Add or create synonyms and relations fields for the vocabulary, if needed.
   $options['vocabulary'] = taxonomy_csv_thesaurus_create($vocabulary->name, $synonym_field, $relation_field);
 
   // Add or create custom fields if needed.

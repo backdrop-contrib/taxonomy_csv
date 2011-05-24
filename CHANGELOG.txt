@@ -7,13 +7,18 @@
 == CHANGELOG ==
   ===========
 
-Taxonomy csv import/export 6.x-5.7-dev, 2011-05-22
-----------------------------------------------
+Taxonomy csv import/export 7.x-5.7-dev, 2011-05-24
+Taxonomy csv import/export 6.x-5.7-dev, 2011-05-24
+--------------------------------------------------
+#1006466 By Daniel Berthereau: Fixed import full definitions in existing.
 By Daniel Berthereau: Fixed some UI bugs and updated help.
+
+Taxonomy csv import/export 6.x-5.7-dev, 2011-05-23
+----------------------------------------------
+#1123914 By Andrey parashutiki: Fixed use of UI with keys up and down.
 
 Taxonomy csv import/export 7.x-5.7-dev, 2011-05-22
 --------------------------------------------------
-By Daniel Berthereau: Fixed some UI bugs and updated help.
 By Daniel Berthereau: Added autocreation of custom fields.
 #1027068 by Carsten Müller and Roberto Mariani: Support custom fields.
 #1040894 by Carsten Müller: Support for file extension .csv and .txt.
