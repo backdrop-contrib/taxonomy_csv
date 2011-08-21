@@ -77,16 +77,16 @@ function taxonomy_csv_term_find($term, $all_vocabularies = FALSE, $parent_tid = 
       if (isset($term->vid)
           && $term->vid
           && !$all_vocabularies) {
-        $sql .= ' AND {t.vid} = :vid';
+        $sql .= ' AND t.vid = :vid';
         $args[':vid'] = $term->vid;
       }
 
       if ($parent_tid) {
-        $sql .= ' AND {h.parent} = :parent';
+        $sql .= ' AND h.parent = :parent';
         $args[':parent'] = $parent_tid;
       }
 
-      $sql .= ' ORDER BY {t.tid} ASC LIMIT 1';
+      $sql .= ' ORDER BY t.tid ASC LIMIT 1';
 
       $result = db_query($sql, $args);
       // Only zero or one result.
