@@ -242,14 +242,16 @@ function taxonomy_csv_vocabulary_name_check($name) {
  * Return vocabulary vid by its name or NULL if none.
  */
 function taxonomy_csv_vocabulary_get_id($name) {
-  return (key(taxonomy_vocabulary_load_multiple(FALSE, array('name' => $name))));
+  $arr = taxonomy_vocabulary_load_multiple(FALSE, array('name' => $name));
+  return (key($arr));
 }
 
 /**
  * Return the vocabulary object matching a vocabulary name.
  */
 function taxonomy_csv_vocabulary_load_name($name) {
-  return reset(taxonomy_vocabulary_load_multiple(NULL, array('name' => $name)));
+  $arr = taxonomy_vocabulary_load_multiple(FALSE, array('name' => $name));
+  return reset($arr);
 }
 
 /**

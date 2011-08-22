@@ -537,7 +537,8 @@ function taxonomy_csv_form_import($form_state) {
       );
       // Preselection if import format has only one option.
       if (count($form['tab']['import_options']["existing_items_$key"]['#options']) == 1) {
-        $form['tab']['import_options']["existing_items_$key"]['#default_value'] = array_pop(array_keys($form['tab']['import_options']["existing_items_$key"]['#options']));
+        $options = array_keys($form['tab']['import_options']["existing_items_$key"]['#options']);
+        $form['tab']['import_options']["existing_items_$key"]['#default_value'] = array_pop($options);
       }
     }
 
