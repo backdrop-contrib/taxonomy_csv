@@ -180,6 +180,7 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
     // Initialize some variables.
     $context['results'][0]['current_term'] = 0;
     $context['results'][0]['current_name'] = '';
+    $context['results'][0]['worst_tid'] = 0;
     $context['results'][0]['worst_term'] = 0;
     $context['results'][0]['worst_name'] = '';
     $context['results'][0]['worst_message'] = 799;
@@ -223,6 +224,7 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
   }
 
   // Load and process one term.
+  $worst_tid       = &$context['results'][0]['worst_tid'];
   $worst_term      = &$context['results'][0]['worst_term'];
   $worst_name      = &$context['results'][0]['worst_name'];
   $worst_message   = &$context['results'][0]['worst_message'];
@@ -234,8 +236,9 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
   if ($term) {
     $term_number++;
 
-    // Remember current name in case of error.
+    // Remember current name/tid in case of error.
     $current_name = $term->name;
+    $current_tid  = $term->tid;
 
     // Process export of current term.
     $result = taxonomy_csv_term_export($term, $options, $duplicate_terms);
@@ -244,6 +247,7 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
     // Remember worst message of exported terms.
     $worst_message_new = _taxonomy_csv_worst_message($result['msg']);
     if ($worst_message > $worst_message_new) {
+      $worst_tid     = $current_tid;
       $worst_term    = $term_number;
       $worst_name    = $current_name;
       $worst_message = $worst_message_new;
@@ -293,10 +297,14 @@ function _taxonomy_csv_vocabulary_export_finished($success, $results, $operation
 
   // Short summary information is different if batch succeeded or not.
   if ($success) {
+    if (!empty($options['worst_tid'])) {
+      $worst_path = drupal_get_path_alias('taxonomy/term/' . $options['worst_tid']);
+      $options['worst_name'] = l(check_plain($options['worst_name']), $worst_path);
+    }
     $variables = array(
       '!total_terms' => $options['total_terms'],
       '!worst_count' => $options['worst_term'],
-      '@worst_name'  => $options['worst_name'],
+      '!worst_name'  => $options['worst_name'],
       '!worst_msg'   => $options['result_display'] ?
           _taxonomy_csv_message_text($options['worst_message']) :
           t('Message code') . ' = ' . $options['worst_message'],
@@ -304,17 +312,17 @@ function _taxonomy_csv_vocabulary_export_finished($success, $results, $operation
     $messages = array(
       WATCHDOG_DEBUG   => t('No error, warnings or notices have been reported during export process of !total_terms terms.', $variables),
       WATCHDOG_INFO    => t('No error, warnings or notices have been reported during export process of !total_terms terms.', $variables),
-      WATCHDOG_NOTICE  => t('Notices have been reported during export process (bad formatted or empty terms). !total_terms terms processed. First notice occurred on term !worst_count (@worst_name) [!worst_msg].', $variables),
-      WATCHDOG_WARNING => t('Warnings have been reported during export process (bad formatted terms). !total_terms terms processed. First term skipped is term !worst_count (@worst_name) [!worst_msg].', $variables),
-      WATCHDOG_ERROR   => t('Errors have been reported during export process. Process failed at term !worst_count (@worst_name) of a total of !total_terms [!worst_msg].', $variables),
+      WATCHDOG_NOTICE  => t('Notices have been reported during export process (bad formatted or empty terms). !total_terms terms processed. First notice occurred on term !worst_count (!worst_name) [!worst_msg].', $variables),
+      WATCHDOG_WARNING => t('Warnings have been reported during export process (bad formatted terms). !total_terms terms processed. First term skipped is term !worst_count (!worst_name) [!worst_msg].', $variables),
+      WATCHDOG_ERROR   => t('Errors have been reported during export process. Process failed at term !worst_count (!worst_name) of a total of !total_terms [!worst_msg].', $variables),
     );
     $worst_level = intval($options['worst_message'] / 100);
     $message = $messages[$worst_level];
   }
   else {
-    $message = t('Exportation failed. Export process was successful until the term !term_count (@term_name) of a total of !total_terms.', array(
+    $message = t('Exportation failed. Export process was successful until the term !term_count (!term_name) of a total of !total_terms.', array(
         '!term_count'  => $options['current_term'],
-        '@term_name'   => $options['current_name'],
+        '!term_name'   => $options['current_name'],
         '!total_terms' => $options['total_terms'],
       )) . '<br />'
       . t('This issue is related to export process and may be caused by a memory overrun of the database. If not, you can reinstall module from a fresh release or submit an issue on <a href="!link">Taxonomy CSV import/export module</a>.', array(
