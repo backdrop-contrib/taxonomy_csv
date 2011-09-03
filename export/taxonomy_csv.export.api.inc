@@ -128,9 +128,9 @@ function taxonomy_csv_vocabulary_export($options) {
   // Complete $options with some csv variables.
   $options['separator'] = $options['enclosure'] . $options['delimiter'] . $options['enclosure'];
   $line_ending = array(
-    'Unix'  => "\n",
-    'Mac'   => "\r",
-    'MSDOS' => "\r\n",
+    'Unix'   => "\n",
+    'Mac'    => "\r",
+    'MS-DOS' => "\r\n",
   );
   $options['end_of_line'] = $line_ending[$options['line_ending']];
 

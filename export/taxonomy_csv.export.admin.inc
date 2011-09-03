@@ -61,7 +61,7 @@ function taxonomy_csv_form_export($form_state) {
   $list_export_line_ending = array(
     'Unix'             => t('Unix / Linux'),
     'Mac'              => t('Apple Mac'),
-    'MSDOS'            => t('Microsoft DOS'),
+    'MS-DOS'           => t('Microsoft DOS'),
   );
 
   $list_export_order = array(
