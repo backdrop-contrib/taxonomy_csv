@@ -29,9 +29,10 @@
  *   - 3. Line and utf8 checks
  * - 4. Which vocabulary to import into (destination) ?
  *   - 1. Destination type
- *   - 2. Autocreate custom fields
- *   - 3. Vocabulary choice
- *   - 4. Vocabulary hierarchy set or check
+ *   - 2. Vocabulary choice
+ *   - 3. Deletion of terms
+ *   - 4. Autocreate custom fields
+ *   - 5. Vocabulary hierarchy set or check
  * - 5. When a term exist, what to do with it ?
  *   - 1. Previous or existing terms
  *   - 2. Specific import options depending on source content
@@ -441,7 +442,7 @@ function taxonomy_csv_form_import($form_state) {
       '#type'          => 'select',
       '#options'       => $list_vocabulary_target,
       '#default_value' => $list_previous_values['vocabulary_target'],
-      '#description'   => t('Choose vocabulary where you want to import your items.'),
+      '#description'   => t('Choose the vocabulary where you want to import your items.'),
     );
 
     $form['tab']['destination']['vocabulary_id'] = array(
@@ -479,6 +480,18 @@ function taxonomy_csv_form_import($form_state) {
     '#states' => array(
       'visible' => array(
         ':input[name=import_format]' => array('value' => 'custom_fields'),
+      ),
+    ),
+  );
+
+  $form['tab']['destination']['delete_terms'] = array(
+    '#type'          => 'checkbox',
+    '#title'         => t('Automatically delete all terms of the selected vocabulary before import'),
+    '#default_value' => $list_previous_values['delete_terms'],
+    '#description'   => t("Warning: You won't be warned before deletion."),
+    '#states' => array(
+      'visible' => array(
+        ':input[name=vocabulary_target]' => array('value' => 'existing'),
       ),
     ),
   );
@@ -1077,6 +1090,7 @@ function taxonomy_csv_form_import_submit($form, &$form_state) {
       'locale_custom',
       'vocabulary_target',
       'vocabulary_id',
+      'delete_terms',
       'import_custom_fields',
       'check_hierarchy',
       'set_hierarchy',

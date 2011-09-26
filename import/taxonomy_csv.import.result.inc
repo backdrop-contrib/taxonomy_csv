@@ -157,6 +157,10 @@ function _taxonomy_csv_info_vocabulary($options) {
         _taxonomy_csv_info_vocabulary_destination($vocabulary, $options['vocabulary_target']);
     $message .=  '<br />';
 
+    if ($options['delete_terms']) {
+      $message .= t('Existing terms of the vocabulary have been deleted.') . '<br />';
+    }
+
     if (!$options['check_hierarchy']) {
       $message .= t('Hierarchy level has been manually set.') . ' ';
     }

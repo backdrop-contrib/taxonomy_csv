@@ -40,6 +40,7 @@ function taxonomy_csv_uninstall() {
       'locale_custom',
       'vocabulary_target',
       'vocabulary_id',
+      'delete_terms',
       'import_custom_fields',
       'check_hierarchy',
       'set_hierarchy',

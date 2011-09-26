@@ -65,12 +65,12 @@ function taxonomy_csv_term_find($term, $all_vocabularies = FALSE, $parent_tid = 
     if (drupal_strlen($name)) {
       // Only term id is selected, because taxonomy_term_load is used next in
       // order to take advantage of taxonomy cache.
-      $sql = "
+      $sql = '
         SELECT t.tid
         FROM {taxonomy_term_data} t
         INNER JOIN {taxonomy_term_hierarchy} h ON t.tid = h.tid
         WHERE :name LIKE LOWER(t.name)
-      ";
+      ';
       $args = array();
       $args[':name'] = $name;
 
@@ -608,6 +608,22 @@ function taxonomy_csv_taxonomy_term_presave($term) {
     // Save messages.
     $_SESSION['taxonomy_csv_import']['messages'] += $messages;
   }
+}
+
+/**
+ * Delete multiple terms.
+ *
+ * @param $tids
+ *   (Optional) An array of taxonomy term IDs.
+ *
+ * @return
+ *   TRUE.
+ */
+function taxonomy_csv_term_delete_multiple($tids = array()) {
+  foreach ($tids as $tid) {
+    taxonomy_term_delete($tid);
+  }
+  return TRUE;
 }
 
 /**

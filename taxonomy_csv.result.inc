@@ -203,7 +203,7 @@ function _taxonomy_csv_message_text($message_code) {
 
       500 => t('Notice'),
       501 => t('Too many items. Second and next columns will be ignored, as import choice is to ignore them.'),
-      510 => t('Line contains empty items. First item is imported, but next ones are ignored.'),
+      510 => t('Line contains empty items. They are ignored.'),
       511 => t('To change vocabulary of a term is not recommended.'),
       512 => t("Line contains items matching first column term. A term can't be related to itself and a synonym may be different to it.") . ' ' . t('Duplicates will be ignored.'),
       513 => t('Line contains empty items.'),

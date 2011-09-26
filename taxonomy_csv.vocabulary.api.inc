@@ -255,6 +255,29 @@ function taxonomy_csv_vocabulary_load_name($name) {
 }
 
 /**
+ * Return an array of all term ids of a given vocabulary.
+ */
+function taxonomy_csv_vocabulary_get_tids($vid) {
+  $tids = array();
+
+  $sql = '
+    SELECT t.tid
+    FROM {taxonomy_term_data} t
+    WHERE t.vid = :vid
+  ';
+  $args = array(
+    ':vid' => $vid,
+  );
+
+  $result = db_query($sql, $args);
+  foreach ($result as $term) {
+    $tids[] = $term->tid;
+  }
+
+  return $tids;
+}
+
+/**
  * Check and update hierarchy flag of a given vocabulary.
  *
  * Drupal hierarchy check function bugs with vocabularies without hierarchy.
