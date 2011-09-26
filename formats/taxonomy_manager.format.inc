@@ -179,7 +179,7 @@ function taxonomy_csv_term_export_taxonomy_manager($term, $options = array(), $d
       $term->name,
       $term->description,
     ),
-    taxonomy_csv_term_get_parents_names($term->tid)
+    taxonomy_csv_term_get_parents_tids($term->tid)
   );
 
   return $result;
