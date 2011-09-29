@@ -211,6 +211,11 @@ function taxonomy_csv_form_export($form_state) {
     '#options'       => $list_export_order,
     '#default_value' => $list_previous_values['export_order'],
     '#description'   => t('Choose order of exported terms.'),
+    '#states' => array(
+      'invisible' => array(
+        ':input[name=export_format]' => array('value' => TAXONOMY_CSV_FORMAT_TREE_STRUCTURE),
+      ),
+    ),
   );
 
   $form['tab']['advanced_options']['info'] = array(

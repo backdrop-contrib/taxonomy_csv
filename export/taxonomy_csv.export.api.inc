@@ -179,8 +179,26 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
     $context['results'][0]['handle'] = fopen($options['file']->filepath, 'a+');
     $context['sandbox']['max'] = $options['total_terms'];
 
-    // Prepare terms to be exported.
-    if ($options['vocabulary_id']) {
+    // Fetch terms to be exported and order them (by tree or by specific order).
+    $terms = array();
+    // Prepare a hierarchical tree of terms.
+    if (in_array($options['export_format'], array(
+        TAXONOMY_CSV_FORMAT_TREE_STRUCTURE,
+        TAXONOMY_CSV_FORMAT_POLYHIERARCHY,
+      ))) {
+      $vocabularies = ($options['vocabulary_id']) ?
+          // Export only the selected vocabulary.
+          array(taxonomy_vocabulary_load($options['vocabulary_id'])) :
+          // Export all vocabularies.
+          taxonomy_vocabulary_get_names();
+      foreach ($vocabularies as $vocabulary) {
+        $terms = array_merge($terms, taxonomy_get_tree($vocabulary->vid));
+      }
+    }
+    // Prepare a list of full terms.
+    // @todo Prepare a simple list of term names or definitions without links in
+    // order to reduce memory usage for some formats.
+    elseif ($options['vocabulary_id']) {
       $terms = taxonomy_term_load_multiple(
         array(),
         array('vid' => $options['vocabulary_id'])
@@ -214,7 +232,7 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
     $context['results'][0]['handle'] = fopen($options['file']->filepath, 'a+');
   }
 
-  // Load and process one term.
+  // To simplify use of variables.
   $worst_tid       = &$context['results'][0]['worst_tid'];
   $worst_term      = &$context['results'][0]['worst_term'];
   $worst_name      = &$context['results'][0]['worst_name'];
@@ -223,8 +241,12 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
   $duplicate_terms = &$context['results'][0]['duplicate_terms'];
   $term_number     = &$context['results'][0]['current_term'];
   $current_name    = &$context['results'][0]['current_name'];
-  $term = array_shift($context['sandbox']['terms']);
-  if ($term) {
+  $terms_list      = &$context['sandbox']['terms'];
+
+  // Process one term until end of vocabulary.
+  if ($term_number < $context['sandbox']['max']) {
+    $term = $terms_list[$term_number];
+
     $term_number++;
 
     // Remember current name/tid in case of error.
@@ -232,7 +254,7 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
     $current_tid  = $term->tid;
 
     // Process export of current term.
-    $result = taxonomy_csv_term_export($term, $options, $duplicate_terms);
+    $result = taxonomy_csv_term_export($term, $options, $terms_list, $duplicate_terms);
     $result['msg'] = taxonomy_csv_line_export($result['line'], $options, $handle, $result['msg']);
 
     // Remember worst message of exported terms.
@@ -381,6 +403,9 @@ function taxonomy_csv_line_export($line, $options, &$handle, $result = array()) 
  *   //  Specific to def_links:
  *   - def_links_terms_ids : 'name_if_needed' (default), 'name' or 'tid'
  *   - def_links_vocabularies_ids : 'none' (default), 'name' or 'vid'
+ * @param $terms_list
+ *   (Optional) Array of all term objects to export, used to avoid to repeat
+ *   fetch of terms. Currently needed only with tree_structure export.
  * @param $duplicate_terms
  *   (Optional) Array of duplicate terms names indexed by tid.
  *   Duplicate terms are managed only with def_links.
@@ -389,7 +414,7 @@ function taxonomy_csv_line_export($line, $options, &$handle, $result = array()) 
  *   'line' => array of exported items,
  *   'msg'  => array of messages arrays.
  */
-function taxonomy_csv_term_export($term, $options, $duplicate_terms = array()) {
+function taxonomy_csv_term_export($term, $options, &$terms_list = array(), $duplicate_terms = array()) {
   // Define default values.
   $result = array(
     'line' => array(),
@@ -492,9 +517,15 @@ function taxonomy_csv_term_export($term, $options, $duplicate_terms = array()) {
         break;
 
       case TAXONOMY_CSV_FORMAT_TREE_STRUCTURE:
+        $terms = taxonomy_csv_term_get_first_path($term, $terms_list);
+        foreach ($terms as $parent) {
+          $result['line'][] = $parent->name;
+        }
+        $result['line'][] = $term->name;
         break;
 
       case TAXONOMY_CSV_FORMAT_POLYHIERARCHY:
+        // Warning : taxonomy_csv_term_get_first_path() returns only first path.
         break;
 
       case TAXONOMY_CSV_FORMAT_PARENTS:
