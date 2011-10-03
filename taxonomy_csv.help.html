@@ -33,7 +33,7 @@
 </head>
 <body>
 <p>This module allows to import/export taxonomies, structures or simple lists of terms into/from a vocabulary from/to a <a href="http://en.wikipedia.org/wiki/Comma-separated_values" title="Wikipedia definition">CSV</a> file, a url or a copy-and-paste text.</p>
-<p>Csv format is a simple list of values separated by a delimiter, often comma (<strong><code>,</code></strong>) or semicolon (<strong><code>;</code></strong>), and enclosures, often quotation marks (<strong><code>"</code></strong>). If you are unsure how to create a CSV file, you might want to use <a href="http://www.libreoffice.org" title="LibreOffice.org">LibreOffice Calc</a> or another spreadsheet application to export your data into a CSV file.</p>
+<p>CSV format is a simple list of values separated by a delimiter, often comma (<strong><code>,</code></strong>) or semicolon (<strong><code>;</code></strong>), and enclosures, often quotation marks (<strong><code>"</code></strong>). If you are unsure how to create a CSV file, you might want to use <a href="http://www.libreoffice.org" title="LibreOffice.org">LibreOffice Calc</a> or another spreadsheet application to export your data into a CSV file.</p>
 <p>Specific import or export formats can be added simply by a plug-in mecanism (or ask author!).</p>
   <div class="toc">
     <h2 class="nonum"><a id="contents" name="contents">Table of Contents</a></h2>
@@ -183,13 +183,16 @@
     <p>This option allows to import full term definitions and direct links to other terms.</p>
     <p>Format is: term name, term id, vocabulary id, term description, weight, number of synonyms, number of first level parents, number of first level children, number of related terms, list of synonyms, list of first level parents ids, list of first level children ids, list of related terms ids, list of vocabulary ids of related terms.</p>
     <p>Only term name should be defined. Other values can be empty. Ids are not internal term ids or vocabulary ids, but a unique identifiant. Ids can be a number or a name. In most case, you can use true name. In fact, term ids need to be specific only for duplicate term names in order to identify each item. So for duplicates, you can use term name with a serial number. Main term id is needed only when term name is a duplicate one.</p>
-    <p>Example with one synonym, two first level parents, no children, one relation with a term of another vocabulary:</p>
+    <p>Examples:</p>
       <div class="codeblock"><ul>
-        <li><code>Drupal, , Knowledge management, "Created by Dries Buytaert in 1998", 10, 1, 2, 0, 1, Drop, CMS, CMF, Open source, Software</code></li>
-        <li><code>Term 1, , Vocabulary 1, "Description of term 1", 10, 1, 2, 0, 1, Synonym 1, Direct parent 1, Direct parent 2, Related term 1, Vocabulary of related term 1</code></li>
+        <li><code>foo, , , "Description of foo", 10, 1, 1, 2, 2, Synonym of foo, bar parent 1, bar child 1, bar child 2, bar related 1, bar related 2, , vocabulary of related 2</code></li>
+        <li><code>France, , Places, "A great country", 1, 1, 1, 3, 3, French Republic, Europe, Paris, Lyon, Vichy, USA, Japan, China</code></li>
+        <li><code>Japan, , Places, "An old country", 1, 1, 1, 2, 2, Land of the Rising Sun, Asia, Tokyo, Kyoto, China, France</code></li>
+        <li><code>China, , Places, "A big country", 2, 1, 1, 1, 2, Middle Kingdom, Asia, Beijing, Japan, France</code></li>
+        <li><code>Asia, , Places, "A large continent", 1, 0, 0, 2, 0, Japan, China</code></li>
       </ul></div>
     <p>With this source content, destination is determined by source. If third column is empty, a new vocabulary will be created. If it's a name or a number, a vocabulary will be created if it doesn't exist. This process is used for related terms too. If vocabulary of a related term is not defined, vocabulary of main term is used. Warning: It's not recommended to change the vocabulary of a term with links.</p>
-    <p>A simpler option, <a href="#fields"><code>Full term definitions</code></a>, allows to import only definitions.</p>
+    <p>A simpler format, <a href="#fields"><code>Full term definitions</code></a>, allows to import only definitions.</p>
   <h4 id="flat"><a href="#contents">4. Terms (flat vocabulary)</a></h4>
     <p>Use this option to import a lot of terms in order to create a flat vocabulary. All items in your file will be imported as terms. Example:</p>
       <div class="codeblock"><ul>
@@ -307,7 +310,7 @@
   <h4 id="synonyms"><a href="#contents">10. Synonyms terms</a></h4>
     <p>The second and next columns will be imported as synonyms terms of the first column term. Example:</p>
       <div class="codeblock"><ul>
-        <li><code>"United Kingdom","Great Britain","England"</code></li>
+        <li><code>"United Kingdom", "Great Britain", "England"</code></li>
       </ul></div>
   <h4 id="fields"><a href="#contents">11. Full term definitions</a></h4>
     <p>This option allows to import full term definitions. Format is: name, weight, description, list of synonyms if any. Example:</p>

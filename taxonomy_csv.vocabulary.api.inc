@@ -55,15 +55,8 @@ function taxonomy_csv_thesaurus_create($name = '', $synonym_field = array(), $re
       'cardinality'  => FIELD_CARDINALITY_UNLIMITED,
       'translatable' => FALSE,
       'settings'     => array('allowed_values' => array(0 => array(
-        // Warning: Term reference field type need a specific vocabulary. This
-        // can create problems when this field is attached to another
-        // vocabulary. So vocabulary_field_add updates this type of field. Even
-        // if other vocabularies with this attached field have more references,
-        // previous references are always available. Another possibility may be
-        // the use of a specific field_term_relation field for each vocabulary,
-        // but it may be complicate to manage.
-        'vid'    => $vocabulary->vid,
-        'parent' => 0,
+        'vocabulary' => $vocabulary->machine_name,
+        'parent'     => 0,
       ))),
     );
     $result = taxonomy_csv_vocabulary_field_add($vocabulary->machine_name, $relation_field);
@@ -255,29 +248,6 @@ function taxonomy_csv_vocabulary_load_name($name) {
 }
 
 /**
- * Return an array of all term ids of a given vocabulary.
- */
-function taxonomy_csv_vocabulary_get_tids($vid) {
-  $tids = array();
-
-  $sql = '
-    SELECT t.tid
-    FROM {taxonomy_term_data} t
-    WHERE t.vid = :vid
-  ';
-  $args = array(
-    ':vid' => $vid,
-  );
-
-  $result = db_query($sql, $args);
-  foreach ($result as $term) {
-    $tids[] = $term->tid;
-  }
-
-  return $tids;
-}
-
-/**
  * Check and update hierarchy flag of a given vocabulary.
  *
  * Drupal hierarchy check function bugs with vocabularies without hierarchy.
@@ -312,6 +282,37 @@ function _taxonomy_csv_check_vocabulary_hierarchy($vocabulary, $changed_term = '
 }
 
 /**
+ * Calculate number of terms in a vocabulary or in all vocabularies.
+ *
+ * @todo Regular query.
+ *
+ * @param $vocabulary_id
+ *   (Optional) Id of the chosen vocabulary. If not specified, count terms in
+ *   all vocabularies.
+ *
+ * @return
+ *   Number of terms in specified vocabulary or in all vocabularies.
+ */
+function taxonomy_csv_vocabulary_count_terms($vocabulary_id = 0) {
+  // @todo Use taxonomy api or regular Drupal 7 query.
+  $sql = "
+    SELECT COUNT(*) AS count
+    FROM {taxonomy_term_data}
+  ";
+
+  $args = array();
+  if ($vocabulary_id) {
+    $sql .= ' WHERE vid = :vid ';
+    $args[':vid'] = $vocabulary_id;
+  }
+
+  $result = db_query($sql, $args);
+  foreach ($result as $item) {
+    return $item->count;
+  }
+}
+
+/**
  * Add or create a field of a vocabulary.
  *
  * @param $vocabulary_machine_name
@@ -326,16 +327,17 @@ function taxonomy_csv_vocabulary_field_add($vocabulary_machine_name, $field) {
   // Check if vocabulary exist.
   $vocabulary = taxonomy_vocabulary_machine_name_load($vocabulary_machine_name);
   if ($vocabulary) {
-    // Check if field exists already and create or update it if not exist.
+    // Check if field exists in order to create or to update it.
     // No other check is made.
     $prior_field = field_info_field($field['field_name']);
 
-    // Create field.
+    // The field doesn't exist, so creates it.
     if (empty($prior_field)) {
       $field = field_create_field($field);
     }
-    // Check if update is needed with taxonomy_term_reference. This is needed,
-    // because this type requires to use specific vocabularies.
+    // The field exists: check if an update is needed. Update is needed only
+    // with taxonomy_term_reference, because this type requires to use specific
+    // vocabularies.
     elseif ($field['type'] == 'taxonomy_term_reference') {
       $flag = FALSE;
       foreach ($prior_field['settings']['allowed_values'] as $allowed_values) {
@@ -351,6 +353,7 @@ function taxonomy_csv_vocabulary_field_add($vocabulary_machine_name, $field) {
       }
       $field = field_info_field($field['field_name']);
     }
+    // The field exists and doesn't need to be updated.
     // Field is already created, so use it.
     else {
       $field = $prior_field;

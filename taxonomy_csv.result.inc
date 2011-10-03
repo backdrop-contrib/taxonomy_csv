@@ -175,6 +175,7 @@ function _taxonomy_csv_message_text($message_code) {
       410 => t("Impossible to get parent of first item, because previous line has less parent(s). You may add one or more parents to current line or change lines order.") . $warning,
       430 => t('Line contains empty items.') . $warning,
       431 => t('Line contains duplicate items.') . $warning,
+      432 => t('Line contains an empty term. Only items before this one have been imported.'),
       433 => t("Line contains items matching term name. A term can't be synonym, related, parent or child of itself.") . $warning,
       434 => t('Line contains too many items.') . $warning,
       440 => t("Vocabulary doesn't exist. When you duplicate or import into an existing vocabulary, option 'vocabulary_id' should contains true vocabulary id.") . $warning,
@@ -231,8 +232,8 @@ function _taxonomy_csv_message_text($message_code) {
       563 => t('No object.') . $notice,
       564 => t('Too many items. Surabondant items will be ignored.') . $notice,
       565 => t('Some items are empty. Previous items will be used.') . $notice,
-      566 => t("Line doesn't contain all needed items.") . $notice,
-      580 => t('Be careful. This line has only one term and import choice is to replace existing items. So they will be removed.'),
+      570 => t("Line doesn't contain all needed items.") . $notice,
+      580 => t('Be careful. This line has only one term and import choice is to replace existing items. So these items will be removed.'),
 
       600 => t('Info'),
       605 => t('No error in options.'),

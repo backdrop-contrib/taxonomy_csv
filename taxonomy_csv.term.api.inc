@@ -6,6 +6,35 @@
  */
 
 /**
+ * Return an array of all term ids of a given vocabulary.
+ *
+ * @param $vid
+ *   The vocabulary id from where to fetch term ids.
+ *
+ * @return
+ *   Array of term ids.
+ */
+function taxonomy_csv_term_get_tids_from_vocabulary($vid) {
+  $tids = array();
+
+  $sql = '
+    SELECT t.tid
+    FROM {taxonomy_term_data} t
+    WHERE t.vid = :vid
+  ';
+  $args = array(
+    ':vid' => $vid,
+  );
+
+  $result = db_query($sql, $args);
+  foreach ($result as $term) {
+    $tids[] = $term->tid;
+  }
+
+  return $tids;
+}
+
+/**
  * Complete a base term object.
  *
  * @param $term
@@ -456,6 +485,7 @@ function _taxonomy_csv_term_format_regular($term) {
  *   - 'parents'     ; array of first level parent tids,
  *   - 'relations'   ; array of related tids,
  *   - 'synonyms'    ; array of synonyms terms names strings,
+ *
  * @return
  *   Status value (SAVED_NEW or SAVED_UPDATED). Term is updated with its tid.
  */
@@ -667,35 +697,4 @@ function taxonomy_csv_term_delete_multiple($tids = array()) {
     taxonomy_term_delete($tid);
   }
   return TRUE;
-}
-
-/**
- * Calculate number of terms in a vocabulary or in all vocabularies.
- *
- * @todo Regular query.
- *
- * @param $vocabulary_id
- *   (Optional) Id of the chosen vocabulary. If not specified, count terms in
- *   all vocabularies.
- *
- * @return
- *   Number of terms in specified vocabulary or in all vocabularies.
- */
-function taxonomy_csv_term_count_in_vocabulary($vocabulary_id = 0) {
-  // @todo Use taxonomy api or regular Drupal 7 query.
-  $sql = "
-    SELECT COUNT(*) AS count
-    FROM {taxonomy_term_data}
-  ";
-
-  $args = array();
-  if ($vocabulary_id) {
-    $sql .= ' WHERE vid = :vid ';
-    $args[':vid'] = $vocabulary_id;
-  }
-
-  $result = db_query($sql, $args);
-  foreach ($result as $item) {
-    return $item->count;
-  }
 }
