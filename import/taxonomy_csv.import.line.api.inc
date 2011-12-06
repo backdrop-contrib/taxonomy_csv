@@ -701,7 +701,7 @@ function taxonomy_csv_term_import($term, $existing_items = TAXONOMY_CSV_EXISTING
             if (is_array($value)) {
               $term->$key = array_unique(array_merge($existing_term->$key, $term->$key));
             }
-            // Else simply use new key: no merge is possible and useful for has been
+            // Else simply use new key: no merge is possible and useful for
             // string, numeric or boolean fields.
             // Description was an exception in previous version, but this
             // exception is removed for simplicity and real use of this module.

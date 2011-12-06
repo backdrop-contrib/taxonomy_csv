@@ -509,7 +509,7 @@ function taxonomy_csv_term_export($term, $options, &$terms_list = array(), $dupl
                 // Previously set identifiant.
                 $ids['main'][0],
             $vid,
-            $term->description,
+            _taxonomy_csv_escape_line_break($term->description),
             $term->weight,
             count($synonyms),
             count($ids['parents']),
@@ -577,7 +577,7 @@ function taxonomy_csv_term_export($term, $options, &$terms_list = array(), $dupl
           array(
             $term->name,
             $term->weight,
-            $term->description,
+            _taxonomy_csv_escape_line_break($term->description),
           ),
           taxonomy_csv_term_get_synonyms($term->tid)
         );
@@ -586,7 +586,7 @@ function taxonomy_csv_term_export($term, $options, &$terms_list = array(), $dupl
       case TAXONOMY_CSV_FORMAT_DESCRIPTIONS:
         $result['line'] = array(
           $term->name,
-          $term->description,
+          _taxonomy_csv_escape_line_break($term->description),
         );
         break;
 
@@ -621,4 +621,23 @@ function taxonomy_csv_term_export($term, $options, &$terms_list = array(), $dupl
   sort($result['msg']);
 
   return $result;
+}
+
+/**
+ * Escapes carriage return and linefeed.
+ *
+ * This function is used for description field of terms and allows to get only
+ * one csv line for one term.
+ *
+ * @param $string
+ *   String to update.
+ *
+ * @return
+ *   Updated string.
+ */
+function _taxonomy_csv_escape_line_break($string) {
+  return str_replace(
+    array("\r", "\n"),
+    array('\r', '\n'),
+    $string);
 }

@@ -69,6 +69,7 @@ function taxonomy_csv_form_import($form_state) {
     'comma'            => t('« , » (Comma)'),
     'semicolon'        => t('« ; » (Semicolon)'),
     'tabulation'       => t('«   » (Tabulation)'),
+    'pipe'             => t('« | » (Pipe)'),
     'space'            => t('«   » (Space)'),
     'currency_sign'    => t('« ¤ » (Currency sign)'),
     'soft_tab'         => t('«    » (Soft tab: two spaces or more)'),
@@ -78,6 +79,7 @@ function taxonomy_csv_form_import($form_state) {
   $list_import_enclosure = array(
     'none'             => t('None'),
     'quotation'        => t('« " » (Quotation mark)'),
+    'quote'            => t("« ' » (Quote)"),
     'custom_enclosure' => t('Custom enclosure'),
   );
 
@@ -950,6 +952,7 @@ function taxonomy_csv_form_import_validate($form, &$form_state) {
     'comma'            => ',',
     'semicolon'        => ';',
     'tabulation'       => "\t",
+    'pipe'             => '|',
     'space'            => ' ',
     'currency_sign'    => '¤',
     'soft_tab'         => str_repeat(' ', $options['import_delimiter_soft_tab_width']),
@@ -961,6 +964,7 @@ function taxonomy_csv_form_import_validate($form, &$form_state) {
   $enclosure = array(
     'none'             => '',
     'quotation'        => '"',
+    'quote'            => "'",
     'custom_enclosure' => $options['import_enclosure_custom'],
   );
   $options['enclosure'] = $enclosure[$options['import_enclosure']];

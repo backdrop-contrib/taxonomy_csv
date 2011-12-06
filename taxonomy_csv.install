@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Taxonomy_csv install and uninstall hook.
+ * Install, update and uninstall functions for the taxonomy_csv module.
  */
 
 /**
