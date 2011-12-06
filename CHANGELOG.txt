@@ -8,11 +8,17 @@
   ===========
 
 
+Taxonomy csv import/export 7.x-5.8-dev, 2011-12-06
+Taxonomy csv import/export 6.x-5.8-dev, 2011-12-06
+----------------------------------------------
+#1359260 by Daniel Berthereau: Added a warning when terms count is invalid.
+
+
 Taxonomy csv import/export 7.x-5.7, 2011-10-03
 ----------------------------------------------
 By Daniel Berthereau: Added autocreation of custom fields.
 By Daniel Berthereau: Improved related terms import.
-#1027068 by Carsten Müller and Roberto Mariani: Added support custom fields.
+#1027068 by Carsten Müller and Roberto Mariani: Added support for custom fields.
 #1040894 by Carsten Müller: Added support for file extension .csv and .txt.
 #1179568 by TommyChris: Fixed DB double prefix error.
 

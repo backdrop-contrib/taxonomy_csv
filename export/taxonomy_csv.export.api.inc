@@ -178,7 +178,6 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
     $context['results'][0]['worst_message'] = 799;
     // No pointer because new line is appended to file.
     $context['results'][0]['handle'] = fopen($options['file']->filepath, 'a+');
-    $context['sandbox']['count'] = $options['total_terms'];
 
     // Fetch terms to be exported and order them (by tree or by specific order).
     // Prepare a hierarchical tree of terms.
@@ -209,6 +208,22 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
       $terms = $query->execute();
 
       $context['sandbox']['terms'] = array_values(taxonomy_term_load_multiple(array_keys($terms['taxonomy_term'])));
+    }
+
+    // Display a warning if terms count in taxonomy_term_data table is different
+    // of terms counted with Drupal taxonomy_term_load_multiple() function.
+    // See http://drupal.org/node/1359260.
+    if ($options['total_terms'] != count($context['sandbox']['terms'])) {
+      // Memorize the first wrong term.
+      $first_wrong_term = array_shift(array_diff_key($terms['taxonomy_term'], taxonomy_term_load_multiple(array_keys($terms['taxonomy_term']))));
+      $context['results'][0]['worst_tid'] = $first_wrong_term->tid;
+      $context['results'][0]['worst_term'] = '';
+      $context['results'][0]['worst_name'] = 'tid:' . ' ' . $first_wrong_term->tid;
+      $context['results'][0]['worst_message'] = 408;
+    }
+
+    // Clean memory.
+    if (isset($terms)) {
       unset($terms);
     }
 
@@ -237,7 +252,7 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
   $terms_list      = &$context['sandbox']['terms'];
 
   // Process one term until end of vocabulary.
-  if ($term_number < $context['sandbox']['count']) {
+  if ($term_number < count($context['sandbox']['terms'])) {
     $term = $terms_list[$term_number];
 
     $term_number++;
@@ -262,7 +277,7 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
     // Remember messages. Currently useless because there isn't any warning or
     // notice message (only error). A result level can be added here if needed.
     if (count($result['msg'])) {
-      $context['results'][$line_number] = $result['msg'];
+      $context['results'][$term_number] = $result['msg'];
     }
 
     // Inform about progress.
@@ -275,7 +290,7 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
     // Check worst message of exported terms and update progress.
     if ($worst_message >= TAXONOMY_CSV_PROCESS_WARNING) {
       // Count should be <= 0.99 to avoid batch stop before end (Drupal 7 bug).
-      $context['finished'] = floor($term_number / $context['sandbox']['count'] * 100) / 100;
+      $context['finished'] = floor($term_number / count($context['sandbox']['terms']) * 100) / 100;
     }
     else {
       $context['finished'] = 1;

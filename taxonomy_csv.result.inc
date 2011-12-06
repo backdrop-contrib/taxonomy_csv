@@ -172,6 +172,7 @@ function _taxonomy_csv_message_text($message_code) {
 
       400 => t('WARNING'),
       405 => t('Unmanaged option') . $warning,
+      408 => t('Number of terms is invalid. Check if all your terms are attached to an existing vocabulary. The module exports only good terms and skips the others automatically.'),
       410 => t("Impossible to get parent of first item, because previous line has less parent(s). You may add one or more parents to current line or change lines order.") . $warning,
       430 => t('Line contains empty items.') . $warning,
       431 => t('Line contains duplicate items.') . $warning,
