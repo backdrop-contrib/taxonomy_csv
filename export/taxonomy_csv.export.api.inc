@@ -139,7 +139,7 @@ function taxonomy_csv_vocabulary_export($options) {
     'file'             => drupal_get_path('module', 'taxonomy_csv') . '/export/taxonomy_csv.export.api.inc',
     'progressive'      => TRUE,
     'operations'       => array(
-        0 => array('_taxonomy_csv_vocabulary_export_process', array($options)),
+      0 => array('_taxonomy_csv_vocabulary_export_process', array($options)),
     ),
   );
 

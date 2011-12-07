@@ -61,6 +61,20 @@ function taxonomy_csv_help($path, $arg) {
 }
 
 /**
+ * Implements hook_permission().
+ */
+function taxonomy_csv_permission() {
+  return array(
+    'import taxonomy by csv' => array(
+      'title' => t('Import taxonomy by CSV'),
+    ),
+    'export taxonomy by csv' => array(
+      'title' => t('Export taxonomy by CSV'),
+    ),
+  );
+}
+
+/**
  * Implements hook_menu().
  *
  * @note See hook_menu for a description of return values.
@@ -72,7 +86,7 @@ function taxonomy_csv_menu() {
     'title'            => 'CSV import',
     'description'      => 'Import taxonomies, hierarchical structure or simple lists of terms and properties with CSV file or text.',
     'page callback'    => 'taxonomy_csv_form_import_prepare',
-    'access arguments' => array('administer taxonomy'),
+    'access arguments' => array('import taxonomy by csv'),
     'weight'           => 12,
     'type'             => MENU_LOCAL_TASK,
   );
@@ -81,7 +95,7 @@ function taxonomy_csv_menu() {
     'title'            => 'CSV export',
     'description'      => 'Export terms and properties to a CSV file.',
     'page callback'    => 'taxonomy_csv_form_export_prepare',
-    'access arguments' => array('administer taxonomy'),
+    'access arguments' => array('export taxonomy by csv'),
     'weight'           => 13,
     'type'             => MENU_LOCAL_TASK,
   );
