@@ -219,7 +219,7 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
       $context['results'][0]['worst_tid'] = $first_wrong_term->tid;
       $context['results'][0]['worst_term'] = '';
       $context['results'][0]['worst_name'] = 'tid:' . ' ' . $first_wrong_term->tid;
-      $context['results'][0]['worst_message'] = 408;
+      $context['results'][0]['worst_message'] = 408; // Warning not a good term.
     }
 
     // Clean memory.
@@ -388,6 +388,9 @@ function taxonomy_csv_line_export($line, $options, &$handle, $result = array()) 
       || (($options['enclosure'] == '')
         && (strpos($check_line, $options['end_of_line']) !== FALSE))) {
     $result[] = 313; // Error delimiter or enclosure.
+  }
+  // Skip a term with warning.
+  elseif (_taxonomy_csv_worst_message($result) < TAXONOMY_CSV_PROCESS_NOTICE) {
   }
   else {
     // Save line to file.
@@ -621,23 +624,4 @@ function taxonomy_csv_term_export($term, $options, &$terms_list = array(), $dupl
   sort($result['msg']);
 
   return $result;
-}
-
-/**
- * Escapes carriage return and linefeed.
- *
- * This function is used for description field of terms and allows to get only
- * one csv line for one term.
- *
- * @param $string
- *   String to update.
- *
- * @return
- *   Updated string.
- */
-function _taxonomy_csv_escape_line_break($string) {
-  return str_replace(
-    array("\r", "\n"),
-    array('\r', '\n'),
-    $string);
 }

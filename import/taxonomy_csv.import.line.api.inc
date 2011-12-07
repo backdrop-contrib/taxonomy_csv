@@ -70,12 +70,12 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array(), $t
             if ($line[1]) {
               $term->weight    = $line[1];
             }
-            $term->description = $line[2];
+            $term->description = _taxonomy_csv_set_line_break($line[2]);
             $term->synonyms    = array_slice($line, 3);
             break;
 
           case TAXONOMY_CSV_FORMAT_DESCRIPTIONS:
-            $term->description = $line[1];
+            $term->description = _taxonomy_csv_set_line_break($line[1]);
             break;
 
           case TAXONOMY_CSV_FORMAT_WEIGHTS:
@@ -111,12 +111,14 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array(), $t
           if (in_array($field_name, array(
               // 'vid', // Never used, because rejected during start check.
               'name',
-              'description',
               'format',
               'weight',
               // 'vocabulary_machine_name',
             ))) {
             $term->$field_name = $line[$key];
+          }
+          elseif ($field_name == 'description') {
+            $term->description = _taxonomy_csv_set_line_break($line['description']);
           }
           elseif (!isset($_SESSION['taxonomy_csv_import']['fields'][$field_name])) {
             $current_result['msg'] = 341; // Non existing field.
@@ -141,7 +143,7 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array(), $t
         // 2. Define main term to be imported.
         $term = (object) array(
           'name'        => $line[0],
-          'description' => $line[3],
+          'description' => _taxonomy_csv_set_line_break($line[3]),
           'weight'      => $line[4],
           'parents'     => array(),
           'synonyms'    => array_slice($line, 9, $line[5]),

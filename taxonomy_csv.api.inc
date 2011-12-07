@@ -430,3 +430,41 @@ function _taxonomy_csv_worst_message($messages) {
     min($messages) :
     799;
 }
+
+/**
+ * Escapes carriage return and linefeed.
+ *
+ * This function is used for description field of terms and allows to get only
+ * one csv line for one term.
+ *
+ * @param $string
+ *   String to update.
+ *
+ * @return
+ *   Updated string.
+ */
+function _taxonomy_csv_escape_line_break($string) {
+  return str_replace(
+    array("\r", "\n"),
+    array('\r', '\n'),
+    $string);
+}
+
+/**
+ * Remove escapes carriage return and linefeed.
+ *
+ * This function is used for description field of terms and allows to import a
+ * multiline text.
+ *
+ * @param $string
+ *   String to update.
+ *
+ * @return
+ *   Updated string.
+ */
+function _taxonomy_csv_set_line_break($string) {
+  return str_replace(
+    array('\r', '\n'),
+    array("\r", "\n"),
+    $string);
+}

@@ -197,8 +197,7 @@ function taxonomy_csv_form_export($form_state) {
     '#title'         => t('Line ending'),
     '#options'       => $list_export_line_ending,
     '#default_value' => $list_previous_values['export_line_ending'],
-    '#description'   => t('Choose the end of line to use.') . '<br />'
-      . t('This delimiter is used for line break in description field of terms too.'),
+    '#description'   => t('Choose the end of line to use.'),
   );
 
   $form['tab']['advanced_options'] = array(
