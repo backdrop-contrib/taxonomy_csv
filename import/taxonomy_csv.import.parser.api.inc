@@ -57,7 +57,7 @@ function _taxonomy_csv_line_import_check($line, $options, $previous_items = arra
       // Get number of items.
       $number_items = count($options['custom_format']);
       if (count($line) < count($options['custom_format'])) {
-        $messages[] = 566; // Notice too little items.
+        $messages[] = 570; // Notice too little items.
       }
       elseif (count($line) > count($options['custom_format'])) {
         $messages[] = 564; // Notice too many items.

@@ -33,7 +33,7 @@
 </head>
 <body>
 <p>Ce module permet d'importer/exporter des taxinomies, des structures ou de simples listes de termes dans/depuis un vocabulaire à partir/vers d'un fichier <a href="http://fr.wikipedia.org/wiki/Comma-separated_values" title="Définition Wikipedia">CSV</a>, d'une url ou d'un texte copié-collé.</p>
-<p>Le format csv correspond à une simple liste de valeurs séparées par un séparateur, souvent une virgule(<strong><code>,</code></strong>) ou un point-virgule (<strong><code>;</code></strong>), et des caractères de délimitation, souvent les guillemets (<strong><code>"</code></strong>). Si vous ne savez pas comment créer un fichier CSV, vous pouvez utiliser <a href="http://www.libreoffice.org" title="LibreOffice.org">LibreOffice Calc</a> ou un autre tableur pour exporter vos données dans un fichier CSV.</p>
+<p>Le format CSV correspond à une simple liste de valeurs séparées par un séparateur, souvent une virgule(<strong><code>,</code></strong>) ou un point-virgule (<strong><code>;</code></strong>), et des caractères de délimitation, souvent les guillemets (<strong><code>"</code></strong>). Si vous ne savez pas comment créer un fichier CSV, vous pouvez utiliser <a href="http://www.libreoffice.org" title="LibreOffice.org">LibreOffice Calc</a> ou un autre tableur pour exporter vos données dans un fichier CSV.</p>
 <p>Des formats d'import ou d'export spécifiques peuvent être ajoutés simplement par un mécanisme d'extensions (sinon, demander à l'auteur !).</p>
   <div class="toc">
     <h2 class="nonum"><a id="contents" name="contents">Sommaire</a></h2>
@@ -182,14 +182,17 @@
   <h4 id="def_links"><a href="#contents">3. Champs et liens des termes</a></h4>
     <p>Cette option permet d'importer la définition complète d'un terme ainsi que ses liens avec les autres termes.</p>
     <p>Le format est : nom du terme, identifiant du terme, identifiant du vocabulaire, description, poids, nombre de synonymes, nombre de parents de premier niveau, nombre d'enfants de premier niveau, nombre de termes associés, liste des synonymes, liste des identifiants des parents de premier niveau, liste des identifiants des enfants de premier niveau, liste des identifiants des termes associés, liste des identifiants des vocabulaires des termes associés.</p>
-    <p>Seul le nom doit être défini, les autres valeurs pouvant être vides. Les identifiants ne sont pas les numéros internes des terme ou des vocabulaires, mais des identifiants uniques. Ils peuvent être des noms ou des nombres. Dans la plupart des cas, vous pouvez simplement utiliser les véritables noms. En fait, les identifiants doivent être spécifiques seulement pour les nomùs de termes doublons de manière à identifier chaque élément. De ce fait, pour les doublons, vous pouvez utiliser le nom plus un nombre. L'identifiant du terme principal est nécessaire seulement lorsque le terme est un doublon.</p>
-    <p>Exemple avec un synonyme, deux parents directs, pas d'enfants et une relation avec un terme d'un autre vocabulaire :</p>
+    <p>Seul le nom doit être défini, les autres valeurs pouvant être vides. Les identifiants ne sont pas les numéros internes des terme ou des vocabulaires, mais des identifiants uniques. Ils peuvent être des noms ou des nombres. Dans la plupart des cas, vous pouvez simplement utiliser les véritables noms. En fait, les identifiants doivent être spécifiques seulement pour les noms de termes doublons de manière à identifier chaque élément. De ce fait, pour les doublons, vous pouvez utiliser le nom plus un nombre. L'identifiant du terme principal est nécessaire seulement lorsque le terme est un doublon.</p>
+    <p>Exemples :</p>
       <div class="codeblock"><ul>
-        <li><code>Drupal, , Gestion des connaissances, "Créé par Dries Buytaert en 1998", 10, 1, 2, 0, 1, Drop, CMS, CMF, Source ouverte, Logiciel</code></li>
-        <li><code>Terme 1, , Vocabulaire 1, "Description du terme 1", 10, 1, 2, 0, 1, Synonyme 1, Parent direct 1, Parent direct 2, Terme associé 1, Vocabulaire du terme associé 1</code></li>
+        <li><code>foo, , , "Description de foo", 10, 1, 1, 2, 2, Synonyme de foo, bar parent 1, bar enfant 1, bar enfant 2, bar relation 1, bar relation 2, , vocabulaire de relation 2</code></li>
+        <li><code>France, , Lieux, "Un grand pays", 1, 1, 1, 3, 3, République française, Europe, Paris, Lyon, Vichy, États-Unis, Japon, Chine</code></li>
+        <li><code>Japon, , Lieux, "Un vieux pays", 1, 1, 1, 2, 2, Le pays du soleil levant, Asie, Tokyo, Kyoto, Chine, France</code></li>
+        <li><code>Chine, , Lieux, "Un gros pays", 2, 1, 1, 1, 2, L'empire du milieu, Asie, Pékin, Japon, France</code></li>
+        <li><code>Asie, , Lieux, "Un continent étendu", 1, 0, 0, 2, 0, Japon, Chine</code></li>
       </ul></div>
     <p>Avec ce format, le vocabulaire de destination est determiné par la source. Si la troisième colonne est vide, un nouveau vocabulaire sera créé. S'il s'agit d'un nom ou d'un nombre, un vocabulaire sera créé s'il n'existe pas. Ce processus est également utilisé pour les termes associés. Si le vocabulaire d'un terme associé n'est pas défini, le vocabulaire du terme principal est utilisé. Attention : il est déconseillé de modifier le vocabulaire d'un terme qui a des liens.</p>
-    <p>Une option plus simple, <a href="#fields"><code>Définitions complètes de termes</code></a>, permet d'importer les seules définitions.</p>
+    <p>Un format plus simple, <a href="#fields"><code>Définitions complètes de termes</code></a>, permet d'importer les seules définitions.</p>
   <h4 id="flat"><a href="#contents">4. Termes (vocabulaire plat)</a></h4>
     <p>Cette option permet d'importer un ensemble de termes de manière à créer un vocabulaire plat. Tous les éléments du fichier seront importés en tant que termes. Exemple :</p>
       <div class="codeblock"><ul>
@@ -306,7 +309,7 @@
   <h4 id="synonyms"><a href="#contents">10. Termes synonymes</a></h4>
     <p>La deuxième colonne et les suivantes seront importées comme termes synonymes du terme de la première colonne. Exemple :</p>
       <div class="codeblock"><ul>
-        <li><code>"Royaume Uni","Grande-Bretagne","Angleterre"</code></li>
+        <li><code>"Royaume Uni", "Grande-Bretagne", "Angleterre"</code></li>
       </ul></div>
   <h4 id="fields"><a href="#contents">11. Définitions complètes de termes</a></h4>
     <p>Cette option permet d'importer des définitions complètes de termes.Le format est : nom, poids, description, liste des synonymes éventuels. Exemple :</p>

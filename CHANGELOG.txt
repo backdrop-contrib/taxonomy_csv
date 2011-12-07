@@ -7,21 +7,44 @@
 == CHANGELOG ==
   ===========
 
-Taxonomy csv import/export 7.x-5.7-dev, 2011-05-24
-Taxonomy csv import/export 6.x-5.7-dev, 2011-05-24
---------------------------------------------------
-#1006466 By Daniel Berthereau: Fixed import full definitions in existing.
-By Daniel Berthereau: Fixed some UI bugs and updated help.
 
-Taxonomy csv import/export 6.x-5.7-dev, 2011-05-23
+Taxonomy csv import/export 7.x-5.8-dev, 2011-12-06
+Taxonomy csv import/export 6.x-5.8-dev, 2011-12-06
 ----------------------------------------------
-#1123914 By Andrey parashutiki: Fixed use of UI with keys up and down.
+#1359260 by Daniel Berthereau: Added a warning when terms count is invalid.
+By Daniel Berthereau: Added pipe delimiter and quote enclosure option.
+By Daniel Berthereau: Check line breaks in descriptions and escape or set them.
 
-Taxonomy csv import/export 7.x-5.7-dev, 2011-05-22
---------------------------------------------------
+
+Taxonomy csv import/export 7.x-5.7, 2011-10-03
+----------------------------------------------
 By Daniel Berthereau: Added autocreation of custom fields.
-#1027068 by Carsten Müller and Roberto Mariani: Support custom fields.
-#1040894 by Carsten Müller: Support for file extension .csv and .txt.
+By Daniel Berthereau: Improved related terms import.
+#1027068 by Carsten Müller and Roberto Mariani: Added support for custom fields.
+#1040894 by Carsten Müller: Added support for file extension .csv and .txt.
+#1179568 by TommyChris: Fixed DB double prefix error.
+
+Taxonomy csv import/export 7.x-5.7, 2011-10-03
+Taxonomy csv import/export 6.x-5.7, 2011-10-03
+----------------------------------------------
+By Daniel Berthereau: Released new versions.
+By Daniel Berthereau: Fixed some UI bugs and updated help.
+By Daniel Berthereau: Simplified full definition and links import.
+By Daniel Berthereau: Completed keep order of terms option.
+By Daniel Berthereau: Improved user interface.
+#1006466 by Daniel Berthereau: Fixed import full definitions in existing.
+#1208010 by Daniel Berthereau: Added hierarchical tree export format.
+#1237068 by Ted A Gifford: Removed a "by reference" warning in PHP strict mode.
+#1244498 by Brad Erickson: Added link to first term causing export failure.
+#1256628 by Daniel Berthereau: Fixed Microsoft DOS end line export format.
+#1267026 by Daniel Berthereau: Fixed non-ascii filename of exported vocabulary.
+#1270168 by Daniel Berthereau: Fixed Taxonomy manager export format.
+#1287210 by Daniel Berthereau: Added option to delete terms before import.
+
+Taxonomy csv import/export 6.x-5.7, 2011-10-03
+----------------------------------------------
+#1123914 by Andrey parashutiki: Fixed use of UI with keys up and down.
+#1248926 by Daniel Berthereau: Added infos about weight limit of imported terms.
 
 
 Taxonomy csv import/export 7.x-5.6, 2011-01-07

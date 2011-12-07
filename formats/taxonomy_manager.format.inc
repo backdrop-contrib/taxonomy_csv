@@ -28,7 +28,7 @@ function taxonomy_csv_format_taxonomy_manager() {
       '!link' => url('http://drupal.org/project/taxonomy_manager'),
     )),
     'description_format'  => t('vocabulary id, term id, term name, term description, list of first level parent ids'),
-    'description_example' => t(', 1, "Île-de-France", "Main region"') . '<br />'
+    'description_example' => t(', 1, "Île-de-France", "Main region"') . '</li><li>'
       . t(', 2, "Paris", "Capital of France", 1'),
     'description_long'    => t("In this format, order of all lines is important, because it's impossible to attach a parent to an item if this parent hasn't been imported in a previous line.") . '<br />'
       . t('Ids are not required, and may be numbers or not, but they need to be unique to avoid duplicate terms.') . '<br />'
@@ -126,8 +126,7 @@ function taxonomy_csv_line_import_taxonomy_manager($line, $options, $previous_it
     'vid'         => $options['vocabulary_id'],
     'description' => $line[3],
   );
-  // Weight is not set with the name and vid above in order to keep
-  // existing one if it exists.
+  // Weight is not set above in order to keep existing one if it exists.
   ++$terms_count;
   if ($options['keep_order']) {
     $term->weight = $terms_count;
@@ -179,7 +178,7 @@ function taxonomy_csv_term_export_taxonomy_manager($term, $options = array(), $d
       $term->name,
       $term->description,
     ),
-    taxonomy_csv_term_get_parents_names($term->tid)
+    taxonomy_csv_term_get_parents_tids($term->tid)
   );
 
   return $result;

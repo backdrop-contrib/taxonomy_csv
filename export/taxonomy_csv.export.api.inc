@@ -14,6 +14,7 @@
   $module_dir = drupal_get_path('module', 'taxonomy_csv');
   require_once("$module_dir/taxonomy_csv.api.inc");
   require_once("$module_dir/taxonomy_csv.term.api.inc");
+  require_once("$module_dir/taxonomy_csv.vocabulary.api.inc");
 
 /**
  * Process the export of a vocabulary.
@@ -76,18 +77,9 @@ function _taxonomy_csv_export_output_presave(&$options) {
   $messages = array();
 
   // Check if there is write access and prepare file.
-  // Set filename.
-  if ($options['vocabulary_id']) {
-    $vocabulary = taxonomy_vocabulary_load($options['vocabulary_id']);
-    $vocabulary_name = $vocabulary->name;
-  }
-  else {
-    $vocabulary_name = t('Taxonomy');
-  }
-  // Create file.
   $filename = file_unmanaged_save_data(
     '',
-    'public://' . "$vocabulary_name.csv",
+    'public://' . 'taxonomy.csv',
     'FILE_EXISTS_RENAME');
   if (!$filename) {
     $messages['file'] = t('Check access rights to temp directory : export needs permission to write and to read in it. Export failed.');
@@ -128,14 +120,14 @@ function taxonomy_csv_vocabulary_export($options) {
   // Complete $options with some csv variables.
   $options['separator'] = $options['enclosure'] . $options['delimiter'] . $options['enclosure'];
   $line_ending = array(
-    'Unix'  => "\n",
-    'Mac'   => "\r",
-    'MSDOS' => "\r\n",
+    'Unix'   => "\n",
+    'Mac'    => "\r",
+    'MS-DOS' => "\r\n",
   );
   $options['end_of_line'] = $line_ending[$options['line_ending']];
 
   // Calculates number of terms to be exported.
-  $options['total_terms'] = taxonomy_csv_term_count_in_vocabulary($options['vocabulary_id']);
+  $options['total_terms'] = taxonomy_csv_vocabulary_count_terms($options['vocabulary_id']);
 
   // Prepare export batch.
   $batch = array(
@@ -180,34 +172,60 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
     // Initialize some variables.
     $context['results'][0]['current_term'] = 0;
     $context['results'][0]['current_name'] = '';
+    $context['results'][0]['worst_tid'] = 0;
     $context['results'][0]['worst_term'] = 0;
     $context['results'][0]['worst_name'] = '';
     $context['results'][0]['worst_message'] = 799;
     // No pointer because new line is appended to file.
     $context['results'][0]['handle'] = fopen($options['file']->filepath, 'a+');
-    $context['sandbox']['max'] = $options['total_terms'];
 
-    // Prepare terms to be exported.
-    if ($options['vocabulary_id']) {
-      $terms = taxonomy_term_load_multiple(
-        array(),
-        array('vid' => $options['vocabulary_id'])
-      );
-    }
-    // Load all terms from all vocabularies.
-    else {
-      $vocabularies = taxonomy_vocabulary_get_names();
-      $terms = array();
+    // Fetch terms to be exported and order them (by tree or by specific order).
+    // Prepare a hierarchical tree of terms.
+    if (in_array($options['export_format'], array(
+        TAXONOMY_CSV_FORMAT_TREE_STRUCTURE,
+        TAXONOMY_CSV_FORMAT_POLYHIERARCHY,
+      ))) {
+      $context['sandbox']['terms'] = array();
+      $vocabularies = ($options['vocabulary_id']) ?
+          // Export only the selected vocabulary.
+          array(taxonomy_vocabulary_load($options['vocabulary_id'])) :
+          // Export all vocabularies.
+          taxonomy_vocabulary_get_names();
       foreach ($vocabularies as $vocabulary) {
-        $terms = array_merge($terms, taxonomy_term_load_multiple(
-          array(),
-          array('vid' => $vocabulary->vid)
-        ));
+        $context['sandbox']['terms'] = array_merge($context['sandbox']['terms'], taxonomy_get_tree($vocabulary->vid));
       }
     }
-    // @todo Order terms.
-    $context['sandbox']['terms'] = &$terms;
-    unset($terms);
+    // Prepare a list of full terms.
+    // @todo Prepare a simple list of term names or definitions without links in
+    // order to reduce memory usage for some formats.
+    else {
+      $query = new EntityFieldQuery();
+      $query->entityCondition('entity_type', 'taxonomy_term');
+      if ($options['vocabulary_id']) {
+        $query->propertyCondition('vid', $options['vocabulary_id']);
+      }
+      $query->propertyOrderBy($options['order'], 'ASC');
+      $terms = $query->execute();
+
+      $context['sandbox']['terms'] = array_values(taxonomy_term_load_multiple(array_keys($terms['taxonomy_term'])));
+    }
+
+    // Display a warning if terms count in taxonomy_term_data table is different
+    // of terms counted with Drupal taxonomy_term_load_multiple() function.
+    // See http://drupal.org/node/1359260.
+    if ($options['total_terms'] != count($context['sandbox']['terms'])) {
+      // Memorize the first wrong term.
+      $first_wrong_term = array_shift(array_diff_key($terms['taxonomy_term'], taxonomy_term_load_multiple(array_keys($terms['taxonomy_term']))));
+      $context['results'][0]['worst_tid'] = $first_wrong_term->tid;
+      $context['results'][0]['worst_term'] = '';
+      $context['results'][0]['worst_name'] = 'tid:' . ' ' . $first_wrong_term->tid;
+      $context['results'][0]['worst_message'] = 408; // Warning not a good term.
+    }
+
+    // Clean memory.
+    if (isset($terms)) {
+      unset($terms);
+    }
 
     // Prepare list of duplicate terms if needed.
     $context['results'][0]['duplicate_terms'] = array();
@@ -222,7 +240,8 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
     $context['results'][0]['handle'] = fopen($options['file']->filepath, 'a+');
   }
 
-  // Load and process one term.
+  // To simplify use of variables.
+  $worst_tid       = &$context['results'][0]['worst_tid'];
   $worst_term      = &$context['results'][0]['worst_term'];
   $worst_name      = &$context['results'][0]['worst_name'];
   $worst_message   = &$context['results'][0]['worst_message'];
@@ -230,20 +249,26 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
   $duplicate_terms = &$context['results'][0]['duplicate_terms'];
   $term_number     = &$context['results'][0]['current_term'];
   $current_name    = &$context['results'][0]['current_name'];
-  $term = array_shift($context['sandbox']['terms']);
-  if ($term) {
+  $terms_list      = &$context['sandbox']['terms'];
+
+  // Process one term until end of vocabulary.
+  if ($term_number < count($context['sandbox']['terms'])) {
+    $term = $terms_list[$term_number];
+
     $term_number++;
 
-    // Remember current name in case of error.
+    // Remember current name/tid in case of error.
     $current_name = $term->name;
+    $current_tid  = $term->tid;
 
     // Process export of current term.
-    $result = taxonomy_csv_term_export($term, $options, $duplicate_terms);
+    $result = taxonomy_csv_term_export($term, $options, $terms_list, $duplicate_terms);
     $result['msg'] = taxonomy_csv_line_export($result['line'], $options, $handle, $result['msg']);
 
     // Remember worst message of exported terms.
     $worst_message_new = _taxonomy_csv_worst_message($result['msg']);
     if ($worst_message > $worst_message_new) {
+      $worst_tid     = $current_tid;
       $worst_term    = $term_number;
       $worst_name    = $current_name;
       $worst_message = $worst_message_new;
@@ -252,7 +277,7 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
     // Remember messages. Currently useless because there isn't any warning or
     // notice message (only error). A result level can be added here if needed.
     if (count($result['msg'])) {
-      $context['results'][$line_number] = $result['msg'];
+      $context['results'][$term_number] = $result['msg'];
     }
 
     // Inform about progress.
@@ -265,7 +290,7 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
     // Check worst message of exported terms and update progress.
     if ($worst_message >= TAXONOMY_CSV_PROCESS_WARNING) {
       // Count should be <= 0.99 to avoid batch stop before end (Drupal 7 bug).
-      $context['finished'] = floor($term_number / $context['sandbox']['max'] * 100) / 100;
+      $context['finished'] = floor($term_number / count($context['sandbox']['terms']) * 100) / 100;
     }
     else {
       $context['finished'] = 1;
@@ -293,10 +318,14 @@ function _taxonomy_csv_vocabulary_export_finished($success, $results, $operation
 
   // Short summary information is different if batch succeeded or not.
   if ($success) {
+    if (!empty($options['worst_tid'])) {
+      $worst_path = drupal_get_path_alias('taxonomy/term/' . $options['worst_tid']);
+      $options['worst_name'] = l(check_plain($options['worst_name']), $worst_path);
+    }
     $variables = array(
       '!total_terms' => $options['total_terms'],
       '!worst_count' => $options['worst_term'],
-      '@worst_name'  => $options['worst_name'],
+      '!worst_name'  => $options['worst_name'],
       '!worst_msg'   => $options['result_display'] ?
           _taxonomy_csv_message_text($options['worst_message']) :
           t('Message code') . ' = ' . $options['worst_message'],
@@ -304,17 +333,17 @@ function _taxonomy_csv_vocabulary_export_finished($success, $results, $operation
     $messages = array(
       WATCHDOG_DEBUG   => t('No error, warnings or notices have been reported during export process of !total_terms terms.', $variables),
       WATCHDOG_INFO    => t('No error, warnings or notices have been reported during export process of !total_terms terms.', $variables),
-      WATCHDOG_NOTICE  => t('Notices have been reported during export process (bad formatted or empty terms). !total_terms terms processed. First notice occurred on term !worst_count (@worst_name) [!worst_msg].', $variables),
-      WATCHDOG_WARNING => t('Warnings have been reported during export process (bad formatted terms). !total_terms terms processed. First term skipped is term !worst_count (@worst_name) [!worst_msg].', $variables),
-      WATCHDOG_ERROR   => t('Errors have been reported during export process. Process failed at term !worst_count (@worst_name) of a total of !total_terms [!worst_msg].', $variables),
+      WATCHDOG_NOTICE  => t('Notices have been reported during export process (bad formatted or empty terms). !total_terms terms processed. First notice occurred on term !worst_count (!worst_name) [!worst_msg].', $variables),
+      WATCHDOG_WARNING => t('Warnings have been reported during export process (bad formatted terms). !total_terms terms processed. First term skipped is term !worst_count (!worst_name) [!worst_msg].', $variables),
+      WATCHDOG_ERROR   => t('Errors have been reported during export process. Process failed at term !worst_count (!worst_name) of a total of !total_terms [!worst_msg].', $variables),
     );
     $worst_level = intval($options['worst_message'] / 100);
     $message = $messages[$worst_level];
   }
   else {
-    $message = t('Exportation failed. Export process was successful until the term !term_count (@term_name) of a total of !total_terms.', array(
+    $message = t('Exportation failed. Export process was successful until the term !term_count (!term_name) of a total of !total_terms.', array(
         '!term_count'  => $options['current_term'],
-        '@term_name'   => $options['current_name'],
+        '!term_name'   => $options['current_name'],
         '!total_terms' => $options['total_terms'],
       )) . '<br />'
       . t('This issue is related to export process and may be caused by a memory overrun of the database. If not, you can reinstall module from a fresh release or submit an issue on <a href="!link">Taxonomy CSV import/export module</a>.', array(
@@ -360,6 +389,9 @@ function taxonomy_csv_line_export($line, $options, &$handle, $result = array()) 
         && (strpos($check_line, $options['end_of_line']) !== FALSE))) {
     $result[] = 313; // Error delimiter or enclosure.
   }
+  // Skip a term with warning.
+  elseif (_taxonomy_csv_worst_message($result) < TAXONOMY_CSV_PROCESS_NOTICE) {
+  }
   else {
     // Save line to file.
     $line = $options['enclosure'] . implode($options['separator'], $line) . $options['enclosure'] . $options['end_of_line'];
@@ -382,6 +414,9 @@ function taxonomy_csv_line_export($line, $options, &$handle, $result = array()) 
  *   //  Specific to def_links:
  *   - def_links_terms_ids : 'name_if_needed' (default), 'name' or 'tid'
  *   - def_links_vocabularies_ids : 'none' (default), 'name' or 'vid'
+ * @param $terms_list
+ *   (Optional) Array of all term objects to export, used to avoid to repeat
+ *   fetch of terms. Currently needed only with tree_structure export.
  * @param $duplicate_terms
  *   (Optional) Array of duplicate terms names indexed by tid.
  *   Duplicate terms are managed only with def_links.
@@ -390,7 +425,7 @@ function taxonomy_csv_line_export($line, $options, &$handle, $result = array()) 
  *   'line' => array of exported items,
  *   'msg'  => array of messages arrays.
  */
-function taxonomy_csv_term_export($term, $options, $duplicate_terms = array()) {
+function taxonomy_csv_term_export($term, $options, &$terms_list = array(), $duplicate_terms = array()) {
   // Define default values.
   $result = array(
     'line' => array(),
@@ -477,7 +512,7 @@ function taxonomy_csv_term_export($term, $options, $duplicate_terms = array()) {
                 // Previously set identifiant.
                 $ids['main'][0],
             $vid,
-            $term->description,
+            _taxonomy_csv_escape_line_break($term->description),
             $term->weight,
             count($synonyms),
             count($ids['parents']),
@@ -493,9 +528,15 @@ function taxonomy_csv_term_export($term, $options, $duplicate_terms = array()) {
         break;
 
       case TAXONOMY_CSV_FORMAT_TREE_STRUCTURE:
+        $terms = taxonomy_csv_term_get_first_path($term, $terms_list);
+        foreach ($terms as $parent) {
+          $result['line'][] = $parent->name;
+        }
+        $result['line'][] = $term->name;
         break;
 
       case TAXONOMY_CSV_FORMAT_POLYHIERARCHY:
+        // Warning : taxonomy_csv_term_get_first_path() returns only first path.
         break;
 
       case TAXONOMY_CSV_FORMAT_PARENTS:
@@ -539,7 +580,7 @@ function taxonomy_csv_term_export($term, $options, $duplicate_terms = array()) {
           array(
             $term->name,
             $term->weight,
-            $term->description,
+            _taxonomy_csv_escape_line_break($term->description),
           ),
           taxonomy_csv_term_get_synonyms($term->tid)
         );
@@ -548,7 +589,7 @@ function taxonomy_csv_term_export($term, $options, $duplicate_terms = array()) {
       case TAXONOMY_CSV_FORMAT_DESCRIPTIONS:
         $result['line'] = array(
           $term->name,
-          $term->description,
+          _taxonomy_csv_escape_line_break($term->description),
         );
         break;
 

@@ -47,6 +47,7 @@ function taxonomy_csv_form_export($form_state) {
     'comma'            => t('« , » (Comma)'),
     'semicolon'        => t('« ; » (Semicolon)'),
     'tabulation'       => t('«   » (Tabulation)'),
+    'pipe'             => t('« | » (Pipe)'),
     'space'            => t('«   » (Space)'),
     'currency_sign'    => t('« ¤ » (Currency sign)'),
     'custom_delimiter' => t('Custom delimiter'),
@@ -55,19 +56,20 @@ function taxonomy_csv_form_export($form_state) {
   $list_export_enclosure = array(
     'none'             => t('None'),
     'quotation'        => t('« " » (Quotation mark)'),
+    'quote'            => t("« ' » (Quote)"),
     'custom_enclosure' => t('Custom enclosure'),
   );
 
   $list_export_line_ending = array(
     'Unix'             => t('Unix / Linux'),
     'Mac'              => t('Apple Mac'),
-    'MSDOS'            => t('Microsoft DOS'),
+    'MS-DOS'           => t('Microsoft DOS'),
   );
 
   $list_export_order = array(
     'name'             => t('Alphabetic order'),
-    'tid'              => t('Internal order'),
     'weight'           => t('Weight'),
+    'tid'              => t('Internal order'),
   );
 
   // Build form.
@@ -211,6 +213,11 @@ function taxonomy_csv_form_export($form_state) {
     '#options'       => $list_export_order,
     '#default_value' => $list_previous_values['export_order'],
     '#description'   => t('Choose order of exported terms.'),
+    '#states' => array(
+      'invisible' => array(
+        ':input[name=export_format]' => array('value' => TAXONOMY_CSV_FORMAT_TREE_STRUCTURE),
+      ),
+    ),
   );
 
   $form['tab']['advanced_options']['info'] = array(
@@ -218,7 +225,7 @@ function taxonomy_csv_form_export($form_state) {
     '#description'   => t('Specific options are shown only if suitable.'),
     '#states' => array(
       'invisible' => array(
-        ':input[name=export_format]' => array('value' => 'def_links'),
+        ':input[name=export_format]' => array('value' => TAXONOMY_CSV_FORMAT_DEFINITION_LINKS),
       ),
     ),
   );
@@ -232,7 +239,7 @@ function taxonomy_csv_form_export($form_state) {
     '#description' => t('Set these options only if you export:') . ' ' . t('Full term fields and links') . '.',
     '#states' => array(
       'visible' => array(
-        ':input[name=export_format]' => array('value' => 'def_links'),
+        ':input[name=export_format]' => array('value' => TAXONOMY_CSV_FORMAT_DEFINITION_LINKS),
       ),
     ),
   );
@@ -256,7 +263,8 @@ function taxonomy_csv_form_export($form_state) {
       'vid'  => t('Serial number (internal vocabulary id)'),
     ),
     '#default_value' => $list_previous_values['def_links_vocabularies_ids'],
-    '#description'   => t('Choose how vocabularies will be identified. First choice can be used only when a single vocabulary is exported and when there is no relation to terms of another vocabulary.'),
+    '#description'   => t('Choose how vocabularies will be identified.'). '<br />'
+      . t('"Nothing" can be used only when a single vocabulary is exported (not all vocabularies in one time) and when there is no relation to terms of another vocabulary. In such a case, vocabulary name will be used instead.'),
   );
 
   $form['tab']['advanced_options']['result_duplicates'] = array(
@@ -304,6 +312,7 @@ function taxonomy_csv_form_export_validate($form, &$form_state) {
     'comma'            => ',',
     'semicolon'        => ';',
     'tabulation'       => "\t",
+    'pipe'             => '|',
     'space'            => ' ',
     'currency_sign'    => '¤',
     'custom_delimiter' => $options['export_delimiter_custom'],
@@ -314,6 +323,7 @@ function taxonomy_csv_form_export_validate($form, &$form_state) {
   $enclosure = array(
     'none'             => '',
     'quotation'        => '"',
+    'quote'            => "'",
     'custom_enclosure' => $options['export_enclosure_custom'],
   );
   $options['enclosure'] = $enclosure[$options['export_enclosure']];
@@ -450,7 +460,7 @@ function _taxonomy_csv_export_check_options(&$options) {
   }
 
   // Calculates number of terms to be exported.
-  $options['total_terms'] = taxonomy_csv_term_count_in_vocabulary($options['vocabulary_id']);
+  $options['total_terms'] = taxonomy_csv_vocabulary_count_terms($options['vocabulary_id']);
   if (!$options['total_terms']) {
     $message['vocabulary_id'] = t('No term to export. Export finished.');
   }
@@ -517,4 +527,6 @@ function _taxonomy_csv_form_export_default_values_submit($form, &$form_state) {
   }
   unset($form_state['values']);
   unset($form_state['storage']);
+
+  drupal_set_message(t('Export options have been reset to default.'));
 }

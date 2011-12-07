@@ -40,6 +40,7 @@
  *   - vocabulary_target: 'autocreate' (default), 'duplicate' or 'existing'
  *   - vocabulary_id  : vocabulary id to duplicate or to import into
  *   - custom_fields  : array. custom fields to add or create (default: array())
+ *   - delete_terms   : delete all terms before import (default: FALSE)
  *   - check_hierarchy: boolean. check (default) or not vocabulary hierarchy
  *   - set_hierarchy  : if hierarchy isn't checked, set it (0, 1 or 2 (default))
  *   - existing_items : see _taxonomy_csv_values (default: 'update')
@@ -363,7 +364,7 @@ function _taxonomy_csv_vocabulary_import_process($options, &$context) {
     $context['results'][0]['worst_message'] = 799;
     $context['results'][0]['handle'] = fopen($options['file']->filepath, 'r');
     $context['sandbox']['handle_pointer'] = 0;
-    $context['sandbox']['max'] = $options['total_lines'];
+    $context['sandbox']['count'] = $options['total_lines'];
     $context['sandbox']['previous_items'] = array(
       'name' => array(),
       'tid'  => array(),
@@ -472,7 +473,7 @@ function _taxonomy_csv_vocabulary_import_process($options, &$context) {
     // Check worst message of imported lines and update progress.
     if ($worst_message >= TAXONOMY_CSV_PROCESS_WARNING) {
       // Count should be <= 0.99 to avoid batch stop before end (Drupal 7 bug).
-      $context['finished'] = floor($line_number / $context['sandbox']['max'] * 100) / 100;
+      $context['finished'] = floor($line_number / $context['sandbox']['count'] * 100) / 100;
     }
     else {
       $context['finished'] = 1;
@@ -559,31 +560,36 @@ function _taxonomy_csv_vocabulary_import_finished($success, $results, $operation
  *
  * @param $options
  *   Array of batch options.
+ * @param $check
+ *   (Optional) Boolean used to determine if some options are checked or not.
  *
  * @return
  *   Name of the prepared vocabulary.
  */
-function _taxonomy_csv_import_vocabulary_prepare(&$options) {
-  // Use name of file or url as vocabulary name.
-  if (isset($options['url']) && $options['url'] != '') {
-    $name = basename($options['url']);
-  }
-  elseif (isset($options['text']) && $options['text'] != '') {
-    $name = '';
-    // Remove useless option, because text is now saved.
-    $options['text'] = '';
-  }
-  else {
-    $name = $options['file']->filename;
-  }
+function _taxonomy_csv_import_vocabulary_prepare(&$options, $check = TRUE) {
+  $name = '';
 
-  // With some formats (def_links), vocabularies are created during import.
-  if (in_array($options['import_format'], array(
-      TAXONOMY_CSV_FORMAT_DEFINITION_LINKS,
-    ))) {
-    return $name;
+  if ($check) {
+    // Use name of file or url as vocabulary name.
+    if (isset($options['url']) && $options['url'] != '') {
+      $name = basename($options['url']);
+    }
+    elseif (isset($options['text']) && $options['text'] != '') {
+      $name = '';
+      // Remove useless option, because text is now saved.
+      $options['text'] = '';
+    }
+    elseif (isset($options['file']->filename) && $options['file']->filename != '') {
+      $name = $options['file']->filename;
+    }
+
+    // With some formats, vocabularies are created during import.
+    if (in_array($options['import_format'], array(
+        TAXONOMY_CSV_FORMAT_DEFINITION_LINKS,
+      ))) {
+      return $name;
+    }
   }
-  // Else.
 
   // Create, duplicate or use an existing vocabulary.
   switch ($options['vocabulary_target']) {
@@ -599,11 +605,17 @@ function _taxonomy_csv_import_vocabulary_prepare(&$options) {
 
     case 'existing':
       $vocabulary = taxonomy_vocabulary_load($options['vocabulary_id']);
+      // Optional deletion of terms.
+      if ($options['delete_terms']) {
+        $tids = taxonomy_csv_term_get_tids_from_vocabulary($vocabulary->vid);
+        $result = taxonomy_csv_term_delete_multiple($tids);
+      }
       break;
   }
 
   // Prepare default synonyms field if needed.
   $synonym_field = (in_array($options['import_format'], array(
+      TAXONOMY_CSV_FORMAT_DEFINITION_LINKS,
       TAXONOMY_CSV_FORMAT_DEFINITIONS,
       TAXONOMY_CSV_FORMAT_SYNONYMS,
     ))) ?
@@ -612,6 +624,7 @@ function _taxonomy_csv_import_vocabulary_prepare(&$options) {
 
   // Prepare default relations field if needed.
   $relation_field = (in_array($options['import_format'], array(
+      TAXONOMY_CSV_FORMAT_DEFINITION_LINKS,
       TAXONOMY_CSV_FORMAT_RELATIONS,
     ))) ?
     array() :
@@ -668,15 +681,8 @@ function _taxonomy_csv_import_vocabulary_prepare(&$options) {
         case 'taxonomy_term_reference':
           $field += array(
             'settings'     => array('allowed_values' => array(0 => array(
-              // Warning: Term reference field type need a specific vocabulary. This
-              // can create problems when this field is attached to another
-              // vocabulary. So vocabulary_field_add updates this type of field. Even
-              // if other vocabularies with this attached field have more references,
-              // previous references are always available. Another possibility may be
-              // the use of a specific field_term_relation field for each vocabulary,
-              // but it may be complicate to manage.
-              'vid'    => $vocabulary->vid,
-              'parent' => 0,
+              'vocabulary' => $vocabulary->machine_name,
+              'parent'     => 0,
           ))));
           break;
         case 'file':

@@ -105,7 +105,7 @@ function _taxonomy_csv_values($list) {
         TAXONOMY_CSV_FORMAT_DEFINITION_LINKS => t('Full term definition and links'),
         // @todo, but useless: use alone_terms.
         // TAXONOMY_CSV_FORMAT_FLAT             => t('Terms (flat vocabulary)'),
-        // TAXONOMY_CSV_FORMAT_TREE_STRUCTURE   => t('Hierarchical tree structure or one term by line structure'),
+        TAXONOMY_CSV_FORMAT_TREE_STRUCTURE   => t('Hierarchical tree structure or one term by line structure'),
         // TAXONOMY_CSV_FORMAT_POLYHIERARCHY    => t('Polyhierarchical structure'),
         TAXONOMY_CSV_FORMAT_PARENTS          => t('First level parents'),
         TAXONOMY_CSV_FORMAT_CHILDREN         => t('First level children'),
@@ -133,6 +133,7 @@ function _taxonomy_csv_values($list) {
         'locale_custom'                 => '',
         'vocabulary_target'             => 'autocreate',
         'vocabulary_id'                 => 'choose_vocabulary',
+        'delete_terms'                  => FALSE,
         'import_custom_fields'          => '',
         'check_hierarchy'               => TRUE,
         'set_hierarchy'                 => 2, // Polyhierarchy.
@@ -159,6 +160,7 @@ function _taxonomy_csv_values($list) {
         'locale_custom'                 => '',
         'vocabulary_target'             => 'autocreate',
         'vocabulary_id'                 => 'choose_vocabulary',
+        'delete_terms'                  => FALSE,
         'custom_fields'                 => array(),
         'check_hierarchy'               => TRUE,
         'set_hierarchy'                 => 2, // Polyhierarchy.
@@ -427,4 +429,42 @@ function _taxonomy_csv_worst_message($messages) {
   return count($messages) ?
     min($messages) :
     799;
+}
+
+/**
+ * Escapes carriage return and linefeed.
+ *
+ * This function is used for description field of terms and allows to get only
+ * one csv line for one term.
+ *
+ * @param $string
+ *   String to update.
+ *
+ * @return
+ *   Updated string.
+ */
+function _taxonomy_csv_escape_line_break($string) {
+  return str_replace(
+    array("\r", "\n"),
+    array('\r', '\n'),
+    $string);
+}
+
+/**
+ * Remove escapes carriage return and linefeed.
+ *
+ * This function is used for description field of terms and allows to import a
+ * multiline text.
+ *
+ * @param $string
+ *   String to update.
+ *
+ * @return
+ *   Updated string.
+ */
+function _taxonomy_csv_set_line_break($string) {
+  return str_replace(
+    array('\r', '\n'),
+    array("\r", "\n"),
+    $string);
 }

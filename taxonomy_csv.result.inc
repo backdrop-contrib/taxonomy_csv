@@ -171,10 +171,12 @@ function _taxonomy_csv_message_text($message_code) {
       392 => t('Problem when caching imported term. Please first check your file and file uploading, else reinstall module from a fresh release or submit an issue.') . $error,
 
       400 => t('WARNING'),
-      405 => t('Unmanaged option') . $warning,
+      405 => t('Unmanaged option.') . $warning,
+      408 => t('Number of terms is invalid. Check if all your terms are attached to an existing vocabulary. The module exports only good terms and skips the others automatically.'),
       410 => t("Impossible to get parent of first item, because previous line has less parent(s). You may add one or more parents to current line or change lines order.") . $warning,
       430 => t('Line contains empty items.') . $warning,
       431 => t('Line contains duplicate items.') . $warning,
+      432 => t('Line contains an empty term. Only items before this one have been imported.'),
       433 => t("Line contains items matching term name. A term can't be synonym, related, parent or child of itself.") . $warning,
       434 => t('Line contains too many items.') . $warning,
       440 => t("Vocabulary doesn't exist. When you duplicate or import into an existing vocabulary, option 'vocabulary_id' should contains true vocabulary id.") . $warning,
@@ -203,7 +205,7 @@ function _taxonomy_csv_message_text($message_code) {
 
       500 => t('Notice'),
       501 => t('Too many items. Second and next columns will be ignored, as import choice is to ignore them.'),
-      510 => t('Line contains empty items. First item is imported, but next ones are ignored.'),
+      510 => t('Line contains empty items. They are ignored.'),
       511 => t('To change vocabulary of a term is not recommended.'),
       512 => t("Line contains items matching first column term. A term can't be related to itself and a synonym may be different to it.") . ' ' . t('Duplicates will be ignored.'),
       513 => t('Line contains empty items.'),
@@ -231,8 +233,8 @@ function _taxonomy_csv_message_text($message_code) {
       563 => t('No object.') . $notice,
       564 => t('Too many items. Surabondant items will be ignored.') . $notice,
       565 => t('Some items are empty. Previous items will be used.') . $notice,
-      566 => t("Line doesn't contain all needed items.") . $notice,
-      580 => t('Be careful. This line has only one term and import choice is to replace existing items. So they will be removed.'),
+      570 => t("Line doesn't contain all needed items.") . $notice,
+      580 => t('Be careful. This line has only one term and import choice is to replace existing items. So these items will be removed.'),
 
       600 => t('Info'),
       605 => t('No error in options.'),
