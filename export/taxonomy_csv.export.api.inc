@@ -29,14 +29,14 @@
  *   - enclosure     : zero or one character csv enclosure (default: '"')
  *   - line_ending   : 'Unix' (default), 'Mac' or 'MS-DOS'
  *   - order         : order of terms: 'name' (default), 'tid' or 'weight'
- *   //  Specific to def_links:
+ *   // Specific to def_links:
  *   - def_links_terms_ids : 'name_if_needed' (default), 'name' or 'tid'
  *   - def_links_vocabularies_ids : 'none' (default), 'name' or 'vid'
- *   // Level of result process infos.
+ *   // Level of result process infos:
  *   - check_options : boolean. check or not (default) this array of options
- *   - result_display: boolean. display or not (default). Only used with UI.
- *   - result_duplicates: boolean. display or not (default) duplicate terms.
- *   Only export_format is needed. Other options have default values.
+ *   - result_display: boolean. display or not (default). Only used with UI
+ *   - result_duplicates: boolean. display or not (default) duplicate terms
+ *   All options have default values.
  *   Warning: default values are different with UI.
  *
  * @return
@@ -55,10 +55,15 @@ function taxonomy_csv_export($options) {
   }
 
   // Process export.
-  taxonomy_csv_vocabulary_export($options);
-
-  // File object.
-  return $options['file'];
+  $messages = taxonomy_csv_vocabulary_export($options);
+  // Return errors if any.
+  if (count($messages)) {
+    return $messages;
+  }
+  // Else return file infos.
+  else {
+    return $options['file'];
+  }
 }
 
 /**
@@ -79,7 +84,7 @@ function _taxonomy_csv_export_output_presave(&$options) {
   // Check if there is write access and prepare file.
   $filename = file_unmanaged_save_data(
     '',
-    'public://' . 'taxonomy.csv',
+    'public://' . 'taxocsv.csv',
     'FILE_EXISTS_RENAME');
   if (!$filename) {
     $messages['file'] = t('Check access rights to temp directory : export needs permission to write and to read in it. Export failed.');
@@ -206,6 +211,10 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
       }
       $query->propertyOrderBy($options['order'], 'ASC');
       $terms = $query->execute();
+
+      if ($terms['taxonomy_term'] === NULL) {
+        $terms['taxonomy_term'] = array();
+      }
 
       $context['sandbox']['terms'] = array_values(taxonomy_term_load_multiple(array_keys($terms['taxonomy_term'])));
     }
