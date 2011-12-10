@@ -320,7 +320,7 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array(), $t
                 'name' => $term->name,
                 'vid'  => $term->vid,
               ),
-              TAXONOMY_CSV_EXISTING_IGNORE);
+              $options['existing_items']);
             $result['name']['term'][$line[1]] = $current_result['name'];
             $result['tid']['term'][$line[1]]  = $current_result['tid'];
             $result['msg'] = array_merge($result['msg'], $current_result['msg']);

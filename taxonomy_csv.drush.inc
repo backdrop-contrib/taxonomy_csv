@@ -14,7 +14,7 @@ function taxonomy_csv_drush_command() {
   $items['taxocsv-import'] = array(
     'aliases' => array('vocimp'),
     'callback' => 'drush_taxonomy_csv_import',
-    'description' => 'Import taxonomies and hierarchical structure with CSV file.',
+    'description' => 'Import taxonomies and hierarchical structures with CSV file.',
     'examples' => array(
       'drush taxocsv-import my_file alone_terms' => 'Import my_file using the default settings.',
       'drush taxocsv-import my_file tree_structure --keep_order --delimiter=";" --check_line --vocabulary_target=existing --vocabulary_id=3 --existing_items=update_replace --result_terms' => 'Import my_file as a tree structure into vocabulary with vid 2, a semicolon for delimiter and default settings for other options, and display imported terms after process.',
@@ -85,7 +85,7 @@ function taxonomy_csv_drush_command() {
 function taxonomy_csv_drush_help($section) {
   switch ($section) {
     case 'drush:taxocsv-import':
-      return dt('Import taxonomies and hierarchical structure with CSV file.');
+      return dt('Import taxonomies and hierarchical structures with CSV file.');
     case 'drush:taxocsv-export':
       return dt('Export terms and properties to a CSV file.');
   }
