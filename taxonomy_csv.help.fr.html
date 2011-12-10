@@ -36,6 +36,7 @@
 <p>Le format CSV correspond à une simple liste de valeurs séparées par un séparateur, souvent une virgule(<strong><code>,</code></strong>) ou un point-virgule (<strong><code>;</code></strong>), et des caractères de délimitation, souvent les guillemets (<strong><code>"</code></strong>). Si vous ne savez pas comment créer un fichier CSV, vous pouvez utiliser <a href="http://www.libreoffice.org" title="LibreOffice.org">LibreOffice Calc</a> ou un autre tableur pour exporter vos données dans un fichier CSV.</p>
 <p>Des formats d'import ou d'export spécifiques peuvent être ajoutés simplement par un mécanisme d'extensions (sinon, demander à l'auteur !).</p>
 <p>Après avoir installé le module, les permissions "importer des taxinomies par csv" et "exporter des taxinomies par csv" doivent être activées. La permission "administrer les taxinomies" n'est pas nécessaire pour utiliser le module, mais est recommandée.</p>
+<p>Ce module peut être utilisé avec <a href="http://drupal.org/project/drush">drush</a> : il est possible d'importer et d'exporter des taxinomies par le biais de la ligne de commandes.</p>
   <div class="toc">
     <h2 class="nonum"><a id="contents" name="contents">Sommaire</a></h2>
     <ol class="toc">
@@ -478,7 +479,8 @@
 
 <h3 id="advanced_options"><a href="#contents">5. Paramètres avancés et conseils</a></h3>
   <h4 id="permissions"><a href="#contents">1. Permissions</a></h4>
-    <p>Pour importer des termes, l'utilisateur doit avoir les permissions générales de <a href="?q=admin/user/permissions#module-taxonomy" title="configure taxonomy permissions">taxinomies (Drupal 6)</a> ou <a href="?q=admin/people/permissions#module-taxonomy" title="configure taxonomy permissions">taxinomies (Drupal 7)</a>. Ces droits d'accès sont souvent associés aux permissions pour accéder aux pages d'administration.</p>
+    <p>Pour importer/exporter des termes, l'utilisateur doit disposer des droits 'Importer des taxinomies par CSV' et 'Exporter des taxinomies par CSV'.<br />
+    De plus, l'utilisateur doit disposer des permissions générales d'administration des'<a href="?q=admin/user/permissions#module-taxonomy" title="configure taxonomy permissions">taxinomies (Drupal 6)</a> ou <a href="?q=admin/people/permissions#module-taxonomy" title="configure taxonomy permissions">taxinomies (Drupal 7)</a>. Ces droits d'accès sont souvent associés aux permissions pour accéder aux pages d'administration.</p>
 
   <h4 id="other_hints"><a href="#contents">2. Autres conseils</a></h4>
     <ul>

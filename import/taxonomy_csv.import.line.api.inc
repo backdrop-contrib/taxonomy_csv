@@ -320,7 +320,7 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array(), $t
                 'name' => $term->name,
                 'vid'  => $term->vid,
               ),
-              TAXONOMY_CSV_EXISTING_IGNORE_CREATE);
+              TAXONOMY_CSV_EXISTING_IGNORE);
             $result['name']['term'][$line[1]] = $current_result['name'];
             $result['tid']['term'][$line[1]]  = $current_result['tid'];
             $result['msg'] = array_merge($result['msg'], $current_result['msg']);
@@ -382,7 +382,7 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array(), $t
             'relations' => array($term->tid),
           );
 
-          $current_result = taxonomy_csv_term_import($temp_term, TAXONOMY_CSV_EXISTING_UPDATE_MERGE);
+          $current_result = taxonomy_csv_term_import($temp_term, TAXONOMY_CSV_EXISTING_UPDATE);
           // Terms are already memorised.
           $result['msg'] = array_merge($result['msg'], $current_result['msg']);
           if (_taxonomy_csv_worst_message($current_result['msg']) < TAXONOMY_CSV_PROCESS_NOTICE) {
@@ -468,10 +468,10 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array(), $t
 
           switch ($options['import_format']) {
             case TAXONOMY_CSV_FORMAT_TREE_STRUCTURE:
-              // With TAXONOMY_CSV_EXISTING_IGNORE_CREATE, parent terms (so all
+              // With TAXONOMY_CSV_EXISTING_IGNORE, parent terms (so all
               // terms but the last on this line) are always updated because
               // they are successive parents of a child.
-              $current_result = ($options['existing_items'] == TAXONOMY_CSV_EXISTING_IGNORE_CREATE && ($c < count($line) - 1)) ?
+              $current_result = ($options['existing_items'] == TAXONOMY_CSV_EXISTING_IGNORE && ($c < count($line) - 1)) ?
                   taxonomy_csv_term_import($term, TAXONOMY_CSV_EXISTING_IGNORE_PREVIOUS, FALSE, $parent_tid) :
                   taxonomy_csv_term_import($term, $options['existing_items'], FALSE, $parent_tid);
               break;
@@ -592,7 +592,7 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array(), $t
           // keep previous relations, as option is only for first column term.
           $current_term_import_option = ($key == 0) ?
             $options['existing_items'] :
-            TAXONOMY_CSV_EXISTING_UPDATE_MERGE;
+            TAXONOMY_CSV_EXISTING_UPDATE;
 
           $current_result = taxonomy_csv_term_import($term, $current_term_import_option, $options['relations_all_vocabularies'], NULL);
           $result['name'][] = $current_result['name'];
@@ -625,7 +625,7 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array(), $t
             'relations' => $relations,
           );
 
-          $current_result = taxonomy_csv_term_import($term, TAXONOMY_CSV_EXISTING_UPDATE_MERGE, $options['relations_all_vocabularies'], NULL);
+          $current_result = taxonomy_csv_term_import($term, TAXONOMY_CSV_EXISTING_UPDATE, $options['relations_all_vocabularies'], NULL);
           // Terms are already memorised.
           $result['msg'] = array_merge($result['msg'], $current_result['msg']);
         }
@@ -682,7 +682,7 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array(), $t
  *    'tid'  => term id,
  *    'msg'  => messages array.
  */
-function taxonomy_csv_term_import($term, $existing_items = TAXONOMY_CSV_EXISTING_IGNORE_CREATE, $all_vocabularies = FALSE, $parent_tid = NULL, $import_format = '') {
+function taxonomy_csv_term_import($term, $existing_items = TAXONOMY_CSV_EXISTING_IGNORE, $all_vocabularies = FALSE, $parent_tid = NULL, $import_format = '') {
   $messages = array();
 
   // Basic check to avoid notices when "Check lines" option is disabled.
@@ -693,8 +693,6 @@ function taxonomy_csv_term_import($term, $existing_items = TAXONOMY_CSV_EXISTING
   else {
     switch ($existing_items) {
       case TAXONOMY_CSV_EXISTING_UPDATE:
-        // When no difference between update/merge and update/replace.
-      case TAXONOMY_CSV_EXISTING_UPDATE_MERGE:
         $existing_term = taxonomy_csv_term_find($term, $all_vocabularies, $parent_tid);
         if ($existing_term) {
           // Unpdate only fields that are set. Other fields are not changed.
@@ -707,7 +705,7 @@ function taxonomy_csv_term_import($term, $existing_items = TAXONOMY_CSV_EXISTING
             // string, numeric or boolean fields.
             // Description was an exception in previous version, but this
             // exception is removed for simplicity and real use of this module.
-            // A option may be had if needed.
+            // An option may be had if needed.
           }
           // Existing fields of existing term should be kept even if they have
           // not been set in new term.
@@ -717,7 +715,7 @@ function taxonomy_csv_term_import($term, $existing_items = TAXONOMY_CSV_EXISTING
 
       case TAXONOMY_CSV_EXISTING_IGNORE_PREVIOUS:
         // Doesn't ignore, but use previous parents.
-      case TAXONOMY_CSV_EXISTING_UPDATE_REPLACE:
+      case TAXONOMY_CSV_EXISTING_REPLACE:
         $existing_term = taxonomy_csv_term_find($term, $all_vocabularies, $parent_tid);
         if ($existing_term) {
           // All fields are replaced by new ones. Other existing fields of
@@ -727,17 +725,11 @@ function taxonomy_csv_term_import($term, $existing_items = TAXONOMY_CSV_EXISTING
         break;
 
       case TAXONOMY_CSV_EXISTING_IGNORE:
-        // When no difference between ignore/create and ignore/all.
-      case TAXONOMY_CSV_EXISTING_IGNORE_CREATE:
         break;
 
       case TAXONOMY_CSV_EXISTING_IGNORE_ALL:
         // Ignore even existing terms in additional columns.
         // @todo IGNORE_ALL
-        break;
-
-      case TAXONOMY_CSV_EXISTING_IGNORE_QUICK:
-        // Don't check existing terms. That's very similar to ignore all.
         break;
     }
 

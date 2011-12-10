@@ -18,9 +18,9 @@ function taxonomy_csv_format_geotaxonomy() {
     'import_format'   => t('Geotaxonomy'),
     'export_format'   => t('Geotaxonomy'),
     'import_allowed'  => array(
-      TAXONOMY_CSV_EXISTING_UPDATE_MERGE,
-      TAXONOMY_CSV_EXISTING_UPDATE_REPLACE,
-      TAXONOMY_CSV_EXISTING_IGNORE_CREATE,
+      TAXONOMY_CSV_EXISTING_UPDATE,
+      TAXONOMY_CSV_EXISTING_REPLACE,
+      TAXONOMY_CSV_EXISTING_IGNORE,
     ),
     'import_previous' => TRUE, // Because import remembers all previous_items.
     'specific_fields' => TRUE,

@@ -695,7 +695,7 @@ function taxonomy_csv_form_import($form_state) {
     '#title'       => t('5. When a term exists, what to do with it?'),
     '#collapsible' => TRUE,
     '#collapsed'   => FALSE,
-    '#description' => t('What will existing or previous imported terms become when a term with same name will be imported?'),
+    '#description' => t('What will existing term become when a term with same name will be imported?'),
   );
 
   if (isset($_COOKIE['has_js'])) {
@@ -744,7 +744,7 @@ function taxonomy_csv_form_import($form_state) {
     $form['tab']['import_options'][TAXONOMY_CSV_FORMAT_DEFINITION_LINKS]['#description'] = t('This option indicates whether and how existing terms with the same name should be updated or ignored.') . '<br />'
       . t('By nature, only one option can be chosen with this format.') . '<br />'
       . '<ul>
-          <li>' . t('"<em>Update and merge"</em>: update term or create it if not exists and merge eventual item with new one.') . '</li>
+          <li>' . t('"<em>Update"</em>: update term and merge eventual item with new one.') . '</li>
         </ul>';
 
     $form['tab']['import_options'][TAXONOMY_CSV_FORMAT_FLAT]['#description'] = t('This option indicates whether existing terms with the same name should be updated or ignored. If ignored, duplicates may be created.');
@@ -752,58 +752,57 @@ function taxonomy_csv_form_import($form_state) {
     $form['tab']['import_options'][TAXONOMY_CSV_FORMAT_TREE_STRUCTURE]['#description'] = t('This option indicates whether and how existing terms with the same name should be updated or ignored.') . '<br />'
       . t('This option is used with last term of the line.') . '<br />'
       . '<ul>
-          <li>' . t('<em>"Update and replace"</em>: each parent replaces eventual older ones.') . '</li>
-          <li>' . t('<em>"Ignore and create"</em>: child is always created and eventually its parents if they don\'t exist.') . ' ' . t('It is recommended if you use duplicate terms.') . '</li>
-          <li>' . t('<em>"Ignore existings"</em>: child is always created and eventually its parents if they don\'t exist.') . ' ' . t('This mode is slightly faster, but lines must be ordered because no check are made on existing terms.') . '</li>
+          <li>' . t('<em>"Replace"</em>: each parent replaces eventual older ones.') . '</li>
+          <li>' . t('<em>"Ignore"</em>: child is always created and eventually its parents if they don\'t exist.') . ' ' . t('It is recommended if you use duplicate terms.') . '</li>
         </ul>';
 
     $form['tab']['import_options'][TAXONOMY_CSV_FORMAT_POLYHIERARCHY]['#description'] = t('This option indicates whether and how existing terms with the same name should be updated or ignored.') . '<br />'
       . t('By nature, only one option can be chosen with this format.') . '<br />'
       . '<ul>
-          <li>' . t('<em>"Update and merge"</em>: each child and parents are merged with old ones, except if the child has the same name than parent, in which case a new term is created, because a child cannot be a parent of itself. Warning: on next lines, direct children of this term name will be attached to the first imported term.') . '</li>
+          <li>' . t('<em>"Update"</em>: each child and parents are merged with old ones, except if the child has the same name than parent, in which case a new term is created, because a child cannot be a parent of itself. Warning: on next lines, direct children of this term name will be attached to the first imported term.') . '</li>
         </ul>';
 
     $form['tab']['import_options'][TAXONOMY_CSV_FORMAT_PARENTS]['#description'] = t('This option indicates whether and how existing terms with the same name should be updated or ignored.') . '<br />'
       . '<ul>
-          <li>' . t('<em>"Update and merge"</em>: each child and parents are merged with old ones. No duplicate are created.') . '</li>
-          <li>' . t('<em>"Update and replace"</em>: each parent replaces eventual older ones.') . '</li>
-          <li>' . t('<em>"Ignore and create"</em>: child is always created and eventually its parents if they don\'t exist.') . '</li>
+          <li>' . t('<em>"Update"</em>: each child and parents are merged with old ones. No duplicate are created.') . '</li>
+          <li>' . t('<em>"Replace"</em>: each parent replaces eventual older ones.') . '</li>
+          <li>' . t('<em>"Ignore"</em>: child is always created and eventually its parents if they don\'t exist.') . '</li>
         </ul>';
 
     $form['tab']['import_options'][TAXONOMY_CSV_FORMAT_CHILDREN]['#description'] = t('This option indicates whether and how existing terms with the same name should be updated or ignored.') . '<br />'
       . '<ul>
-          <li>' . t('<em>"Update and merge"</em>: each child and parents are merged with old ones.') . '</li>
-          <li>' . t('<em>"Update and replace"</em>: each parent replaces eventual older ones.') . '</li>
-          <li>' . t('<em>"Ignore and create"</em>: child is always created and eventually its parents if they don\'t exist.') . '</li>
+          <li>' . t('<em>"Update"</em>: each child and parents are merged with old ones.') . '</li>
+          <li>' . t('<em>"Replace"</em>: each parent replaces eventual older ones.') . '</li>
+          <li>' . t('<em>"Ignore"</em>: child is always created and eventually its parents if they don\'t exist.') . '</li>
         </ul>';
 
     $form['tab']['import_options'][TAXONOMY_CSV_FORMAT_RELATIONS]['#description'] = t('This option indicates whether existing terms with the same name should be updated or ignored.
     <p>For example, if existing related terms of term < <code>foo</code> > are < <code>bar 1</code> > and < <code>bar 2</code> > and an imported line in the csv file is < <code>"foo", "bar 3", "bar 2"</code> >, then:') . '<br >'
       . '<ul>
-          <li>' . t('<em>"Update and merge"</em> choice makes related terms of < <code>foo</code> > are now < <code>bar 1</code> >, < <code>bar 2</code> > and < <code>bar 3</code> >;') . '</li>
-          <li>' . t('<em>"Update and replace"</em> choice makes related terms of < <code>foo</code> > are now < <code>bar 3</code> > and < <code>bar 2</code> >;') . '</li>
-          <li>' . t('<em>"Ignore and create"</em> choice makes two < <code>foo</code> > terms, one with existing related and other items and another one with the imported related terms < <code>bar 3</code> > and < <code>bar 1</code> >, which one has not been duplicated.') . '</li>
+          <li>' . t('<em>"Update"</em> choice makes related terms of < <code>foo</code> > are now < <code>bar 1</code> >, < <code>bar 2</code> > and < <code>bar 3</code> >;') . '</li>
+          <li>' . t('<em>"Replace"</em> choice makes related terms of < <code>foo</code> > are now < <code>bar 3</code> > and < <code>bar 2</code> >;') . '</li>
+          <li>' . t('<em>"Ignore"</em> choice makes two < <code>foo</code> > terms, one with existing related and other items and another one with the imported related terms < <code>bar 3</code> > and < <code>bar 1</code> >, which one has not been duplicated.') . '</li>
         </ul></p>';
 
     $form['tab']['import_options'][TAXONOMY_CSV_FORMAT_SYNONYMS]['#description'] = t('This option indicates whether and how existing terms with the same name should be updated or ignored.') . '<br />'
       . '<ul>
-          <li>' . t('<em>"Update and merge"</em>: update term or create it if not exists and merge eventual synonyms with new ones. Always remove duplicate synonyms.') . '</li>
-          <li>' . t('<em>"Update and replace"</em>: update term or create it if not exists and replace eventual synonyms with new ones.') . '</li>
-          <li>' . t('<em>"Ignore existings"</em>: term is always created.') . '</li>
+          <li>' . t('<em>"Update"</em>: update term or create it if not exists and merge eventual synonyms with new ones. Always remove duplicate synonyms.') . '</li>
+          <li>' . t('<em>"Replace"</em>: update term or create it if not exists and replace eventual synonyms with new ones.') . '</li>
+          <li>' . t('<em>"Ignore"</em>: term is always created.') . '</li>
         </ul>';
 
     $form['tab']['import_options'][TAXONOMY_CSV_FORMAT_DEFINITIONS]['#description'] = t('This option indicates whether existing terms with the same name should be updated or ignored. If ignored, duplicates may be created.') . '<br />'
       . '<ul>
-          <li>' . t('<em>"Update and merge"</em>: update term or create it if not exists and merge eventual description with new one.') . '</li>
-          <li>' . t('<em>"Update and replace"</em>: update term or create it if not exists and replace eventual description with new one.') . '</li>
-          <li>' . t('<em>"Ignore existings"</em>: term is always created.') . '</li>
+          <li>' . t('<em>"Update"</em>: update term or create it if not exists and merge eventual description with new one.') . '</li>
+          <li>' . t('<em>"Replace"</em>: update term or create it if not exists and replace eventual description with new one.') . '</li>
+          <li>' . t('<em>"Ignore"</em>: term is always created.') . '</li>
         </ul>';
 
     $form['tab']['import_options'][TAXONOMY_CSV_FORMAT_DESCRIPTIONS]['#description'] = t('This option indicates whether and how existing terms with the same name should be updated or ignored.') . '<br />'
       . '<ul>
-          <li>' . t('<em>"Update and merge"</em>: update term or create it if not exists and merge eventual description with new one.') . '</li>
-          <li>' . t('<em>"Update and replace"</em>: update term or create it if not exists and replace eventual description with new one.') . '</li>
-          <li>' . t('<em>"Ignore existings"</em>: term is always created.') . '</li>
+          <li>' . t('<em>"Update"</em>: update term or create it if not exists and merge eventual description with new one.') . '</li>
+          <li>' . t('<em>"Replace"</em>: update term or create it if not exists and replace eventual description with new one.') . '</li>
+          <li>' . t('<em>"Ignore"</em>: term is always created.') . '</li>
         </ul>';
 
     $form['tab']['import_options'][TAXONOMY_CSV_FORMAT_WEIGHTS]['#description'] = t('This option indicates whether and how existing terms with the same name should be updated or ignored.');
@@ -818,12 +817,9 @@ function taxonomy_csv_form_import($form_state) {
       '#type'          => 'radios',
       '#options'       => array_intersect_key($list_import_option, array_flip(array(
         TAXONOMY_CSV_EXISTING_UPDATE,
-        TAXONOMY_CSV_EXISTING_UPDATE_MERGE,
-        TAXONOMY_CSV_EXISTING_UPDATE_REPLACE,
+        TAXONOMY_CSV_EXISTING_REPLACE,
         TAXONOMY_CSV_EXISTING_IGNORE,
-        TAXONOMY_CSV_EXISTING_IGNORE_CREATE,
         TAXONOMY_CSV_EXISTING_IGNORE_ALL,
-        TAXONOMY_CSV_EXISTING_IGNORE_QUICK,
       ))),
       '#default_value' => $list_previous_values['existing_items'],
       // '#description' below in order to use same help with javascript.

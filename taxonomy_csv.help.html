@@ -36,6 +36,7 @@
 <p>CSV format is a simple list of values separated by a delimiter, often comma (<strong><code>,</code></strong>) or semicolon (<strong><code>;</code></strong>), and enclosures, often quotation marks (<strong><code>"</code></strong>). If you are unsure how to create a CSV file, you might want to use <a href="http://www.libreoffice.org" title="LibreOffice.org">LibreOffice Calc</a> or another spreadsheet application to export your data into a CSV file.</p>
 <p>Specific import or export formats can be added simply by a plug-in mecanism (or ask author!).</p>
 <p>After enabling the module, permissions "import taxonomy by csv" and "export taxonomy by csv" need to be set. Main "administer taxonomy" permission is not needed to use module, but this is recommended.</p>
+<p>This module supports <a href="http://drupal.org/project/drush">drush</a> and allows to import or to export taxonomies by csv with command line interface.</p>
   <div class="toc">
     <h2 class="nonum"><a id="contents" name="contents">Table of Contents</a></h2>
     <ol class="toc">
@@ -478,7 +479,8 @@
 
 <h3 id="advanced_options"><a href="#contents">5. Advanced settings and hints</a></h3>
   <h4 id="permissions"><a href="#contents">1. Permissions</a></h4>
-    <p>To import terms, user needs general <a href="?q=admin/user/permissions#module-taxonomy" title="configure taxonomy permissions">taxonomy permissions (Drupal 6)</a> or <a href="?q=admin/people/permissions#module-taxonomy" title="configure taxonomy permissions">taxonomy permissions (Drupal 7)</a>. These permissions are often associated with access rights for administration pages.</p>
+    <p>To import/export terms, user needs 'Import taxonomy by CSV' and 'Export taxonomy by CSV' rights.<br />
+    Furthermore, user needs general <a href="?q=admin/user/permissions#module-taxonomy" title="configure taxonomy permissions">taxonomy permissions (Drupal 6)</a> or <a href="?q=admin/people/permissions#module-taxonomy" title="configure taxonomy permissions">taxonomy permissions (Drupal 7)</a>. These permissions are often associated with access rights for administration pages.</p>
 
   <h4 id="other_hints"><a href="#contents">2. Other hints</a></h4>
     <ul>

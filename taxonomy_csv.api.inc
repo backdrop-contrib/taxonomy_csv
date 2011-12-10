@@ -29,13 +29,11 @@ define('TAXONOMY_CSV_FORMAT_FIELDS',            'fields');
  * Available import options.
  */
 define('TAXONOMY_CSV_EXISTING_UPDATE',          'update');
-define('TAXONOMY_CSV_EXISTING_UPDATE_MERGE',    'update_merge');
-define('TAXONOMY_CSV_EXISTING_UPDATE_REPLACE',  'update_replace');
+define('TAXONOMY_CSV_EXISTING_REPLACE',         'replace');
 define('TAXONOMY_CSV_EXISTING_IGNORE',          'ignore');
-define('TAXONOMY_CSV_EXISTING_IGNORE_CREATE',   'ignore_create');
-define('TAXONOMY_CSV_EXISTING_IGNORE_ALL',      'ignore_all');
+define('TAXONOMY_CSV_EXISTING_IGNORE_ALL',      'ignore_all'); // @todo
+// Internal use only: in fact, same as TAXONOMY_CSV_EXISTING_REPLACE.
 define('TAXONOMY_CSV_EXISTING_IGNORE_PREVIOUS', 'ignore_previous');
-define('TAXONOMY_CSV_EXISTING_IGNORE_QUICK',    'ignore_quick');
 
 /**
  * List of process levels matching watchdog levels.
@@ -133,8 +131,8 @@ function _taxonomy_csv_values($list) {
         'locale_custom'                 => '',
         'vocabulary_target'             => 'autocreate',
         'vocabulary_id'                 => 'choose_vocabulary',
-        'delete_terms'                  => FALSE,
         'import_custom_fields'          => '',
+        'delete_terms'                  => FALSE,
         'check_hierarchy'               => TRUE,
         'set_hierarchy'                 => 2, // Polyhierarchy.
         'existing_items'                => TAXONOMY_CSV_EXISTING_UPDATE,
@@ -160,8 +158,8 @@ function _taxonomy_csv_values($list) {
         'locale_custom'                 => '',
         'vocabulary_target'             => 'autocreate',
         'vocabulary_id'                 => 'choose_vocabulary',
-        'delete_terms'                  => FALSE,
         'custom_fields'                 => array(),
+        'delete_terms'                  => FALSE,
         'check_hierarchy'               => TRUE,
         'set_hierarchy'                 => 2, // Polyhierarchy.
         'existing_items'                => TAXONOMY_CSV_EXISTING_UPDATE,
@@ -187,11 +185,12 @@ function _taxonomy_csv_values($list) {
         'export_enclosure'              => 'none',
         'export_enclosure_custom'       => '',
         'export_line_ending'            => 'Unix',
-        'export_order'                  => 'name',
-        'result_duplicates'             => TRUE,
         // Default options of specific imports.
         'def_links_terms_ids'           => 'name_if_needed',
         'def_links_vocabularies_ids'    => 'none',
+        // General options.
+        'export_order'                  => 'name',
+        'result_duplicates'             => TRUE,
       );
 
     case 'export_default_api':
@@ -203,92 +202,89 @@ function _taxonomy_csv_values($list) {
         'enclosure'                     => '"',
         'line_ending'                   => 'Unix',
         'order'                         => 'name',
-        'result_duplicates'             => FALSE,
-        'check_options'                 => FALSE,
-        'result_display'                => FALSE,
         // Default options of specific imports.
         'def_links_terms_ids'           => 'name_if_needed',
         'def_links_vocabularies_ids'    => 'none',
+        // General options.
+        'result_duplicates'             => FALSE,
+        'check_options'                 => FALSE,
+        'result_display'                => FALSE,
       );
 
     case 'import_option':
       return array(
-        TAXONOMY_CSV_EXISTING_UPDATE         => t('Update existing term (avoid duplicate terms)'),
-        TAXONOMY_CSV_EXISTING_UPDATE_MERGE   => t('Update (merge) existing term and items if exist else create'),
-        TAXONOMY_CSV_EXISTING_UPDATE_REPLACE => t('Update (replace) existing term and items if exist else create'),
-        TAXONOMY_CSV_EXISTING_IGNORE         => t('Duplicate existing term'),
-        TAXONOMY_CSV_EXISTING_IGNORE_CREATE  => t('Ignore existing term and create a new term'),
-        TAXONOMY_CSV_EXISTING_IGNORE_ALL     => t('Ignore existing term and create a new term for each term on the line'),
-        TAXONOMY_CSV_EXISTING_IGNORE_QUICK   => t('Ignore existing terms (quicker, but duplicates may be created)'),
+        TAXONOMY_CSV_EXISTING_UPDATE     => t('Update it (avoid duplicate terms)'),
+        TAXONOMY_CSV_EXISTING_REPLACE    => t('Replace it (avoid duplicate terms)'),
+        TAXONOMY_CSV_EXISTING_IGNORE     => t('Ignore it and create a new term (duplicate terms may be created)'),
+        TAXONOMY_CSV_EXISTING_IGNORE_ALL => t('Ignore it and create a new term for each term on the line (duplicate terms may be created)'),
       );
 
     case 'import_allowed':
       $items = array(
         TAXONOMY_CSV_FORMAT_ALONE_TERMS      => array(
           TAXONOMY_CSV_EXISTING_UPDATE,
-          TAXONOMY_CSV_EXISTING_IGNORE_QUICK,
+          TAXONOMY_CSV_EXISTING_IGNORE,
         ),
         TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS    => array(
-          TAXONOMY_CSV_EXISTING_UPDATE_MERGE,
-          TAXONOMY_CSV_EXISTING_UPDATE_REPLACE,
-          TAXONOMY_CSV_EXISTING_IGNORE_QUICK,
+          TAXONOMY_CSV_EXISTING_UPDATE,
+          TAXONOMY_CSV_EXISTING_REPLACE,
+          TAXONOMY_CSV_EXISTING_IGNORE,
         ),
         TAXONOMY_CSV_FORMAT_DEFINITION_LINKS => array(
-          TAXONOMY_CSV_EXISTING_UPDATE_MERGE,
+          TAXONOMY_CSV_EXISTING_UPDATE,
         ),
         TAXONOMY_CSV_FORMAT_FLAT             => array(
           TAXONOMY_CSV_EXISTING_UPDATE,
-          TAXONOMY_CSV_EXISTING_IGNORE_QUICK,
+          TAXONOMY_CSV_EXISTING_IGNORE,
         ),
         TAXONOMY_CSV_FORMAT_TREE_STRUCTURE   => array(
-          TAXONOMY_CSV_EXISTING_UPDATE_REPLACE,
-          TAXONOMY_CSV_EXISTING_IGNORE_CREATE,
-          TAXONOMY_CSV_EXISTING_IGNORE_QUICK,
+          TAXONOMY_CSV_EXISTING_REPLACE,
+          TAXONOMY_CSV_EXISTING_IGNORE,
         ),
         TAXONOMY_CSV_FORMAT_POLYHIERARCHY    => array(
-          TAXONOMY_CSV_EXISTING_UPDATE_MERGE,
+          TAXONOMY_CSV_EXISTING_UPDATE,
         ),
         TAXONOMY_CSV_FORMAT_PARENTS          => array(
-          TAXONOMY_CSV_EXISTING_UPDATE_MERGE,
-          TAXONOMY_CSV_EXISTING_UPDATE_REPLACE,
-          TAXONOMY_CSV_EXISTING_IGNORE_CREATE,
+          TAXONOMY_CSV_EXISTING_UPDATE,
+          TAXONOMY_CSV_EXISTING_REPLACE,
+          TAXONOMY_CSV_EXISTING_IGNORE,
 //           TAXONOMY_CSV_EXISTING_IGNORE_ALL,
         ),
         TAXONOMY_CSV_FORMAT_CHILDREN         => array(
-          TAXONOMY_CSV_EXISTING_UPDATE_MERGE,
-          TAXONOMY_CSV_EXISTING_UPDATE_REPLACE,
-          TAXONOMY_CSV_EXISTING_IGNORE_CREATE,
+          TAXONOMY_CSV_EXISTING_UPDATE,
+          TAXONOMY_CSV_EXISTING_REPLACE,
+          TAXONOMY_CSV_EXISTING_IGNORE,
 //           TAXONOMY_CSV_EXISTING_IGNORE_ALL,
         ),
         TAXONOMY_CSV_FORMAT_RELATIONS        => array(
-          TAXONOMY_CSV_EXISTING_UPDATE_MERGE,
-          TAXONOMY_CSV_EXISTING_UPDATE_REPLACE,
-          TAXONOMY_CSV_EXISTING_IGNORE_CREATE,
+          TAXONOMY_CSV_EXISTING_UPDATE,
+          TAXONOMY_CSV_EXISTING_REPLACE,
+          TAXONOMY_CSV_EXISTING_IGNORE,
 //           TAXONOMY_CSV_EXISTING_IGNORE_ALL,
         ),
         TAXONOMY_CSV_FORMAT_SYNONYMS         => array(
-          TAXONOMY_CSV_EXISTING_UPDATE_MERGE,
-          TAXONOMY_CSV_EXISTING_UPDATE_REPLACE,
-          TAXONOMY_CSV_EXISTING_IGNORE_QUICK,
+          TAXONOMY_CSV_EXISTING_UPDATE,
+          TAXONOMY_CSV_EXISTING_REPLACE,
+          TAXONOMY_CSV_EXISTING_IGNORE,
         ),
         TAXONOMY_CSV_FORMAT_DEFINITIONS      => array(
-          TAXONOMY_CSV_EXISTING_UPDATE_MERGE,
-          TAXONOMY_CSV_EXISTING_UPDATE_REPLACE,
-          TAXONOMY_CSV_EXISTING_IGNORE_QUICK,
+          TAXONOMY_CSV_EXISTING_UPDATE,
+          TAXONOMY_CSV_EXISTING_REPLACE,
+          TAXONOMY_CSV_EXISTING_IGNORE,
         ),
         TAXONOMY_CSV_FORMAT_DESCRIPTIONS     => array(
-          TAXONOMY_CSV_EXISTING_UPDATE_MERGE,
-          TAXONOMY_CSV_EXISTING_UPDATE_REPLACE,
-          TAXONOMY_CSV_EXISTING_IGNORE_QUICK,
+          TAXONOMY_CSV_EXISTING_UPDATE,
+          TAXONOMY_CSV_EXISTING_REPLACE,
+          TAXONOMY_CSV_EXISTING_IGNORE,
         ),
         TAXONOMY_CSV_FORMAT_WEIGHTS          => array(
-          TAXONOMY_CSV_EXISTING_UPDATE_MERGE,
-          TAXONOMY_CSV_EXISTING_IGNORE_QUICK,
+          TAXONOMY_CSV_EXISTING_UPDATE,
+          TAXONOMY_CSV_EXISTING_IGNORE,
         ),
         TAXONOMY_CSV_FORMAT_FIELDS           => array(
-          TAXONOMY_CSV_EXISTING_UPDATE_MERGE,
-          TAXONOMY_CSV_EXISTING_UPDATE_REPLACE,
-          TAXONOMY_CSV_EXISTING_IGNORE_CREATE,
+          TAXONOMY_CSV_EXISTING_UPDATE,
+          TAXONOMY_CSV_EXISTING_REPLACE,
+          TAXONOMY_CSV_EXISTING_IGNORE,
         ),
       );
       break;

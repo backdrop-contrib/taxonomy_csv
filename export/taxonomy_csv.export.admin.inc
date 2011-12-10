@@ -462,7 +462,7 @@ function _taxonomy_csv_export_check_options(&$options) {
   // Calculates number of terms to be exported.
   $options['total_terms'] = taxonomy_csv_vocabulary_count_terms($options['vocabulary_id']);
   if (!$options['total_terms']) {
-    $message['vocabulary_id'] = t('No term to export. Export finished.');
+    $messages['vocabulary_id'] = t('Vocabulary has no term to export. Export finished.');
   }
 
   return $messages;
@@ -484,9 +484,9 @@ function taxonomy_csv_form_export_submit($form, &$form_state) {
       'export_enclosure_custom',
       'export_line_ending',
       'export_order',
-      'result_duplicates',
       'def_links_terms_ids',
       'def_links_vocabularies_ids',
+      'result_duplicates',
     ) as $option) {
     variable_set("taxonomy_csv_$option", $form_state['values'][$option]);
     $options[$option] = $form_state['values'][$option];

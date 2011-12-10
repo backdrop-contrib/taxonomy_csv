@@ -16,6 +16,7 @@ By Daniel Berthereau: Added pipe delimiter and quote enclosure option.
 By Daniel Berthereau: Check line breaks in descriptions and escape or set them.
 #1287210 by Èric Palau: Added permissions to import and export by csv.
 #1312244 by Daniel Berthereau: Added drush support to use module with CLI.
+By Daniel Berthereau: Simplified use of update/replace/ignore existing items.
 
 
 Taxonomy csv import/export 7.x-5.7, 2011-10-03

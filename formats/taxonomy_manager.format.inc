@@ -18,9 +18,9 @@ function taxonomy_csv_format_taxonomy_manager() {
     'import_format'   => t('Taxonomy manager'),
     'export_format'   => t('Taxonomy manager'),
     'import_allowed'  => array(
-      TAXONOMY_CSV_EXISTING_UPDATE_MERGE,
-      TAXONOMY_CSV_EXISTING_UPDATE_REPLACE,
-      TAXONOMY_CSV_EXISTING_IGNORE_CREATE,
+      TAXONOMY_CSV_EXISTING_UPDATE,
+      TAXONOMY_CSV_EXISTING_REPLACE,
+      TAXONOMY_CSV_EXISTING_IGNORE,
     ),
     'import_previous' => TRUE, // Because import remembers all previous_items.
     'specific_fields' => FALSE,
@@ -146,7 +146,7 @@ function taxonomy_csv_line_import_taxonomy_manager($line, $options, $previous_it
   }
   else {
     // No tid is given, so it's always a new term.
-    $options['existing_items'] = TAXONOMY_CSV_EXISTING_IGNORE_CREATE;
+    $options['existing_items'] = TAXONOMY_CSV_EXISTING_IGNORE;
   }
 
   // Import term then store result. No check because only one term.

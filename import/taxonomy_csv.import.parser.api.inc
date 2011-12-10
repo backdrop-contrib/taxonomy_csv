@@ -247,7 +247,7 @@ function _taxonomy_csv_line_import_check($line, $options, $previous_items = arra
       }
       // Example: "Term"
       if ((count($checked_items) == 1)
-          && ($existing_items == TAXONOMY_CSV_EXISTING_UPDATE_REPLACE)) {
+          && ($existing_items == TAXONOMY_CSV_EXISTING_REPLACE)) {
         $messages[] = 580; // Notice remove items.
       }
       foreach ($checked_items as $name) {
@@ -264,7 +264,7 @@ function _taxonomy_csv_line_import_check($line, $options, $previous_items = arra
       }
       elseif (count($line) == 1) {
         $messages[] = 510; // Notice empty items.
-        if ($existing_items == TAXONOMY_CSV_EXISTING_UPDATE_REPLACE) {
+        if ($existing_items == TAXONOMY_CSV_EXISTING_REPLACE) {
           $messages[] = 580; // Notice remove items.
         }
         $checked_items = array($line[0], 0);
@@ -308,7 +308,7 @@ function _taxonomy_csv_line_import_check($line, $options, $previous_items = arra
         break;
       }
       if ((count($line) == 1)
-          && ($existing_items == TAXONOMY_CSV_EXISTING_UPDATE_REPLACE)) {
+          && ($existing_items == TAXONOMY_CSV_EXISTING_REPLACE)) {
         $messages[] = 580; // Notice remove items.
         $checked_items = array($line[0], '');
       }
@@ -333,7 +333,7 @@ function _taxonomy_csv_line_import_check($line, $options, $previous_items = arra
         $messages[] = 450; // Warning weight is not a number.
         break;
       }
-      if ((count($line) == 1) && ($existing_items == TAXONOMY_CSV_EXISTING_UPDATE_REPLACE)) {
+      if ((count($line) == 1) && ($existing_items == TAXONOMY_CSV_EXISTING_REPLACE)) {
         $messages[] = 580; // Notice remove items.
         $checked_items = array($line[0], 0);
       }
