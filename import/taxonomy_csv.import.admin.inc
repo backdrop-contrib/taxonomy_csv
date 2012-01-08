@@ -1091,6 +1091,12 @@ function _taxonomy_csv_import_check_options(&$options) {
   // Clean locale if any.
   $options['locale_custom'] = trim($options['locale_custom']);
 
+  // Replace machine name with vocabulary id.
+  if (!is_numeric($options['vocabulary_id'])) {
+     $vocabulary = taxonomy_vocabulary_machine_name_load($options['vocabulary_id']);
+     $options['vocabulary_id'] = $vocabulary->vid;
+  }
+
   // Calculates number of lines to be imported.
   if (!isset($options['file'])
       || !is_object($options['file'])

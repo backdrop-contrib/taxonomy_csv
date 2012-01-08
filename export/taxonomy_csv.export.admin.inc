@@ -400,6 +400,12 @@ function _taxonomy_csv_export_check_options(&$options) {
     $messages['vocabulary_id'] = t('No vocabulary to export.');
   }
   elseif ($options['vocabulary_id']) {
+    // Replace machine name with vocabulary id.
+    if (!is_numeric($options['vocabulary_id'])) {
+       $vocabulary = taxonomy_vocabulary_machine_name_load($options['vocabulary_id']);
+       $options['vocabulary_id'] = $vocabulary->vid;
+    }
+
     if (!isset($list_vocabularies[$options['vocabulary_id']])) {
       $messages['vocabulary_id'] = t("You choose to export a vocabulary, but it doesn't exist.");
     }

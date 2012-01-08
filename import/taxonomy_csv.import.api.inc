@@ -38,7 +38,8 @@
  *   - check_utf8     : boolean. check or not (default) utf8 format
  *   - locale_custom  : string. specific locale of imported file
  *   - vocabulary_target: 'autocreate' (default), 'duplicate' or 'existing'
- *   - vocabulary_id  : vocabulary id to duplicate or to import into
+ *   - vocabulary_id  : vid or machine_name of the vocabulary to duplicate or to
+ *                      import into
  *   - custom_fields  : array. custom fields to add or create (default: array())
  *   - delete_terms   : delete all terms before import (default: FALSE)
  *   - check_hierarchy: boolean. check (default) or not vocabulary hierarchy

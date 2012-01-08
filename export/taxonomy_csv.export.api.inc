@@ -24,7 +24,8 @@
  * @param $options
  *   An associative array of options:
  *   - export_format : see _taxonomy_csv_values('export_format')
- *   - vocabulary_id : vocabulary id to export (default: 0, which means all)
+ *   - vocabulary_id : vid or machine_name of the vocabulary to export (default:
+ *                     0, which means all)
  *   - delimiter     : one character csv delimiter (default: ',')
  *   - enclosure     : zero or one character csv enclosure (default: '"')
  *   - line_ending   : 'Unix' (default), 'Mac' or 'MS-DOS'

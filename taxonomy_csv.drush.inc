@@ -32,7 +32,7 @@ function taxonomy_csv_drush_command() {
       'check_utf8'    => 'Check utf8 format',
       'locale_custom' => 'Specific locale of imported file',
       'vocabulary_target' => "'autocreate' (default), 'duplicate' or 'existing'",
-      'vocabulary_id' => 'Vocabulary id to duplicate or to import into',
+      'vocabulary_id' => 'vid or machine_name (>=D7 only) of the vocabulary to duplicate or to import into',
       'custom_fields' => 'Custom comma separated fields to add or create [>=D7 only]',
       'delete_terms'  => 'Delete all terms before import',
       'check_hierarchy' => 'Check vocabulary hierarchy',
@@ -58,7 +58,7 @@ function taxonomy_csv_drush_command() {
       'drush taxocsv-export 2 tree_structure --delimiter=";" --order=name' => 'Export vocabulary with vid 2 as a CSV tree_structure ordered by name, with a semicolon for delimiter, and default settings for other options.',
     ),
     'arguments' => array(
-      'vocabulary_id' => 'Required. Vocabulary id to export (0 means all)',
+      'vocabulary_id' => 'Required. vid or machine_name (>=D7 only) of the vocabulary to export (0 means all)',
       'export_format' => "Optional. CSV format: 'alone_terms' (default), 'def_links', 'tree_structure', 'parents', 'children', 'relations', 'synonyms', 'definitions', 'descriptions', 'weights' or 'fields'",
       'file_path'     => "Optional. Full path or filename of exported csv file (default: [current directory]/taxocsv.csv)",
     ),

@@ -8,13 +8,17 @@
   ===========
 
 
-Taxonomy csv import/export 7.x-5.8-dev, 2011-12-07
-Taxonomy csv import/export 6.x-5.8-dev, 2011-12-07
+Taxonomy csv import/export 7.x-5.8-dev, 2012-01-08
+----------------------------------------------
+#1395090 by Alex Oroshchuk: Added import/export by vocabulary machine name.
+
+Taxonomy csv import/export 7.x-5.8-dev, 2012-01-08
+Taxonomy csv import/export 6.x-5.8-dev, 2012-01-08
 ----------------------------------------------
 #1359260 by Daniel Berthereau: Added a warning when terms count is invalid.
 By Daniel Berthereau: Added pipe delimiter and quote enclosure option.
 By Daniel Berthereau: Check line breaks in descriptions and escape or set them.
-#1287210 by Èric Palau: Added permissions to import and export by csv.
+#1287210 by Èric Palau: Added permissions to import and export by CSV.
 #1312244 by Daniel Berthereau: Added drush support to use module with CLI.
 By Daniel Berthereau: Simplified use of update/replace/ignore existing items.
 #1308420 by Jordim: Fixed 'Full definitions and links' import.
