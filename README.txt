@@ -79,3 +79,10 @@ Major rewrite 6.x-2.0 and subsequents by Daniel Berthereau (Daniel_KM).
 
 First version of the project has been sponsored by
 * The Site Mechanic (http://www.thesitemechanics.com)
+
+
+-- COPYRIGHT --
+  ---------
+
+Copyright © 2007-2009 Dennis Stevense (naquah)
+Copyright © 2009-2012 Daniel Berthereau <daniel.drupal@berthereau.net>

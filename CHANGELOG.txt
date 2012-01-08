@@ -18,6 +18,7 @@ By Daniel Berthereau: Check line breaks in descriptions and escape or set them.
 #1312244 by Daniel Berthereau: Added drush support to use module with CLI.
 By Daniel Berthereau: Simplified use of update/replace/ignore existing items.
 #1308420 by Jordim: Fixed 'Full definitions and links' import.
+By Daniel Berthereau: Cleaned some cosmetic items (Coder review).
 
 
 Taxonomy csv import/export 7.x-5.7, 2011-10-03

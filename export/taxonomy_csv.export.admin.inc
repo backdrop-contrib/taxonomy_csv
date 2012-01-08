@@ -263,7 +263,7 @@ function taxonomy_csv_form_export($form_state) {
       'vid'  => t('Serial number (internal vocabulary id)'),
     ),
     '#default_value' => $list_previous_values['def_links_vocabularies_ids'],
-    '#description'   => t('Choose how vocabularies will be identified.'). '<br />'
+    '#description'   => t('Choose how vocabularies will be identified.') . '<br />'
       . t('"Nothing" can be used only when a single vocabulary is exported (not all vocabularies in one time) and when there is no relation to terms of another vocabulary. In such a case, vocabulary name will be used instead.'),
   );
 

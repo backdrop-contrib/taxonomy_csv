@@ -329,7 +329,7 @@ function _taxonomy_csv_vocabulary_export_finished($success, $results, $operation
   if ($success) {
     if (!empty($options['worst_tid'])) {
       $worst_path = drupal_get_path_alias('taxonomy/term/' . $options['worst_tid']);
-      $options['worst_name'] = l(check_plain($options['worst_name']), $worst_path);
+      $options['worst_name'] = l($options['worst_name'], $worst_path);
     }
     $variables = array(
       '!total_terms' => $options['total_terms'],

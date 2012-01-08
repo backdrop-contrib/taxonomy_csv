@@ -221,7 +221,7 @@ function taxonomy_csv_form_import($form_state) {
         . t('With this import format, destination vocabulary is determined not only by the fourth group of options, but by the import source too.') . '<br />'
         . t('* If the third column is empty, null or "0", a vocabulary is autocreated, duplicated or used matching the destination vocabulary option. If the vocabulary of a related term is not defined, the vocabulary of the main term is used.') . '<br />'
         . t('* If the third column or the vocabulary of a related term is a name or a number, it has priority over destination vocabulary option:') . '<br />'
-        . t("- When the matching vocabulary doesn't exist, a new vocabulary is created, regardless the destination vocabulary option.")  . '<br />'
+        . t("- When the matching vocabulary doesn't exist, a new vocabulary is created, regardless the destination vocabulary option.") . '<br />'
         . t("- When the matching vocabulary exists, it will be always used, regardless the destination option or the chosen vocabulary.") . '<br />'
         . '<br />'
         . t('Notes:') . '<br />'
