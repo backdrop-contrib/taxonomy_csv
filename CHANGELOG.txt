@@ -23,6 +23,7 @@ By Daniel Berthereau: Check line breaks in descriptions and escape or set them.
 By Daniel Berthereau: Simplified use of update/replace/ignore existing items.
 #1308420 by Jordim: Fixed 'Full definitions and links' import.
 By Daniel Berthereau: Cleaned some cosmetic items (Coder review).
+#1395090 by Alex Oroshchuk: Fixed check options with Drush 4.5.
 
 
 Taxonomy csv import/export 7.x-5.7, 2011-10-03

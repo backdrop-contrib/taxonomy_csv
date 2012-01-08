@@ -171,8 +171,12 @@ function drush_taxonomy_csv_import($file_path, $import_format = 'alone_terms') {
   // Prepare import.
   $messages = taxonomy_csv_import($options);
 
-  // Last check: unknow options.
+  // Last check: unknown options.
   $other_options = array_diff(array_keys(drush_get_merged_options()), array_keys($options));
+  // Compatibility with drush 4.5. See https://drupal.org/node/1395090.
+  if (($i = array_search('drush-make-update-default-url', $other_options)) !== FALSE) {
+    unset($other_options[$i]);
+  }
   if ($other_options) {
     $messages[] = 'Unknown options:' . ' ' . implode(', ', $other_options) . '.';
   }
@@ -271,8 +275,12 @@ function drush_taxonomy_csv_export($vocabulary_id, $export_format = 'alone_terms
     $messages = array();
   }
 
-  // Last check: unknow options.
+  // Last check: unknown options.
   $other_options = array_diff(array_keys(drush_get_merged_options()), array_keys($options));
+  // Compatibility with drush 4.5. See https://drupal.org/node/1395090.
+  if (($i = array_search('drush-make-update-default-url', $other_options)) !== FALSE) {
+    unset($other_options[$i]);
+  }
   if ($other_options) {
     $messages[] = 'Unknown options:' . ' ' . implode(', ', $other_options) . '.';
   }
