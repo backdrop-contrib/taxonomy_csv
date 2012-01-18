@@ -159,7 +159,7 @@ function _taxonomy_csv_message_text($message_code) {
       310 => t("You choose to import a taxonomy by a file, but you don't set its name or its size is greater than the server's limit.") . $error,
       311 => t('Size of your file is null.') . $error,
       312 => t('Unable to write to file.') . $error,
-      313 => t('Current line contains delimiter, enclosure or unprotected line ending. Change the content of the term, or set appropriate format settings in second tab.'),
+      313 => t('Current line is multiline or contains delimiter, enclosure or unprotected line ending. Change the content of the term, or set appropriate format settings in second tab.'),
       320 => t("Your file can't be converted to utf-8. Please install iconv, GNU recode or mbstring for PHP or convert your file to utf-8 and disable 'Enable utf-8 conversion' option.") . $error,
       321 => t('Despite your option, your file is not recognize as an UTF-8 encoded one. Convert it before submit it.') . $error,
       340 => t("Vocabulary doesn't exist."),

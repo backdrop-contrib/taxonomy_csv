@@ -182,7 +182,7 @@ function _taxonomy_csv_values($list) {
         'export_vocabulary_id'          => 0,
         'export_delimiter'              => 'comma',
         'export_delimiter_custom'       => '',
-        'export_enclosure'              => 'none',
+        'export_enclosure'              => 'quotation',
         'export_enclosure_custom'       => '',
         'export_line_ending'            => 'Unix',
         // Default options of specific imports.
