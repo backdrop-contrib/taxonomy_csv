@@ -34,12 +34,19 @@
  *   - keep_order     : boolean. keep order of imported terms or not (default)
  *   - delimiter      : 1 character csv delimiter (default: ',')
  *   - enclosure      : 0 or 1 character csv enclosure (default: none or '"')
+ *   - filter_format  : string. description field format (default: 'plain_text')
+ *   - filter_format_custom : string. custom fields format (default: 'none')
+ *   - language       : string. terms' default language (default: neutral 'und')
  *   - check_line     : boolean. check or not (default) format of lines
  *   - check_utf8     : boolean. check or not (default) utf8 format
  *   - locale_custom  : string. specific locale of imported file
  *   - vocabulary_target: 'autocreate' (default), 'duplicate' or 'existing'
  *   - vocabulary_id  : vid or machine_name of the vocabulary to duplicate or to
  *                      import into
+ *   - i18n_mode      : integer. internationalization mode of autocreated
+ *                      vocabulary (default: 0 (I18N_MODE_NONE))
+ *   - vocabulary_language: string. language code of autocreated vocabulary
+ *                      (default: 'und' (undefined))
  *   - custom_fields  : array. custom fields to add or create (default: array())
  *   - delete_terms   : delete all terms before import (default: FALSE)
  *   - check_hierarchy: boolean. check (default) or not vocabulary hierarchy
@@ -84,6 +91,8 @@ function taxonomy_csv_import($options) {
  * Then check if there is write access and prepare file.
  * To use a file is not optimal with array and text input, but this solution
  * unifies input and avoids some memory crashes.
+ *
+ * @todo Add an option to use only memory.
  *
  * @param $options
  *   Array of options.
@@ -284,7 +293,7 @@ function taxonomy_csv_vocabulary_import($options) {
   // Calculates number of lines to be imported. File is already checked.
   $options['total_lines'] = count(file($options['file']->filepath));
 
-  // Prepare vocabularies.
+  // Prepare vocabularies. Options are passed by-reference and can be updated.
   $name = _taxonomy_csv_import_vocabulary_prepare($options);
 
   // Set locale if needed.
@@ -303,7 +312,8 @@ function taxonomy_csv_vocabulary_import($options) {
           '!total_lines' => $options['total_lines'])) :
         t('Importing !total_lines lines from text...', array(
           '!total_lines' => $options['total_lines'])),
-    'init_message'     => t('Starting uploading of datas...'),
+    'init_message'     => t('Starting uploading of datas...') . '<br />'
+      . t('Wait some seconds for pre-processing...'),
     'progress_message' => '',
     'error_message'    => t('An error occurred during the import.'),
     'finished'         => '_taxonomy_csv_vocabulary_import_finished',
@@ -336,17 +346,20 @@ function _taxonomy_csv_vocabulary_import_process($options, &$context) {
   // which process extra fields. Context is used to store infos on main process.
 
   // First callback to prepare SESSION.
-  if (empty($_SESSION['taxonomy_csv_import'])) {
+  if (empty($_SESSION['taxonomy_csv_import']) && ($options['import_format'] == TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS)) {
     $_SESSION['taxonomy_csv_import'] = array(
       'options'    => $options,
-      'language'   => 'und', // Undetermined.
+      // Currently, translatable fields are unmanaged.
+      'language'   => 'und', // Undefined.
       'vocabulary' => taxonomy_vocabulary_load($options['vocabulary_id']),
       'messages'   => array(),
     );
     $_SESSION['taxonomy_csv_import']['instances'] = field_info_instances('taxonomy_term', $_SESSION['taxonomy_csv_import']['vocabulary']->machine_name);
     $_SESSION['taxonomy_csv_import']['fields'] = array();
-    foreach ($_SESSION['taxonomy_csv_import']['instances'] as $key => $value) {
-      $_SESSION['taxonomy_csv_import']['fields'][$key] = field_info_field($key);
+    if (is_array($_SESSION['taxonomy_csv_import']['instances'])) {
+      foreach ($_SESSION['taxonomy_csv_import']['instances'] as $key => $value) {
+        $_SESSION['taxonomy_csv_import']['fields'][$key] = field_info_field($key);
+      }
     }
   }
 
@@ -597,6 +610,13 @@ function _taxonomy_csv_import_vocabulary_prepare(&$options, $check = TRUE) {
     case 'autocreate':
       $vocabulary = taxonomy_csv_vocabulary_create($name);
       $options['vocabulary_id'] = $vocabulary->vid;
+
+      // Update vocabulary with language options.
+      if (module_exists('i18n_taxonomy')) {
+        $vocabulary->i18n_mode = $options['i18n_mode'];
+        $vocabulary->language = $options['vocabulary_language'];
+        $result = taxonomy_vocabulary_save($vocabulary);
+      }
       break;
 
     case 'duplicate':
@@ -608,10 +628,20 @@ function _taxonomy_csv_import_vocabulary_prepare(&$options, $check = TRUE) {
       $vocabulary = taxonomy_vocabulary_load($options['vocabulary_id']);
       // Optional deletion of terms.
       if ($options['delete_terms']) {
-        $tids = taxonomy_csv_term_get_tids_from_vocabulary($vocabulary->vid);
+        $tids = taxonomy_csv_vocabulary_get_tids($vocabulary->vid);
         $result = taxonomy_csv_term_delete_multiple($tids);
       }
       break;
+  }
+
+  // Synchronize vocabulary internationalization options.
+  if (module_exists('i18n_taxonomy')) {
+    $options['i18n_mode'] = $vocabulary->i18n_mode;
+    $options['vocabulary_language'] = $vocabulary->language;
+
+    if ($vocabulary->i18n_mode == I18N_MODE_LOCALIZE) {
+      $options['filter_format'] = 'plain_text';
+    }
   }
 
   // Prepare default synonyms field if needed.
@@ -645,6 +675,9 @@ function _taxonomy_csv_import_vocabulary_prepare(&$options, $check = TRUE) {
           'description',
           'format',
           'weight',
+          'language',
+          'i18n_tsid',
+          'guid',
           'vocabulary_machine_name',
         ))) {
         unset($custom_fields[$key]);
@@ -674,6 +707,7 @@ function _taxonomy_csv_import_vocabulary_prepare(&$options, $check = TRUE) {
         'description'  => '',
         'type'         => $field_type,
         'cardinality'  => FIELD_CARDINALITY_UNLIMITED,
+          // Currently, translatable term reference fields are not supported.
         'translatable' => FALSE,
       );
       switch ($field_type) {
@@ -682,12 +716,11 @@ function _taxonomy_csv_import_vocabulary_prepare(&$options, $check = TRUE) {
         case 'taxonomy_term_reference':
           $field += array(
             'settings'     => array('allowed_values' => array(0 => array(
-              'vocabulary' => $vocabulary->machine_name,
-              'parent'     => 0,
+                'vocabulary' => $vocabulary->machine_name,
+                'parent'     => 0,
           ))));
           break;
         case 'file':
-          break;
         default:
       }
       $result = taxonomy_csv_vocabulary_field_add($vocabulary->machine_name, $field);

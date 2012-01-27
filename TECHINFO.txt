@@ -4,6 +4,8 @@
                   ==========================================
 
 
+@todo To be updated for >= 7.x.5.8
+
 
 Taxonomy csv import/export module has a lot of files, but majority of them are
 used for user interface, to check the input and to manage big taxonomies import.
@@ -44,7 +46,7 @@ User Interface use -> .import.admin.inc                   .export.admin.inc
                               ------------------+------------------
                               |                                   |
                               V                                   V
-API use ---------->    .import.api.inc                     .export.api.inc
+API / Drush use -----> .import.api.inc                     .export.api.inc
                    .import.parser.api.inc                         |
                     .import.line.api.inc                          |
                               |                                   |

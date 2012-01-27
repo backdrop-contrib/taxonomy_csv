@@ -36,6 +36,7 @@
 <p>CSV format is a simple list of values separated by a delimiter, often comma (<strong><code>,</code></strong>) or semicolon (<strong><code>;</code></strong>), and enclosures, often quotation marks (<strong><code>"</code></strong>). If you are unsure how to create a CSV file, you might want to use <a href="http://www.libreoffice.org" title="LibreOffice.org">LibreOffice Calc</a> or another spreadsheet application to export your data into a CSV file.</p>
 <p>Specific import or export formats can be added simply by a plug-in mecanism (or ask author!).</p>
 <p>After enabling the module, permissions "import taxonomy by csv" and "export taxonomy by csv" need to be set. Main "administer taxonomy" permission is not needed to use module, but this is recommended.</p>
+<p>Internationalization is supported, except for attached Fields [Taxonomy CSV pour Drupal 7 only]. So you can import a list or a structure of terms, then translate them.</p>
 <p>This module supports <a href="http://drupal.org/project/drush">drush</a> and allows to import or to export taxonomies by csv with command line interface.</p>
   <div class="toc">
     <h2 class="nonum"><a id="contents" name="contents">Table of Contents</a></h2>
@@ -81,6 +82,9 @@
           </li>
           <li>
             <a href="#weights">Term weights</a>
+          </li>
+          <li>
+            <a href="#translation_name">Term and description translation</a>
           </li>
           <li>
             <a href="#taxonomy_manager">Taxonomy manager</a>
@@ -188,7 +192,7 @@
     <p>Examples:</p>
       <div class="codeblock"><ul>
         <li><code>foo, , , "Description of foo", 10, 1, 1, 2, 2, Synonym of foo, bar parent 1, bar child 1, bar child 2, bar related 1, bar related 2, , vocabulary of related 2</code></li>
-        <li><code>France, , Places, "A great country", 1, 1, 1, 3, 3, French Republic, Europe, Paris, Lyon, Vichy, USA, Japan, China</code></li>
+        <li><code>France, , Places, "A free country", 1, 1, 1, 3, 3, French Republic, Europe, Paris, Lyon, Vichy, USA, Japan, China</code></li>
         <li><code>Japan, , Places, "An old country", 1, 1, 1, 2, 2, Land of the Rising Sun, Asia, Tokyo, Kyoto, China, France</code></li>
         <li><code>China, , Places, "A big country", 2, 1, 1, 1, 2, Middle Kingdom, Asia, Beijing, Japan, France</code></li>
         <li><code>Asia, , Places, "A large continent", 1, 0, 0, 2, 0, Japan, China</code></li>
@@ -330,7 +334,16 @@
       <div class="codeblock"><ul>
         <li><code>Baobab, 3</code></li>
       </ul></div>
-  <h4 id="taxonomy_manager"><a href="#contents">14. Taxonomy manager</a></h4>
+  <h4 id="translation_name"><a href="#contents">14. Name and description translation [Drupal 7 only]</a></h4>
+    <p>The term is in the first column followed by its translation and their description. Names are required, but descriptions are optional. Example:</p>
+      <div class="codeblock"><ul>
+        <li><code>foo, bar, description of foo, description of bar</code></li>
+        <li><code>"United Kingdom", "Royaume-Uni"</code></li>
+        <li><code>"Germany", "Allemagne", "A European country", "Un pays européen"</code></li>
+      </ul></div>
+    <p>The language of first term will be "Language neutral" and the language of the second item can be set in the third tab.</p>
+    <p>This format is available only if the sub-module "i18n Taxonomy" of the module <a href="http://drupal.org/project/i18n">Internationalization</a> is enabled.</p>
+  <h4 id="taxonomy_manager"><a href="#contents">15. Taxonomy manager</a></h4>
     <p>This format is used by <a href="http://drupal.org/project/taxonomy_manager" title="Taxonomy manager module">Taxonomy manager</a> to export vocabularies. Columns are: vocabulary id, term id, term name, term description, first level parent id 1, ..., first level parent id n. Example:</p>
       <div class="codeblock"><ul>
         <li><code>, 1, "Île-de-France", "Main region"</code></li>
@@ -338,7 +351,7 @@
       </ul></div>
     <p>In this format, order of all lines is important: it's impossible to attach a parent to an item if this parent hasn't been imported in a previous line.</p><br />
     <p>When a vocabulary is imported in an existing one, only option "ignore existing terms" can be used.</p>
-  <h4 id="geotaxonomy"><a href="#contents">15. Geotaxonomy</a></h4>
+  <h4 id="geotaxonomy"><a href="#contents">16. Geotaxonomy</a></h4>
     <p>Import and export <a href="http://drupal.org/project/geotaxonomy" title="Module Geotaxonomy">geotaxonomy</a> terms.</p>
     <p>Format</p>
     <div class="codeblock"><ul>

@@ -6,74 +6,21 @@
  */
 
 /**
- * Return an array of all term ids of a given vocabulary.
+ * Find a term by its name and load it. This function manages duplicates.
  *
- * @param $vid
- *   The vocabulary id from where to fetch term ids.
+ * If the term has got duplicates, only first one (lower tid) will be returned.
  *
- * @return
- *   Array of term ids.
- */
-function taxonomy_csv_term_get_tids_from_vocabulary($vid) {
-  $tids = array();
-
-  $sql = '
-    SELECT t.tid
-    FROM {taxonomy_term_data} t
-    WHERE t.vid = :vid
-  ';
-  $args = array(
-    ':vid' => $vid,
-  );
-
-  $result = db_query($sql, $args);
-  foreach ($result as $term) {
-    $tids[] = $term->tid;
-  }
-
-  return $tids;
-}
-
-/**
- * Complete a base term object.
- *
- * @param $term
- *   The base term object to complete.
- *
- * @return
- *   Found full term object.
- */
-function taxonomy_csv_term_get_full($term) {
-  if (isset($term->tid)) {
-    $term->parents   = taxonomy_csv_term_get_parents_tids($term->tid);
-
-    // Check vocabulary because if there are specific fields, term needs to be
-    // completed with them.
-    $vocabulary_formats = taxonomy_csv_format_check_vocabulary($term->vid);
-    foreach ($vocabulary_formats as $format) {
-      $funcname = "taxonomy_csv_term_get_full_$format";
-      $term = $funcname($term);
-    }
-
-    return _taxonomy_csv_term_format_internal($term);
-  }
-  // Else.
-
-  return FALSE;
-}
-
-/**
- * Find and load a term.
- *
- * @todo Use a regular Drupal 7 dbquery.
- *
+ * @note
  * Need to maintain a specific function and a direct query, because
- * taxonomy_term_load_multiple doesn't manage parents.
+ * taxonomy_term_load_multiple doesn't manage parents and duplicates.
+ * db_query() is prefered, because it's four times faster than db_select(),
+ * EntityFieldQuery and taxonomy_get_term_by_name() (these last two don't manage
+ * parents'). Anyway terms are loaded to get all fields, specialy parents.
  *
  * @param $term
  *   The term object to find. It's not necessarily a standard term object. It's
- *   an object which needs only a name and eventually a vid or a parent id. Of
- *   course, if tid is set, the found term is the existing one.
+ *   an object which needs only a name and eventually a vid, a parent id and a
+ *   language. Of course, if tid is set, the found term is the existing one.
  * @param $all_vocabularies
  *   (Optional) Boolean. Search in all vocabularies or only in $term->vid
  *   vocabulary (default), which need to be set. Used with relations import.
@@ -86,51 +33,54 @@ function taxonomy_csv_term_get_full($term) {
  */
 function taxonomy_csv_term_find($term, $all_vocabularies = FALSE, $parent_tid = NULL) {
   if (isset($term->tid) && $term->tid) {
-    $found_term = taxonomy_term_load($term->tid);
+    return taxonomy_term_load($term->tid);
   }
-  elseif (isset($term->name)) {
+
+  static $flag_i18n = NULL;
+  if (is_NULL($flag_i18n)) {
+    $flag_i18n = module_exists('i18n_taxonomy');
+  }
+
+  if (isset($term->name)) {
     $name = drupal_strtolower(trim($term->name));
 
-    if (drupal_strlen($name)) {
-      // Only term id is selected, because taxonomy_term_load is used next in
-      // order to take advantage of taxonomy cache.
-      $sql = '
-        SELECT t.tid
-        FROM {taxonomy_term_data} t
-        INNER JOIN {taxonomy_term_hierarchy} h ON t.tid = h.tid
-        WHERE :name LIKE LOWER(t.name)
-      ';
-      $args = array();
-      $args[':name'] = $name;
+    // Only term id is selected, because taxonomy_term_load is used next in
+    // order to take advantage of taxonomy cache.
+    $sql = '
+      SELECT t.tid
+      FROM {taxonomy_term_data} t
+      INNER JOIN {taxonomy_term_hierarchy} h ON t.tid = h.tid
+      WHERE :name LIKE LOWER(t.name)
+    ';
+    $args = array();
+    $args[':name'] = $name;
 
-      if (isset($term->vid)
-          && $term->vid
-          && !$all_vocabularies) {
-        $sql .= ' AND t.vid = :vid';
-        $args[':vid'] = $term->vid;
-      }
+    if (isset($term->vid)
+        && $term->vid
+        && !$all_vocabularies) {
+      $sql .= ' AND t.vid = :vid';
+      $args[':vid'] = $term->vid;
+    }
 
-      if ($parent_tid) {
-        $sql .= ' AND h.parent = :parent';
-        $args[':parent'] = $parent_tid;
-      }
+    if ($flag_i18n && isset($term->language)) {
+      $sql .= ' AND t.language = :language';
+      $args[':language'] = $term->language;
+    }
 
-      $sql .= ' ORDER BY t.tid ASC LIMIT 1';
+    if ($parent_tid) {
+      $sql .= ' AND h.parent = :parent';
+      $args[':parent'] = $parent_tid;
+    }
 
-      $result = db_query($sql, $args);
-      // Only zero or one result.
-      foreach ($result as $item) {
-        $found_term = taxonomy_term_load($item->tid);
-      }
+    $sql .= ' ORDER BY t.tid ASC LIMIT 1';
+
+    $result = db_query($sql, $args)->fetchField();
+    if ($result) {
+      return taxonomy_term_load($result);
     }
   }
 
-  // Complete and internal format term.
-  if (isset($found_term)) {
-    return taxonomy_csv_term_get_full($found_term);
-  }
-
-  // Not found, or error (neither tid nor name).
+  // Not found or error.
   return FALSE;
 }
 
@@ -164,12 +114,9 @@ function taxonomy_csv_term_find_duplicate($vid = 0) {
 
   $sql .= ' ORDER BY t1.tid ASC ';
 
-  $result = db_query($sql, $args);
-  foreach ($result as $term) {
-    $terms[$term->tid] = $term->name;
-  }
+  $result = db_query($sql, $args)->fetchAllKeyed();
 
-  return $terms;
+  return $result;
 }
 
 /**
@@ -268,13 +215,6 @@ function taxonomy_csv_term_get_field_terms($term_tid, $field_name) {
 }
 
 /**
-    // Keep all true custom fields.
-    $options['custom_fields'] = $custom_fields;
-  }
-  // Custom format is use only for custom fields import.
-  else {
-    $options['custom_fields'] = array();
-
  * Return an array of all names of a term reference field of a given term ID.
  *
  * @param $term_tid
@@ -336,8 +276,12 @@ function taxonomy_csv_term_get_relations_names($term_tid) {
 /**
  * Return the first path to the root of a term.
  *
+ * @note
+ *   Drupal and taxonomy_csv use 'parent' property, but taxonomy_get_tree() uses
+ *   'parents'.
+ *
  * @param $term
- *   A term object with parents attribute, as obtained with taxonomy_get_tree().
+ *   A term object with 'parent' property.
  * @param $tree
  *   A tree array as obtained with taxonomy_get_tree().
  *
@@ -348,27 +292,36 @@ function taxonomy_csv_term_get_relations_names($term_tid) {
 function taxonomy_csv_term_get_first_path($term, &$tree) {
   $path = array();
 
+  // Items need to be ordered from 0 to get first parent easy.
+  if (isset($term->parent)) {
+    $term->parent = array_values($term->parent);
+  }
+
   // To use a counter prevents infinite loop when the hierarchy is inconsistent.
   $i = 0;
   while ($i < 100
       // A term root has no parent.
-      && isset($term->parents)
-      && !empty($term->parents)
-      && $term->parents[0] <> 0
+      && isset($term->parent)
+      && !empty($term->parent)
+      && $term->parent[0] <> 0
     ) {
-    $tid = $term->parents[0];
-    if ($tid > 0) {
-      // Get the full term from the tree.
-      foreach ($tree as $parent) {
-        if ($parent->tid == $tid) {
-          break;
-        }
-      }
-      $path[] = $term = $parent;
-    }
-    else {
+    $tid = $term->parent[0];
+    if ($tid === 0) {
       break;
     }
+
+    // Get the full term from the tree.
+    foreach ($tree as $parent) {
+      if ($parent->tid == $tid) {
+        break;
+      }
+    }
+    if (isset($parent->parents)) {
+      $parent->parent = array_values($parent->parents);
+      unset($parent->parents);
+    }
+    $path[] = $term = $parent;
+
     $i++;
   }
 
@@ -377,131 +330,30 @@ function taxonomy_csv_term_get_first_path($term, &$tree) {
 }
 
 /**
- * Direct set values of a field of a given term id or object.
+ * Delete multiple terms.
  *
- * @todo To be removed by using of field api.
- *
- * Values can be names or ids depending on field type (text or term reference).
- *
- * @param $term_tid
- *   Term object or term id on which to set values. Use of object is quicker.
- * @param $field_name
- *   Field to get.
- * @param $langcode
- *   (Optional) Language code to use.
+ * @param $tids
+ *   An array of taxonomy term IDs.
  *
  * @return
- *   Result array of items.
+ *   TRUE.
  */
-function taxonomy_csv_term_set_field_values($term_tid, $field_name, $langcode = 'und') {
-  $items = array();
-
-  $term = is_object($term_tid) ? $term_tid : taxonomy_term_load($term_tid);
-
-  $value = ($field_name == 'relations') ? 'tid' : 'value';
-
-  if (isset($term->{$field_name})) {
-    foreach ($term->{$field_name} as $delta) {
-      $items[$langcode][] = array($value => $delta);
-    }
+function taxonomy_csv_term_delete_multiple($tids) {
+  if (!is_array($tids)) {
+    return FALSE;
   }
 
-  return $items;
-}
-
-/**
- * Format a regular term for internal purpose (synonyms and relations).
- *
- * Use of real values is simpler to manage than field subarrays.
- *
- * @param $term
- *   The term object to format.
- *
- * @return
- *   Formatted term object.
- */
-function _taxonomy_csv_term_format_internal($term) {
-  if (isset($term->field_term_synonym)) {
-    $term->synonyms = taxonomy_csv_term_get_field_values($term, 'field_term_synonym');
+  foreach ($tids as $tid) {
+    taxonomy_term_delete($tid);
   }
-  if (isset($term->field_term_relation)) {
-    $term->relations = taxonomy_csv_term_get_field_values($term, 'field_term_relation');
-  }
-
-  return $term;
-}
-
-/**
- * Format an internal term to a regular term (synonyms and relations).
- *
- * Use of real values is simpler to manage than field subarrays.
- *
- * @param $term
- *   The term object to format.
- *
- * @return
- *   Formatted term object.
- */
-function _taxonomy_csv_term_format_regular($term) {
-  $langcode = 'und';
-
-  if (isset($term->parents) && (count($term->parents) > 0)) {
-    $term->parent = $term->parents;
-    unset($term->parents);
-  }
-  else {
-    $term->parent = array(0);
-    unset($term->parents);
-  }
-  if (isset($term->synonyms)) {
-    $field = taxonomy_csv_term_set_field_values($term, 'synonyms', $langcode);
-    $term->field_term_synonym[$langcode] = ($field) ?
-      array_shift($field) :
-      array();
-    unset($term->synonyms);
-  }
-  if (isset($term->relations)) {
-    $field = taxonomy_csv_term_set_field_values($term, 'relations', $langcode);
-    $term->field_term_relation[$langcode] = ($field) ?
-      array_shift($field) :
-      array();
-    unset($term->relations);
-  }
-
-  return $term;
-}
-
-/**
- * Save by reference an internally formatted term object.
- *
- * @param $term
- *   A term object to save by reference. Term is an object containing:
- *   - 'name'        ; term name string,
- *   - 'vid'         ; the vocabulary id,
- *   and eventually:
- *   - 'tid'         ; term id in case of an update,
- *   - 'description' ; description string,
- *   - 'weight'      ; weight integer,
- *   - 'parents'     ; array of first level parent tids,
- *   - 'relations'   ; array of related tids,
- *   - 'synonyms'    ; array of synonyms terms names strings,
- *
- * @return
- *   Status value (SAVED_NEW or SAVED_UPDATED). Term is updated with its tid.
- */
-function taxonomy_csv_term_save(&$term) {
-  $term_to_save = _taxonomy_csv_term_format_regular($term);
-
-  $result = taxonomy_term_save($term_to_save);
-
-  // Update term.
-  $term->tid = $term_to_save->tid;
-
-  return $result;
+  return TRUE;
 }
 
 /**
  * Implements hook_taxonomy_term_update().
+ *
+ * @todo Don't use a hook, but a normal taxonomy_csv_line_import() /
+ *   taxonomy_csv_term_import().
  *
  * @param $term
  *   A taxonomy term object with fields.
@@ -509,8 +361,7 @@ function taxonomy_csv_term_save(&$term) {
 function taxonomy_csv_taxonomy_term_presave($term) {
   // Check if is an import is in progress.
   if (!empty($term)
-      && !empty($_SESSION['taxonomy_csv_import'])
-      && ($_SESSION['taxonomy_csv_import']['options']['import_format'] == TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS)
+      && isset($_SESSION['taxonomy_csv_import']['options']['import_format'])
     ) {
     // Call back session datas.
     $language      = $_SESSION['taxonomy_csv_import']['language'];
@@ -524,15 +375,21 @@ function taxonomy_csv_taxonomy_term_presave($term) {
 
     // Import fields according custom format.
     foreach ($custom_format as $key => $field_name) {
+      // Don't do anything for already imported items.
       if (in_array($field_name, array(
-          // 'vid', // Never used, because rejected during start check.
+          'tid',
+          'vid',
           'name',
           'description',
           'format',
           'weight',
-          // 'vocabulary_machine_name',
+          'language',
+          'i18n_tsid',
+          'vocabulary_machine_name',
+          'guid',
+          'field_term_synonym',
+          'field_term_relation',
         ))) {
-        // Already imported, as taxonomy_csv synonyms and relations.
       }
       elseif (isset($fields[$field_name])) {
         $field = $fields[$field_name];
@@ -541,15 +398,15 @@ function taxonomy_csv_taxonomy_term_presave($term) {
         switch ($field['type']) {
           case 'text':
             // Complete term if there are already items.
-            if (is_array($term->$field_name) && !empty($term->$field_name)) {
-              foreach ($term->$field_name as $field_language => &$delta_array) {
+            if (is_array($term->{$field_name}) && !empty($term->$field_name)) {
+              foreach ($term->{$field_name} as $field_language => &$delta_array) {
                 $delta_array[]['value'] = $line[$key];
               }
             }
             // Else complete term directly.
             else {
               $value_array[$language][0]['value'] = $line[$key];
-              $term->$field_name = $value_array;
+              $term->{$field_name} = $value_array;
             }
             break;
 
@@ -577,8 +434,8 @@ function taxonomy_csv_taxonomy_term_presave($term) {
                 $file = file_save($file);
 
                 // Complete term if there are already items.
-                if (is_array($term->$field_name) && !empty($term->$field_name)) {
-                  foreach ($term->$field_name as $field_language => &$delta_array) {
+                if (is_array($term->{$field_name}) && !empty($term->$field_name)) {
+                  foreach ($term->{$field_name} as $field_language => &$delta_array) {
                     $delta_array[] = array(
                       'fid'         => $file->fid,
                       'display'     => 1,
@@ -588,7 +445,7 @@ function taxonomy_csv_taxonomy_term_presave($term) {
                 }
                 // Else complete term directly.
                 else {
-                  $term->$field_name[$language][0] = array(
+                  $term->{$field_name}[$language][0] = array(
                     'fid'         => $file->fid,
                     'display'     => 1,
                     'description' => '',
@@ -623,15 +480,15 @@ function taxonomy_csv_taxonomy_term_presave($term) {
                 // Only tid.
                 if (isset($tid)) {
                   // Complete term if there are already items.
-                  if (is_array($term->$field_name) && !empty($term->$field_name)) {
-                    foreach ($term->$field_name as $field_language => &$delta_array) {
+                  if (is_array($term->{$field_name}) && !empty($term->$field_name)) {
+                    foreach ($term->{$field_name} as $field_language => &$delta_array) {
                       $delta_array[]['tid'] = $tid[0];
                     }
                   }
                   // Else complete term directly.
                   else {
                     $value_array[$language][0]['tid'] = $tid[0];
-                    $term->$field_name = $value_array;
+                    $term->{$field_name} = $value_array;
                   }
                 }
                 break;
@@ -660,15 +517,15 @@ function taxonomy_csv_taxonomy_term_presave($term) {
                 }
 
                 // Complete term if there are already items.
-                if (is_array($term->$field_name) && !empty($term->$field_name)) {
-                  foreach ($term->$field_name as $field_language => &$delta_array) {
+                if (is_array($term->{$field_name}) && !empty($term->$field_name)) {
+                  foreach ($term->{$field_name} as $field_language => &$delta_array) {
                     $delta_array[] = $column;
                   }
                 }
                 // Else complete term directly.
                 else {
                   $value_array[$language][0] = $column;
-                  $term->$field_name = $value_array;
+                  $term->{$field_name} = $value_array;
                 }
                 break;
             }
@@ -681,20 +538,4 @@ function taxonomy_csv_taxonomy_term_presave($term) {
     // Save messages.
     $_SESSION['taxonomy_csv_import']['messages'] += $messages;
   }
-}
-
-/**
- * Delete multiple terms.
- *
- * @param $tids
- *   (Optional) An array of taxonomy term IDs.
- *
- * @return
- *   TRUE.
- */
-function taxonomy_csv_term_delete_multiple($tids = array()) {
-  foreach ($tids as $tid) {
-    taxonomy_term_delete($tid);
-  }
-  return TRUE;
 }

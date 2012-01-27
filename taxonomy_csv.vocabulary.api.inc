@@ -96,7 +96,7 @@ function taxonomy_csv_vocabulary_create($name = '') {
 /**
  * Duplicates a vocabulary object. If not exist, creates an empty vocabulary.
  *
- * @todo To be finished.
+ * @todo To be finished (currently, option is unavailable).
  *
  * @param $vocabulary_id
  *   Vocabulary id to duplicate.
@@ -105,6 +105,9 @@ function taxonomy_csv_vocabulary_create($name = '') {
  *   Duplicated vocabulary object.
  */
 function taxonomy_csv_vocabulary_duplicate($vocabulary_id) {
+  drupal_set_message(t('Currently, duplicate a vocabulary is available only with Taxonomy CSV for Drupal 6. A new vocabulary is created instead.'), 'error');
+  $vocabulary_id = 0;
+
   $original_vocabulary = taxonomy_vocabulary_load($vocabulary_id);
   if ($original_vocabulary) {
     // Creates an unused name.
@@ -214,7 +217,10 @@ function _taxonomy_csv_vocabulary_name_create($name = '') {
  *   The processed string.
  */
 function taxonomy_csv_vocabulary_machine_name_create($name) {
-  return drupal_substr(preg_replace('/_+/i', '_', preg_replace('/[^a-z0-9\\_]/i', '_', drupal_strtolower(trim(strval($name))))), 0, 16) . strval(rand(10000, 99999));
+  // Get last vid.
+  $vid = 1 + db_query('SELECT max(vid) FROM {taxonomy_vocabulary}')->fetchField();
+  $machine_name = drupal_substr(preg_replace('/_+/i', '_', preg_replace('/[^a-z0-9\\_]/i', '_', drupal_strtolower(trim(strval($name))))), 0, 16) . $vid . '_' . strval(rand(10000, 99999));
+  return drupal_substr($machine_name, 0, 21);
 }
 
 /**
@@ -254,12 +260,10 @@ function taxonomy_csv_vocabulary_load_name($name) {
  *
  * @param $vocabulary
  *   The vocabulary object to check and to update.
- * @param $changed_term
- *   (Optional) Useless. Kept for compatibility with taxonomy D7 function.
  * @return
  *   Updated hierarchy level.
  */
-function _taxonomy_csv_check_vocabulary_hierarchy($vocabulary, $changed_term = '') {
+function _taxonomy_csv_check_vocabulary_hierarchy($vocabulary) {
   $tree = taxonomy_get_tree($vocabulary->vid);
   $hierarchy = 0;
   foreach ($tree as $term) {
@@ -268,7 +272,7 @@ function _taxonomy_csv_check_vocabulary_hierarchy($vocabulary, $changed_term = '
       $hierarchy = 2;
       break;
     }
-    // taxonomy.module l. 464 can't detect level 0 with '0 !== array_shift'.
+    // taxonomy.module l. 547 can't detect level 0 with '0 !== array_shift'.
     elseif (count($term->parents) == 1 && 0 != array_shift($term->parents)) {
       $hierarchy = 1;
     }
@@ -279,6 +283,44 @@ function _taxonomy_csv_check_vocabulary_hierarchy($vocabulary, $changed_term = '
   }
 
   return $hierarchy;
+}
+
+/**
+ * Return an array of all term ids of a given vocabulary.
+ *
+ * @param $vid
+ *   The vocabulary id from where to fetch term ids.
+ *
+ * @return
+ *   Array of term ids.
+ */
+function taxonomy_csv_vocabulary_get_tids($vid) {
+  // Tids are available in drupal_static('taxonomy_get_tree:terms'), but we
+  // prefer to use an entity query to avoid issue with cache, if not updated.
+  $query = new EntityFieldQuery;
+  $query
+    ->entityCondition('entity_type', 'taxonomy_term')
+    ->propertyCondition('vid', $vid)
+  ;
+  $result = $query->execute();
+
+  return (isset($result['taxonomy_term'])) ?
+    array_keys($result['taxonomy_term']) :
+    array();
+}
+
+/**
+ * Return an array of all full terms of a given vocabulary.
+ *
+ * @param $vid
+ *   The vocabulary id from where to fetch term ids.
+ *
+ * @return
+ *   Array of full term.
+ */
+function taxonomy_csv_vocabulary_get_terms($vid) {
+  $result = taxonomy_csv_vocabulary_get_tids($vid);
+  return taxonomy_term_load_multiple($result);
 }
 
 /**
@@ -306,10 +348,9 @@ function taxonomy_csv_vocabulary_count_terms($vocabulary_id = 0) {
     $args[':vid'] = $vocabulary_id;
   }
 
-  $result = db_query($sql, $args);
-  foreach ($result as $item) {
-    return $item->count;
-  }
+  $result = db_query($sql, $args)->fetchField();
+
+  return $result;
 }
 
 /**
@@ -338,7 +379,7 @@ function taxonomy_csv_vocabulary_field_add($vocabulary_machine_name, $field) {
     // The field exists: check if an update is needed. Update is needed only
     // with taxonomy_term_reference, because this type requires to use specific
     // vocabularies.
-    elseif ($field['type'] == 'taxonomy_term_reference') {
+    elseif ($field['field_name'] == 'field_term_relation') {
       $flag = FALSE;
       foreach ($prior_field['settings']['allowed_values'] as $allowed_values) {
         // Don't add new allowed values if they exists already.

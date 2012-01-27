@@ -247,7 +247,7 @@ function _taxonomy_csv_line_import_check($line, $options, $previous_items = arra
       }
       // Example: "Term"
       if ((count($checked_items) == 1)
-          && ($existing_items == TAXONOMY_CSV_EXISTING_REPLACE)) {
+          && ($existing_items == TAXONOMY_CSV_EXISTING_UPDATE_REPLACE)) {
         $messages[] = 580; // Notice remove items.
       }
       foreach ($checked_items as $name) {
@@ -264,7 +264,7 @@ function _taxonomy_csv_line_import_check($line, $options, $previous_items = arra
       }
       elseif (count($line) == 1) {
         $messages[] = 510; // Notice empty items.
-        if ($existing_items == TAXONOMY_CSV_EXISTING_REPLACE) {
+        if ($existing_items == TAXONOMY_CSV_EXISTING_UPDATE_REPLACE) {
           $messages[] = 580; // Notice remove items.
         }
         $checked_items = array($line[0], 0);
@@ -308,7 +308,7 @@ function _taxonomy_csv_line_import_check($line, $options, $previous_items = arra
         break;
       }
       if ((count($line) == 1)
-          && ($existing_items == TAXONOMY_CSV_EXISTING_REPLACE)) {
+          && ($existing_items == TAXONOMY_CSV_EXISTING_UPDATE_REPLACE)) {
         $messages[] = 580; // Notice remove items.
         $checked_items = array($line[0], '');
       }
@@ -333,7 +333,7 @@ function _taxonomy_csv_line_import_check($line, $options, $previous_items = arra
         $messages[] = 450; // Warning weight is not a number.
         break;
       }
-      if ((count($line) == 1) && ($existing_items == TAXONOMY_CSV_EXISTING_REPLACE)) {
+      if ((count($line) == 1) && ($existing_items == TAXONOMY_CSV_EXISTING_UPDATE_REPLACE)) {
         $messages[] = 580; // Notice remove items.
         $checked_items = array($line[0], 0);
       }
@@ -345,6 +345,38 @@ function _taxonomy_csv_line_import_check($line, $options, $previous_items = arra
       }
       if (drupal_strlen($checked_items[0]) > 255) {
         $messages[] = 454; // Warning too long.
+        break;
+      }
+      break;
+
+    case TAXONOMY_CSV_FORMAT_TRANSLATE_TERMS:
+      if (empty($line[0])) {
+        $messages[] = 484; // Warning no first/second column.
+        break;
+      }
+      if ((count($line) < 2) || empty($line[1])) {
+        $messages[] = 484; // Warning no first/second column.
+        break;
+      }
+
+      if (count($line) > 4) {
+        $messages[] = 542; // Notice too many items.
+      }
+      $checked_items = array_slice($line, 0, 4);
+      if (drupal_strlen($checked_items[0]) > 255) {
+        $messages[] = 454; // Warning too long.
+        break;
+      }
+      if (drupal_strlen($checked_items[1]) > 255) {
+        $messages[] = 454; // Warning too long.
+        break;
+      }
+      if (isset($checked_items[3]) && !$checked_items[2] && $checked_items[3]) {
+        $messages[] = 435; // Description not translatable.
+        break;
+      }
+      if (isset($checked_items[2]) && $checked_items[2] && (!isset($checked_items[3]) || !$checked_items[3])) {
+        $messages[] = 435; // Description not translatable.
         break;
       }
       break;

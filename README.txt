@@ -10,27 +10,26 @@
 This module allows to import or export taxonomy from or to a CSV
 (comma-separated values) local or distant file or a copy-and-paste text.
 
-When you want to import a vocabulary, a taxonomy, a structure or a simple list
-of terms in your Drupal site, you have three main choices: migration modules,
-Taxonomy XML and Taxonomy CSV.
-
-For migration modules, see http://groups.drupal.org/node/21338 and
-http://groups.drupal.org/soc-2006-import-export-api.
-
-Taxonomy XML (http://drupal.org/project/taxonomy_xml) is perfect for
-standardized taxonomies and vocabularies importation. Despite its name, it can
-import csv files too, but only if they are ISO 2788 formatted.
-
 When you want to quick import a non-standardized vocabulary, for example an
 old thesaurus or a simple list of children, synonyms, related terms,
-descriptions or weights of a set of terms, Taxonomy CSV is simpler to use.
+descriptions or weights of a set of terms, Taxonomy CSV is simpler to use. It
+can manage internationalized vocabularies with i18n_taxonomy, a submodule of
+i18n module (see http://drupal.org/project/i18n).
 
-Other modules are available such as Taxonomy batch operations
-(http://drupal.org/project/taxonomy_batch_operations). It has only Drupal 4.7
-and Drupal 5 releases. Drupal 6 release exists too, but it's an unofficial one.
 
-For export, you can use Taxonomy XML too or one of backup modules. Taxonomy CSV
-is a more specialised tool which allows more precise tuning.
+Some other modules allow to import and export taxonomies:
+* Taxonomy XML (http://drupal.org/project/taxonomy_xml) is perfect for
+  standardized taxonomies and vocabularies importation. Despite its name, it can
+  import csv files too, but only if they are ISO 2788 formatted.
+
+* Migration modules, see http://groups.drupal.org/node/21338 and
+  http://groups.drupal.org/soc-2006-import-export-api.
+
+
+Taxonomy CSV is a more specialised tool which allows more precise tuning.
+It's designed to be used when the website is building. After that, it's
+recommended to disable it.
+
 
 For a full description of the module, visit the project page:
   http://drupal.org/project/taxonomy_csv

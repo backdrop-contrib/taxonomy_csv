@@ -36,6 +36,7 @@
 <p>Le format CSV correspond à une simple liste de valeurs séparées par un séparateur, souvent une virgule(<strong><code>,</code></strong>) ou un point-virgule (<strong><code>;</code></strong>), et des caractères de délimitation, souvent les guillemets (<strong><code>"</code></strong>). Si vous ne savez pas comment créer un fichier CSV, vous pouvez utiliser <a href="http://www.libreoffice.org" title="LibreOffice.org">LibreOffice Calc</a> ou un autre tableur pour exporter vos données dans un fichier CSV.</p>
 <p>Des formats d'import ou d'export spécifiques peuvent être ajoutés simplement par un mécanisme d'extensions (sinon, demander à l'auteur !).</p>
 <p>Après avoir installé le module, les permissions "importer des taxinomies par csv" et "exporter des taxinomies par csv" doivent être activées. La permission "administrer les taxinomies" n'est pas nécessaire pour utiliser le module, mais est recommandée.</p>
+<p>Les termes peuvent être internationalisés, à l'exception des champs attachés [Taxonomy CSV pour Drupal 7 seulement]. Vous pouvez donc importer une liste ou une structure de termes puis traduire ces derniers.</p>
 <p>Ce module peut être utilisé avec <a href="http://drupal.org/project/drush">drush</a> : il est possible d'importer et d'exporter des taxinomies par le biais de la ligne de commandes.</p>
   <div class="toc">
     <h2 class="nonum"><a id="contents" name="contents">Sommaire</a></h2>
@@ -81,6 +82,9 @@
           </li>
           <li>
             <a href="#weights">Poids des termes</a>
+          </li>
+          <li>
+            <a href="#translation_name">Term and description translation</a>
           </li>
           <li>
             <a href="#taxonomy_manager">Taxonomy manager</a>
@@ -188,7 +192,7 @@
     <p>Exemples :</p>
       <div class="codeblock"><ul>
         <li><code>foo, , , "Description de foo", 10, 1, 1, 2, 2, Synonyme de foo, bar parent 1, bar enfant 1, bar enfant 2, bar relation 1, bar relation 2, , vocabulaire de relation 2</code></li>
-        <li><code>France, , Lieux, "Un grand pays", 1, 1, 1, 3, 3, République française, Europe, Paris, Lyon, Vichy, États-Unis, Japon, Chine</code></li>
+        <li><code>France, , Lieux, "Un pays libre", 1, 1, 1, 3, 3, République française, Europe, Paris, Lyon, Vichy, États-Unis, Japon, Chine</code></li>
         <li><code>Japon, , Lieux, "Un vieux pays", 1, 1, 1, 2, 2, Le pays du soleil levant, Asie, Tokyo, Kyoto, Chine, France</code></li>
         <li><code>Chine, , Lieux, "Un gros pays", 2, 1, 1, 1, 2, L'empire du milieu, Asie, Pékin, Japon, France</code></li>
         <li><code>Asie, , Lieux, "Un continent étendu", 1, 0, 0, 2, 0, Japon, Chine</code></li>
@@ -329,7 +333,16 @@
       <div class="codeblock"><ul>
         <li><code>Baobab, 3</code></li>
       </ul></div>
-  <h4 id="taxonomy_manager"><a href="#contents">14. Taxonomy manager</a></h4>
+  <h4 id="translation_name"><a href="#contents">14. Traduction du nom et de la description [Drupal 7 seulement]</a></h4>
+    <p>La première colonne correspond au nom, la seconde à sa traduction et les deux suivantes à leur description éventuelle. Exemple :</p>
+      <div class="codeblock"><ul>
+        <li><code>foo, bar, description de foo, description de bar</code></li>
+        <li><code>"Royaume-Uni", "United Kingdom"</code></li>
+        <li><code>"Allemagne", "Germany", "Un pays européen", "A European country"</code></li>
+      </ul></div>
+    <p>La langue du premier terme est "Neutre" et celle du second élement peut être sélectionné dans le troisième onglet.</p>
+    <p>Ce format est disponible seulement si le sous-module "i18n Taxonomy" du module <a href="http://drupal.org/project/i18n">Internationalization</a> est activé.</p>
+  <h4 id="taxonomy_manager"><a href="#contents">15. Taxonomy manager</a></h4>
     <p>Ce format est utilisé par <a href="http://drupal.org/project/taxonomy_manager" title="Module Taxonomy manager">Taxonomy manager</a> pour exporter des vocabulaires. Les colonnes sont : identifiant du vocabulaire, identifiant du terme, nom du terme, description du terme, id du parent 1 de premier niveau, ..., id du parent n de premier niveau. Example:</p>
       <div class="codeblock"><ul>
         <li><code>, 1, "Île-de-France", "Main region"</code></li>
@@ -337,7 +350,7 @@
       </ul></div>
     <p>Dans ce format, l'ordre des lignes est important : il est impossible d'attacher un parent à un terme si ce parent n'a pas été importé dans une ligne précédente.</p><br />
     <p>Lorsqu'un vocabulaire est importé dans un vocabulaire existant, seule l'option "ignorer et créer" peut être utilisée.</p>
-  <h4 id="geotaxonomy"><a href="#contents">15. Geotaxonomy</a></h4>
+  <h4 id="geotaxonomy"><a href="#contents">16. Geotaxonomy</a></h4>
     <p>Importe et exporte des termes de <a href="http://drupal.org/project/geotaxonomy"  title="Module Geotaxonomy">géotaxinomie</a>.</p>
     <p>Format</p>
     <div class="codeblock"><ul>

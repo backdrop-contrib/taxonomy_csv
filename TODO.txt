@@ -79,6 +79,7 @@ Functions
  o         option to automatically disable and re-enable non compatible modules
  x 647 747 full term definitions and links export in order to import in Drupal 7
  o         quick light basic import with no check release 7.x-1.y as 4/5/6.x-1.y
+ o     758 internationalization
 
 Code / security
  o         remove query and use only Drupal core ones and php filters (useful?)

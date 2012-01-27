@@ -44,6 +44,7 @@ function taxonomy_csv_help($path, $arg) {
     case 'admin/structure/taxonomy/csv_import':
       $output = '<p>' . t('Use this form to import a taxonomy, a structure or a list of terms into a vocabulary from a simple <a href="!link" title="Wikipedia definition">CSV</a> file, a url or a copy-and-paste text.', array('!link' => url('http://en.wikipedia.org/wiki/Comma-separated_values'))) . '</p>'
       . '<p>' . t('For performance reasons, it is recommended to disable some other taxonomy related modules before import of big taxonomies and to reactivate them after process.') . '</p>'
+      . '<p>' . t('For a better user experience, it is recommended to avoid duplicate terms. This module can manage them efficiently, but hidden errors can occur when a complex vocabulary with duplicates is updated by the administrator or by the module.') . '</p>'
       . '<p>' . t('<strong>Warning:</strong> If you want to update an existing vocabulary, make sure you have a backup before you proceed so you can roll back, if necessary.')
       . theme('more_help_link', array('url' => 'admin/help/taxonomy_csv')) . '</p>';
       return $output;

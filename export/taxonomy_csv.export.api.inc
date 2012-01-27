@@ -138,7 +138,8 @@ function taxonomy_csv_vocabulary_export($options) {
   // Prepare export batch.
   $batch = array(
     'title'            => t('Exporting !total_terms terms to CSV file...', array('!total_terms' => $options['total_terms'])),
-    'init_message'     => t('Starting downloading of datas...'),
+    'init_message'     => t('Starting downloading of datas...') . '<br />'
+      . t('Wait some seconds for pre-processing...'),
     'progress_message' => '',
     'error_message'    => t('An error occurred during the export.'),
     'finished'         => '_taxonomy_csv_vocabulary_export_finished',
@@ -201,9 +202,11 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
         $context['sandbox']['terms'] = array_merge($context['sandbox']['terms'], taxonomy_get_tree($vocabulary->vid));
       }
     }
-    // Prepare a list of full terms.
+    // Prepare a list of normal terms. They will be completed only if needed.
     // @todo Prepare a simple list of term names or definitions without links in
     // order to reduce memory usage for some formats.
+    // @todo Use a one term approach to reduce memory usage (anyway, all terms
+    // will be load)?
     else {
       $query = new EntityFieldQuery();
       $query->entityCondition('entity_type', 'taxonomy_term');
@@ -495,7 +498,7 @@ function taxonomy_csv_term_export($term, $options, &$terms_list = array(), $dupl
             // Don't set vocabulary.
             '' :
             // Use name or vid.
-            $vocabulary->$options['def_links_vocabularies_ids'];
+            $vocabulary->{$options['def_links_vocabularies_ids']};
         // Prepare vocabularies identifiants of related terms.
         $relations_vocs = array();
         // Option 'none' is impossible with multiple vocabularies, so use name.
@@ -509,7 +512,7 @@ function taxonomy_csv_term_export($term, $options, &$terms_list = array(), $dupl
               // Same vocabularies, so use same identifiant.
               $vid :
               // Different vocabularies, so use name or vid.
-              $vocabulary->$vocabulary_option;
+              $vocabulary->{$vocabulary_option};
         }
 
         $result['line'] = array_merge(

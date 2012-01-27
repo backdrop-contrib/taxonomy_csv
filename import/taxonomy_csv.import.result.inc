@@ -106,6 +106,11 @@ function _taxonomy_csv_info_chosen_options($options) {
     '!import_items' => $list[$options['existing_items']],
   )) . '<br />';
 
+  // Internationalization.
+  $message .= t('Language of terms: "!language".', array(
+    '!language' => $options['language'],
+  )) . '<br />';
+
   // Custom locale.
   if ($options['locale_custom']) {
     $message .= t('Custom locale "!locale" has been used.', array(
@@ -157,12 +162,32 @@ function _taxonomy_csv_info_vocabulary($options) {
         _taxonomy_csv_info_vocabulary_destination($vocabulary, $options['vocabulary_target']);
     $message .=  '<br />';
 
+    if (isset($vocabulary->language) && module_exists('i18n_taxonomy')) {
+      $message .= t('Language of vocabulary: "!language".', array(
+        '!language' => $vocabulary->language,
+      )) . '<br />';
+      $language_mode = array(
+        I18N_MODE_NONE => t('None'),
+        I18N_MODE_LOCALIZE => t('Localize'),
+        I18N_MODE_TRANSLATE => t('Translate'),
+        I18N_MODE_MULTIPLE => t('Multiple'),
+        I18N_MODE_LANGUAGE => t('Fixed language'),
+      );
+      $message .= t('Internationalization mode of vocabulary: "!language".', array(
+        '!language' => $language_mode[$vocabulary->i18n_mode],
+      )) . '<br />';
+
+      if ($options['language'] != $vocabulary->language) {
+        $message .= '<strong>' . t('Warning') . '</strong>: ' . t('Language of imported terms is not the language of the vocabulary. You may check multilingual options to see terms.') . '<br />';
+      }
+    }
+
     if ($options['delete_terms']) {
       $message .= t('Existing terms of the vocabulary have been deleted.') . '<br />';
     }
 
     if (!$options['check_hierarchy']) {
-      $message .= t('Hierarchy level has been manually set.') . ' ';
+      $message .= t('Hierarchy level has been manually set.') . '<br />';
     }
 
     $message .= _taxonomy_csv_info_vocabulary_result($vocabulary, $options['vocabulary_target'], $new_hierarchy[$vocabulary_id]) . '<br />';
@@ -232,6 +257,7 @@ function _taxonomy_csv_info_vocabulary_result($vocabulary, $vocabulary_target, $
       '!link' => url('http://drupal.org/project/taxonomy_manager'),
     ));
   }
+  $message .= ' ' . t('Note: Current release of Taxonomy manager [7.x-1.0-beta2] does not indicate language of terms.');
   return $message;
 }
 
@@ -258,11 +284,11 @@ function _taxonomy_csv_info_terms($options) {
     if ($options['result_terms']) {
       $terms = taxonomy_term_load_multiple($tids);
 
-      $message .= '"';
+      $term_list = array();
       foreach ($terms as $term) {
-        $message .= $term->name . '", "';
+        $term_list[] = $term->name;
       }
-      $message = drupal_substr($message, 0, drupal_strlen($message) - 3) . '.';
+      $message .= '"' . implode('", "',  $term_list) . '".';
     }
   }
   else {
