@@ -24,8 +24,8 @@
  * @param $options
  *   An associative array of options:
  *   - export_format : see _taxonomy_csv_values('export_format')
- *   - vocabulary_id : vid or machine_name of the vocabulary to export (default:
- *                     0, which means all)
+ *   - vocabulary_id : vid or machine_name (or array of them) of the vocabulary
+ *                     to export (default: 0, which means all)
  *   - delimiter     : one character csv delimiter (default: ',')
  *   - enclosure     : zero or one character csv enclosure (default: '"')
  *   - line_ending   : 'Unix' (default), 'Mac' or 'MS-DOS'
@@ -193,11 +193,17 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
         TAXONOMY_CSV_FORMAT_POLYHIERARCHY,
       ))) {
       $context['sandbox']['terms'] = array();
-      $vocabularies = ($options['vocabulary_id']) ?
-          // Export only the selected vocabulary.
-          array(taxonomy_vocabulary_load($options['vocabulary_id'])) :
-          // Export all vocabularies.
-          taxonomy_vocabulary_get_names();
+      $vocabularies = array();
+      // Export only selected vocabularies.
+      if ($options['vocabulary_id'] && ($options['vocabulary_id'] != array(0))) {
+        foreach ($options['vocabulary_id'] as $vocabulary) {
+          $vocabularies[] = taxonomy_vocabulary_load($vocabulary);
+        }
+      }
+      // Export all vocabularies.
+      else {
+        $vocabularies = taxonomy_vocabulary_get_names();
+      }
       foreach ($vocabularies as $vocabulary) {
         $context['sandbox']['terms'] = array_merge($context['sandbox']['terms'], taxonomy_get_tree($vocabulary->vid));
       }
@@ -210,7 +216,7 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
     else {
       $query = new EntityFieldQuery();
       $query->entityCondition('entity_type', 'taxonomy_term');
-      if ($options['vocabulary_id']) {
+      if ($options['vocabulary_id'] && ($options['vocabulary_id'] != array(0))) {
         $query->propertyCondition('vid', $options['vocabulary_id']);
       }
       $query->propertyOrderBy($options['order'], 'ASC');
@@ -245,7 +251,10 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
     if (in_array($options['export_format'], array(
         TAXONOMY_CSV_FORMAT_DEFINITION_LINKS,
       ))) {
-      $context['results'][0]['duplicate_terms'] = taxonomy_csv_term_find_duplicate($options['vocabulary_id']);
+      $context['results'][0]['duplicate_terms'] = array();
+      foreach ($options['vocabulary_id'] as $item) {
+        $context['results'][0]['duplicate_terms'] += taxonomy_csv_term_find_duplicate($item);
+      }
     }
   }
   elseif (!is_resource($context['results'][0]['handle'])) {

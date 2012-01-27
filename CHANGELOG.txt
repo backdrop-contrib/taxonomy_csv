@@ -29,6 +29,7 @@ By Daniel Berthereau: Cleaned some cosmetic items (Coder review).
 #1395090 by Alex Oroshchuk: Fixed check options with Drush 4.5.
 #1006440 by Daniel Berthereau: Changed default export enclosure to « " ».
 By Daniel Berthereau: Fixed Full definitions import with duplicates names.
+#1410628 by Daniel Berthereau: Added select to export multiple vocabularies.
 
 
 Taxonomy csv import/export 7.x-5.7, 2011-10-03

@@ -130,12 +130,14 @@ function taxonomy_csv_form_export($form_state) {
 
   $form['tab']['content']['export_vocabulary_id'] = array(
     '#type'          => 'select',
-    '#title'         => t('Vocabulary to export'),
+    '#title'         => t('Vocabularies to export'),
     '#options'       => array(
       0 => t('All vocabularies'),
     ),
+    '#multiple'      => TRUE,
     '#default_value' => $list_previous_values['export_vocabulary_id'],
-    '#description'   => t('The vocabulary you want to export.'),
+    '#description'   => t('The vocabularies you want to export.'),
+    '#size'          => min(12, count($list_vocabularies)) + 1,
   );
   foreach ($list_vocabularies as $vocabulary) {
       $form['tab']['content']['export_vocabulary_id']['#options'][$vocabulary->vid] = $vocabulary->name;
@@ -401,13 +403,23 @@ function _taxonomy_csv_export_check_options(&$options) {
   }
   elseif ($options['vocabulary_id']) {
     // Replace machine name with vocabulary id.
-    if (!is_numeric($options['vocabulary_id'])) {
+    if (!(is_numeric($options['vocabulary_id']) || is_array($options['vocabulary_id']))) {
        $vocabulary = taxonomy_vocabulary_machine_name_load($options['vocabulary_id']);
-       $options['vocabulary_id'] = $vocabulary->vid;
+       $options['vocabulary_id'] = array($vocabulary->vid);
+    }
+    // Replace vocabulary_id by an array if only one item is selected.
+    elseif (!is_array($options['vocabulary_id'])) {
+      $options['vocabulary_id'] = array($options['vocabulary_id']);
     }
 
-    if (!isset($list_vocabularies[$options['vocabulary_id']])) {
-      $messages['vocabulary_id'] = t("You choose to export a vocabulary, but it doesn't exist.");
+    if ((count($options['vocabulary_id']) > 1) && in_array(0, $options['vocabulary_id'])) {
+      $messages['vocabulary_id'] = t('You choose to export all vocabularies, but you select some individual vocabularies too.');
+    }
+
+    foreach ($options['vocabulary_id'] as $item) {
+      if (($item != 0) && !isset($list_vocabularies[$item])) {
+        $messages['vocabulary_id'] = t("You choose to export a vocabulary, but it doesn't exist.");
+      }
     }
   }
 
@@ -456,7 +468,7 @@ function _taxonomy_csv_export_check_options(&$options) {
 
   // When multiple vocabularies are exported, names or tids are always needed.
   if ($options['def_links_vocabularies_ids'] == 'none') {
-    if ($options['vocabulary_id'] == 0) {
+    if (($options['vocabulary_id'] == array(0)) || (count($options['vocabulary_id']) > 1)) {
       $options['def_links_vocabularies_ids'] = 'name';
     }
     else {

@@ -60,7 +60,10 @@ function _taxonomy_csv_export_result($options, $worst_level, $summary, $results)
     if (!in_array($options['export_format'], array(
         TAXONOMY_CSV_FORMAT_DEFINITION_LINKS,
       ))) {
-      $options['duplicate_terms'] = taxonomy_csv_term_find_duplicate($options['vocabulary_id']);
+      $options['duplicate_terms'] = array();
+      foreach ($options['vocabulary_id'] as $item) {
+        $options['duplicate_terms'] += taxonomy_csv_term_find_duplicate($item);
+      }
     }
 
     $duplicate_count = count($options['duplicate_terms']);

@@ -326,25 +326,26 @@ function taxonomy_csv_vocabulary_get_terms($vid) {
 /**
  * Calculate number of terms in a vocabulary or in all vocabularies.
  *
- * @todo Regular query.
- *
  * @param $vocabulary_id
- *   (Optional) Id of the chosen vocabulary. If not specified, count terms in
- *   all vocabularies.
+ *   (Optional) Id or array of ids of the chosen vocabularies. If not specified,
+ *   count terms in all vocabularies.
  *
  * @return
  *   Number of terms in specified vocabulary or in all vocabularies.
  */
 function taxonomy_csv_vocabulary_count_terms($vocabulary_id = 0) {
-  // @todo Use taxonomy api or regular Drupal 7 query.
+  if (!is_array($vocabulary_id)) {
+    $vocabulary_id = array($vocabulary_id);
+  }
+
   $sql = "
     SELECT COUNT(*) AS count
     FROM {taxonomy_term_data}
   ";
 
   $args = array();
-  if ($vocabulary_id) {
-    $sql .= ' WHERE vid = :vid ';
+  if (($vocabulary_id != array(0)) && ($vocabulary_id != array('0'))) {
+    $sql .= ' WHERE vid IN (:vid) ';
     $args[':vid'] = $vocabulary_id;
   }
 
