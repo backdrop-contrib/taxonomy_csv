@@ -8,7 +8,7 @@
   ===========
 
 
-Taxonomy csv import/export 7.x-5.8-dev, 2012-01-27
+Taxonomy csv import/export 7.x-5.8, 2012-01-28
 ----------------------------------------------
 #1395090 by Alex Oroshchuk: Added import/export by vocabulary machine name.
 By Daniel Berthereau: Added option to set the format of the description.
@@ -17,7 +17,7 @@ By Daniel Berthereau: Improved import speed and memory usage.
 By Daniel Berthereau: Added internationalization for Taxonomy CSV import.
 #1413922 By Daniel Berthereau: Added support for number and text custom fields.
 
-Taxonomy csv import/export 7.x-5.8-dev, 2012-01-27
+Taxonomy csv import/export 7.x-5.8, 2012-01-28
 ----------------------------------------------
 #1359260 by Daniel Berthereau: Added a warning when terms count is invalid.
 By Daniel Berthereau: Added pipe delimiter and quote enclosure option.
