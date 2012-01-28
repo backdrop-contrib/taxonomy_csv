@@ -408,8 +408,8 @@ function taxonomy_csv_vocabulary_field_add($vocabulary_machine_name, $field) {
         'field_name'  => $field['field_name'],
         'entity_type' => 'taxonomy_term',
         'bundle'      => $vocabulary->machine_name,
-        'label'       => $field['label'],
-        'description' => $field['description'],
+        'label'       => (isset($field['label']) ? $field['label'] : $field['field_name']),
+        'description' => (isset($field['description']) ? $field['description'] : ''),
       ));
     }
     return TRUE;

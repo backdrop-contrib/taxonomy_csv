@@ -866,7 +866,7 @@ function taxonomy_csv_form_import($form_state) {
     // Complete generic form with specific help for each import format.
     $form['tab']['import_options'][TAXONOMY_CSV_FORMAT_ALONE_TERMS]['#description'] = t('This option indicates whether existing terms with the same name should be updated or ignored. If ignored, duplicates may be created.');
 
-    $form['tab']['import_options'][TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS]['#description'] = t('This option indicates whether existing terms with the same name should be updated, replaced or ignored. If ignored, duplicates may be created.');
+    $form['tab']['import_options'][TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS]['#description'] = t('This option indicates whether existing terms with the same name should be updated or ignored. If ignored, duplicates may be created.');
 
     $form['tab']['import_options'][TAXONOMY_CSV_FORMAT_DEFINITION_LINKS]['#description'] = t('This option indicates whether and how existing terms with the same name should be updated or ignored.') . '<br />'
       . t('Only one option can be chosen with this format.') . '<br />'
@@ -1394,14 +1394,7 @@ function _taxonomy_csv_import_check_options(&$options) {
             'vocabulary_machine_name',
             'guid',
           ))) {
-          $messages['custom_fields'] = t("Custom fields can't be one of default vocabulary fields.");
-        }
-        elseif (!in_array($field_type, array(
-            'text',
-            'file',
-            'taxonomy_term_reference',
-          ))) {
-          $messages['custom_fields'] = t("Currently allowed custom fields types are 'text' (default), 'taxonomy_term_reference' and 'file'.");
+          $messages['custom_fields'] = t("Custom fields can't be one of the default term fields.");
         }
       }
     }

@@ -136,6 +136,9 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array(), $t
           }
         }
 
+        // Remember line (currently, a hook is used to import custom fields).
+        $_SESSION['taxonomy_csv_import']['line'] = $line;
+
         // Import term then store result. No check because only one term.
         $current_result = taxonomy_csv_term_import($term, $options['existing_items']);
         $error = _taxonomy_csv_line_result($result, $current_result, $terms_count);

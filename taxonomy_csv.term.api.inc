@@ -375,6 +375,11 @@ function taxonomy_csv_taxonomy_term_presave($term) {
 
     // Import fields according custom format.
     foreach ($custom_format as $key => $field_name) {
+      // Currently, 'update and replace' of existing fields is not managed.
+      if (!isset($line[$key]) || ($line[$key] == '')) {
+        continue;
+      }
+
       // Don't do anything for already imported items.
       if (in_array($field_name, array(
           'tid',
@@ -395,21 +400,8 @@ function taxonomy_csv_taxonomy_term_presave($term) {
         $field = $fields[$field_name];
         $instance = $instances[$field_name];
 
-        switch ($field['type']) {
-          case 'text':
-            // Complete term if there are already items.
-            if (is_array($term->{$field_name}) && !empty($term->$field_name)) {
-              foreach ($term->{$field_name} as $field_language => &$delta_array) {
-                $delta_array[]['value'] = $line[$key];
-              }
-            }
-            // Else complete term directly.
-            else {
-              $value_array[$language][0]['value'] = $line[$key];
-              $term->{$field_name} = $value_array;
-            }
-            break;
 
+        switch ($field['type']) {
           case 'file':
             $uri_scheme = $field['settings']['uri_scheme'];
             $file_directory = $instance['settings']['file_directory'];
@@ -487,8 +479,7 @@ function taxonomy_csv_taxonomy_term_presave($term) {
                   }
                   // Else complete term directly.
                   else {
-                    $value_array[$language][0]['tid'] = $tid[0];
-                    $term->{$field_name} = $value_array;
+                    $term->{$field_name}[$language][0]['tid'] = $tid[0];
                   }
                 }
                 break;
@@ -524,10 +515,47 @@ function taxonomy_csv_taxonomy_term_presave($term) {
                 }
                 // Else complete term directly.
                 else {
-                  $value_array[$language][0] = $column;
-                  $term->{$field_name} = $value_array;
+                  $term->{$field_name}[$language][0] = $column;
                 }
                 break;
+            }
+            break;
+
+          case 'list_boolean':
+            $line[$key] = (($line[$key] == '0') || (strtolower($line[$key]) == 'false')) ? 0 : 1;
+            $term->{$field_name}[$language][0]['value'] = $line[$key];
+            break;
+
+          // Managed by default:
+          // case 'number_decimal':
+          // case 'number_integer':
+          // case 'number_float':
+          // case 'text':
+          // case 'text_long':
+          // case 'text_with_summary':
+          // Currently doesn't manage default value.
+          default:
+            switch ($field['type']) {
+              case 'number_decimal':
+                $line[$key] = (float) $line[$key];
+                break;
+              case 'number_integer':
+                $line[$key] = (integer) $line[$key];
+                break;
+              case 'number_float':
+                $line[$key] = (float) $line[$key];
+                break;
+            }
+
+            // Complete term if there are already items.
+            if (is_array($term->{$field_name}) && !empty($term->$field_name)) {
+              foreach ($term->{$field_name} as $field_language => &$delta_array) {
+                $delta_array[]['value'] = $line[$key];
+              }
+            }
+            // Else complete term directly.
+            else {
+              $term->{$field_name}[$language][0]['value'] = $line[$key];
             }
             break;
         }

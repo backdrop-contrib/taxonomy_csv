@@ -241,7 +241,7 @@ function _taxonomy_csv_values($list) {
         ),
         TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS    => array(
           TAXONOMY_CSV_EXISTING_UPDATE,
-          TAXONOMY_CSV_EXISTING_UPDATE_REPLACE,
+//           TAXONOMY_CSV_EXISTING_UPDATE_REPLACE,
           TAXONOMY_CSV_EXISTING_IGNORE,
         ),
         TAXONOMY_CSV_FORMAT_DEFINITION_LINKS => array(

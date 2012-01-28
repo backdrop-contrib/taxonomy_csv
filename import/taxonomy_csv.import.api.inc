@@ -347,13 +347,12 @@ function _taxonomy_csv_vocabulary_import_process($options, &$context) {
 
   // First callback to prepare SESSION.
   if (empty($_SESSION['taxonomy_csv_import']) && ($options['import_format'] == TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS)) {
-    $_SESSION['taxonomy_csv_import'] = array(
-      'options'    => $options,
-      // Currently, translatable fields are unmanaged.
-      'language'   => 'und', // Undefined.
-      'vocabulary' => taxonomy_vocabulary_load($options['vocabulary_id']),
-      'messages'   => array(),
-    );
+    $_SESSION['taxonomy_csv_import'] = array();
+    $_SESSION['taxonomy_csv_import']['options'] = $options;
+    // Currently, translatable fields are unmanaged.
+    $_SESSION['taxonomy_csv_import']['language'] = 'und'; // Undefined.
+    $_SESSION['taxonomy_csv_import']['vocabulary'] = taxonomy_vocabulary_load($options['vocabulary_id']);
+    $_SESSION['taxonomy_csv_import']['messages'] = array();
     $_SESSION['taxonomy_csv_import']['instances'] = field_info_instances('taxonomy_term', $_SESSION['taxonomy_csv_import']['vocabulary']->machine_name);
     $_SESSION['taxonomy_csv_import']['fields'] = array();
     if (is_array($_SESSION['taxonomy_csv_import']['instances'])) {
@@ -413,7 +412,6 @@ function _taxonomy_csv_vocabulary_import_process($options, &$context) {
 
     // Remember pointer in case of memory or time out.
     $context['sandbox']['handle_pointer'] = ftell($handle);
-    $_SESSION['taxonomy_csv_import']['line'] = $line;
 
     // Process import of current line.
     $result = taxonomy_csv_line_import_process($line, $options, $previous_items, $terms_count);
@@ -711,8 +709,6 @@ function _taxonomy_csv_import_vocabulary_prepare(&$options, $check = TRUE) {
         'translatable' => FALSE,
       );
       switch ($field_type) {
-        case 'text':
-          break;
         case 'taxonomy_term_reference':
           $field += array(
             'settings'     => array('allowed_values' => array(0 => array(
@@ -720,8 +716,13 @@ function _taxonomy_csv_import_vocabulary_prepare(&$options, $check = TRUE) {
                 'parent'     => 0,
           ))));
           break;
-        case 'file':
-        default:
+        case 'list_boolean':
+          $field += array(
+            'settings'     => array('allowed_values' => array(0 => array(
+                '0' => 'FALSE',
+                '1' => 'TRUE',
+          ))));
+          break;
       }
       $result = taxonomy_csv_vocabulary_field_add($vocabulary->machine_name, $field);
     }
