@@ -87,8 +87,8 @@ function taxonomy_csv_form_export($form_state) {
   }
   // Else there are vocabularies.
 
-  // Advertise that javascript is not enabled.
-  if (!isset($_COOKIE['has_js'])) {
+  // Advertise that javascript is not enabled. Presume it is set by default.
+  if (isset($_COOKIE['has_js']) && !$_COOKIE['has_js']) {
     $form['javascript'] = array(
       '#type'        => 'fieldset',
       '#title'       => t('WARNING'),

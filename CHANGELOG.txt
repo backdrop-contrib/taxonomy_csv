@@ -8,6 +8,12 @@
   ===========
 
 
+Taxonomy csv import/export 7.x-5.9-dev, 2012-01-28
+Taxonomy csv import/export 6.x-5.9-dev, 2012-01-28
+----------------------------------------------
+#969750 by Daniel Berthereau: Fixed check of Javascript, presumed true.
+
+
 Taxonomy csv import/export 7.x-5.8, 2012-01-28
 ----------------------------------------------
 #1395090 by Alex Oroshchuk: Added import/export by vocabulary machine name.
@@ -18,6 +24,7 @@ By Daniel Berthereau: Added internationalization for Taxonomy CSV import.
 #1413922 By Daniel Berthereau: Added support for number and text custom fields.
 
 Taxonomy csv import/export 7.x-5.8, 2012-01-28
+Taxonomy csv import/export 6.x-5.8, 2012-01-28
 ----------------------------------------------
 #1359260 by Daniel Berthereau: Added a warning when terms count is invalid.
 By Daniel Berthereau: Added pipe delimiter and quote enclosure option.
