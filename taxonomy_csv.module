@@ -42,21 +42,28 @@ function taxonomy_csv_help($path, $arg) {
 
   switch ($path) {
     case 'admin/structure/taxonomy/csv_import':
-      $output = '<p>' . t('Use this form to import a taxonomy, a structure or a list of terms into a vocabulary from a simple <a href="!link" title="Wikipedia definition">CSV</a> file, a url or a copy-and-paste text.', array('!link' => url('http://en.wikipedia.org/wiki/Comma-separated_values'))) . '</p>'
-      . '<p>' . t('For performance reasons, it is recommended to disable some other taxonomy related modules before import of big taxonomies and to reactivate them after process.') . '</p>'
-      . '<p>' . t('For a better user experience, it is recommended to avoid duplicate terms. This module can manage them efficiently, but hidden errors can occur when a complex vocabulary with duplicates is updated by the administrator or by the module.') . '</p>'
-      . '<p>' . t('<strong>Warning:</strong> If you want to update an existing vocabulary, make sure you have a backup before you proceed so you can roll back, if necessary.')
-      . theme('more_help_link', array('url' => 'admin/help/taxonomy_csv')) . '</p>';
+      $output = '<p>' . t('Use this form to import a taxonomy, a structure or a list of terms into a vocabulary from a simple <a href="!link" title="Wikipedia definition">CSV</a> file, a url or a copy-and-paste text.', array(
+        '!link' => url('http://en.wikipedia.org/wiki/Comma-separated_values'),
+      )) . '</p>'
+      . '<ul>'
+      . '<li>' . t('For performance reasons, it is recommended to disable some other taxonomy related modules before import of big taxonomies and to reactivate them after process.') . '</li>'
+      . '<li>' . t('For a better user experience, it is recommended to avoid duplicate terms. This module can manage them efficiently, but hidden errors can occur when a complex vocabulary with duplicates is updated by the administrator or by the module.') . '</li>'
+      . '<li>'. '<strong>' . t('Warning') . '</strong>' . ': ' . t('If you want to update an existing vocabulary, make sure you have a backup before you proceed so you can roll back, if necessary.') . '</li>'
+      . '</ul>'
+      . theme('more_help_link', array('url' => 'admin/help/taxonomy_csv')) . '<br />';
       return $output;
 
     case 'admin/structure/taxonomy/csv_export':
-      $output = '<p>' . t('Use this form to export a taxonomy, a structure or a list of terms to a simple <a href="!link" title="Wikipedia definition">CSV</a> file.', array('!link' => url('http://en.wikipedia.org/wiki/Comma-separated_values'))) . '<br />'
-      . t('Set vocabulary to export in first tab, format to use in second tab and order of terms in third tab.')
-      . theme('more_help_link', array('url' => 'admin/help/taxonomy_csv')) . '</p>';
+      $output = '<p>' . t('Use this form to export a taxonomy, a structure or a list of terms to a simple <a href="!link" title="Wikipedia definition">CSV</a> file.', array(
+        '!link' => url('http://en.wikipedia.org/wiki/Comma-separated_values'),
+      )) . '</p>'
+      . '<p>' . t('Set vocabulary to export in first tab, format to use in second tab and order of terms in third tab.') . '</p>'
+      . theme('more_help_link', array('url' => 'admin/help/taxonomy_csv')) . '<br />';
       return $output;
 
     case 'admin/help#taxonomy_csv':
-      $output = file_get_contents(drupal_get_path('module', 'taxonomy_csv') . ((is_file(drupal_get_path('module', 'taxonomy_csv') . "/translations/taxonomy_csv.help.{$language->prefix}.html")) ? "/translations/taxonomy_csv.help.{$language->prefix}.html" : '/taxonomy_csv.help.html'));
+      $check = drupal_realpath(drupal_get_path('module', 'taxonomy_csv') . '/taxonomy_csv.help.' . $language->prefix . '.html');
+      $output = file_get_contents($check ? $check : drupal_realpath(drupal_get_path('module', 'taxonomy_csv') . '/taxonomy_csv.help.html'));
       return $output;
   }
 }

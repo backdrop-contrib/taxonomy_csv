@@ -15,7 +15,7 @@
 /**
  * Generates the taxonomy CSV import form.
  *
- * Form contain five fieldsets:
+ * Form contain six fieldsets:
  * - 1. What to import ?
  *   - 1. Content of the source
  *   - 2. Custom fields order
@@ -55,7 +55,7 @@
  * @see _taxonomy_csv_form_import_default_values_validate()
  * @see _taxonomy_csv_form_import_default_values_submit()
  */
-function taxonomy_csv_form_import($form_state) {
+function taxonomy_csv_form_import($form, &$form_state) {
   // User is used to get formats the current user has access to.
   global $user;
 
@@ -67,7 +67,7 @@ function taxonomy_csv_form_import($form_state) {
   foreach ($list_recommended_values as $key => $value) {
     $list_previous_values[$key] = isset($form_state['values'][$key]) ?
       $form_state['values'][$key] :
-      variable_get("taxonomy_csv_{$key}", $value);
+      variable_get('taxonomy_csv_' . $key, $value);
   }
 
   $list_import_format = _taxonomy_csv_values('import_format');
@@ -273,7 +273,7 @@ function taxonomy_csv_form_import($form_state) {
 
     $form['tab']['format'][TAXONOMY_CSV_FORMAT_TREE_STRUCTURE]['#description'] = t('Allow to create a tree structure (geography, classification...).')
       . $line_format
-        . t('term name, children term name, sub-children term name...')
+        . t('term name, child term name, sub-child term name...')
       . $example
         . t('foo, bar, small bar') . $li
         . t('Europe, France, Paris') . $li
@@ -402,10 +402,12 @@ function taxonomy_csv_form_import($form_state) {
     '#default_value' => $list_previous_values['import_custom_format'],
     '#size'          => 60,
     '#maxlength'     => 1024,
-    '#description'   => t("Set custom order of csv input separated by comma. First field need to be 'name'.") . ' ' . t('Currently, only fixed number of items are supported.') . '<br />'
-      . t('Examples:') . '<ul>'
-      . '<li><code>' . t('name, field_mycustomfield_1_machinename, field_mycustomfield_2_machinename') . '</code></li>'
-      . '<li><code>' . t('name, description, field_country, field_year_started') . '</code></li></ul>',
+    '#description'   => t("Set custom order of csv input separated by comma. First field need to be 'name' or 'tid'.") . ' ' . t('Currently, only fixed number of items are supported, but terms can be updated.') . '<br />'
+      . t('Examples:')
+      . '<ul>'
+        . '<li><code>' . t('name, field_mycustomfield_1_machinename, field_mycustomfield_2_machinename') . '</code></li>'
+        . '<li><code>' . t('name, description, field_country, field_year_started') . '</code></li>'
+      . '</ul>',
     '#states'        => array(
       'visible' => array(
         ':input[name=import_format]' => array('value' => TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS),
@@ -760,8 +762,20 @@ function taxonomy_csv_form_import($form_state) {
     '#default_value' => $list_previous_values['import_custom_fields'],
     '#size'          => 60,
     '#maxlength'     => 1024,
-    '#description'   =>  t('Fields of custom format are automatically added (if they exist) or created and attached to the vocabulary.') . ' ' . t('When a field is created, options are set to Drupal defaults for a text field with a unlimited number of values.') . ' ' . t("If you want another type, you have to set it here with the '|' symbol.") . '<br />'
-      . t('Currently only these field types are managed: "text" (default), "taxonomy_term_reference" and "file".') . '<br />'
+    '#description'   =>  t('Fields of custom format are automatically attached if they exist, else they are created before.') . ' ' . t('When a field is created, options are set to Drupal defaults for a text field with a unlimited number of values.') . ' ' . t("If you want another type, you have to create it before or set it here with the '|' symbol.") . '<br />'
+      . t('Currently only these field types are managed by default:')
+      . '<ul>'
+        .'<li>' . 'text' . '</li>'
+        .'<li>' . 'text_long' . '</li>'
+        .'<li>' . 'text_with_summary' . '</li>'
+        .'<li>' . 'number_decimal' . '</li>'
+        .'<li>' . 'number_integer' . '</li>'
+        .'<li>' . 'number_float' . '</li>'
+        .'<li>' . 'list_boolean' . '</li>'
+        .'<li>' . 'taxonomy_term_reference' . '</li>'
+        .'<li>' . 'file' . '</li>'
+      . '</ul>'
+      . t('Other types are well imported too if their content is a "value".') . '<br />'
       . t('Be careful with "taxonomy_term_reference", because this field allows references to one vocabulary only, so referenced vocabulary is set to current one, which can be an issue if the same field is used somewhere else.') . '<br />'
       . t('Examples:') . '<ul>'
       . '<li><code>' . t('field_mycustomfield_1_machinename, field_mycustomfield_2_machinename|file') . '</code></li>'
@@ -1017,12 +1031,14 @@ function taxonomy_csv_form_import($form_state) {
     '#description' => t('Warning: to display warnings, notices and informations, especially by line, can help you to detect issues when submitted list of terms is not clean and when you choose to check lines, but it is memory intensive.'),
   );
 
-  $form['import_submit'] = array(
+  $form['actions'] = array('#type' => 'actions');
+
+  $form['actions']['import_submit'] = array(
     '#type'  => 'submit',
     '#value' => t('Import'),
   );
 
-  $form['import_default_values'] = array(
+  $form['actions']['import_default_values'] = array(
     '#type'     => 'submit',
     '#value'    => t('Reset to defaults'),
     '#validate' => array('_taxonomy_csv_form_import_default_values_validate'),
@@ -1187,33 +1203,31 @@ function _taxonomy_csv_import_check_options(&$options) {
   // @todo Use a regexp.
   if ($options['import_format'] == TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS) {
     if (!is_array($options['custom_format'])) {
-      $messages['custom_format'] = t('Custom format is an array of machine name fields.');
+      $messages['custom_format'] = t('Field format is an array of machine name fields.');
     }
-    elseif ($options['custom_format'] == array()) {
-      $messages['custom_format'] = t("Custom format can't be empty.");
+    elseif ($options['custom_format'] === array()) {
+      $messages['custom_format'] = t("Field format can't be empty.");
     }
     elseif (in_array('', $options['custom_format'])) {
-      $messages['custom_format'] = t('One of the custom csv fields is empty.');
+      $messages['custom_format'] = t('One of the fields is empty.');
     }
     // Check if name is the first item.
-    elseif ($options['custom_format'][0] != 'name') {
-      $messages['custom_format'] = t("First custom field has to be 'name'.");
+    elseif ($options['custom_format'][0] != 'name' && $options['custom_format'][0] != 'tid') {
+      $messages['custom_format'] = t("First field has to be 'name' or 'tid'.");
     }
     // Name need to be unique..
     elseif (count(array_keys($options['custom_format'], 'name')) > 1) {
-      $messages['custom_format'] = t("Custom fields can have only one 'name'.");
+      $messages['custom_format'] = t("Fields can have only one 'name'.");
+    }
+    // tid need to be unique..
+    elseif (count(array_keys($options['custom_format'], 'tid')) > 1) {
+      $messages['custom_format'] = t("Fields can have only one 'tid'.");
     }
     elseif (array_map('strtolower', $options['custom_format']) != $options['custom_format']) {
-      $messages['custom_format'] = t("Custom csv fields have to be in lower case.");
+      $messages['custom_format'] = t("Fields have to be in lower case.");
     }
     elseif (str_replace(' ', '', implode(',', $options['custom_format'])) != implode(',', $options['custom_format'])) {
-      $messages['custom_format'] = t("Custom csv fields can't have spaces.");
-    }
-    elseif (array_intersect(array(
-        'vid',
-        'vocabulary_machine_name',
-      ), $options['custom_format'])) {
-      $messages['custom_format'] = t("Currently, 'vid' and 'vocabulary_machine_name' can't be used as custom fields.");
+      $messages['custom_format'] = t("Fields can't have spaces.");
     }
   }
 
@@ -1356,7 +1370,7 @@ function _taxonomy_csv_import_check_options(&$options) {
   // @todo Use a regexp.
   if ($options['import_format'] == TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS) {
     if (!is_array($options['custom_fields'])) {
-      $messages['custom_fields'] = t('Custom fields is an array of machine name fields.');
+      $messages['custom_fields'] = t('Custom fields are an array of machine name fields.');
     }
     elseif ($options['custom_fields'] == array()) {
       // Good
@@ -1393,8 +1407,9 @@ function _taxonomy_csv_import_check_options(&$options) {
             'i18n_tsid',
             'vocabulary_machine_name',
             'guid',
+            'parent',
           ))) {
-          $messages['custom_fields'] = t("Custom fields can't be one of the default term fields.");
+          $messages['custom_fields'] = t("Default term fields don't need to be defined.");
         }
       }
     }
@@ -1473,7 +1488,7 @@ function taxonomy_csv_form_import_submit($form, &$form_state) {
       'result_level',
       'result_type',
     ) as $option) {
-    variable_set("taxonomy_csv_$option", $form_state['values'][$option]);
+    variable_set('taxonomy_csv_' . $option, $form_state['values'][$option]);
     $options[$option] = $form_state['values'][$option];
   }
 

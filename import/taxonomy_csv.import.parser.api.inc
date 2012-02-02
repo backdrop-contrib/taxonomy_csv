@@ -68,7 +68,7 @@ function _taxonomy_csv_line_import_check($line, $options, $previous_items = arra
 
       // @todo Add format check: required or not, type of datas...
 
-      // Currently, check only if the name field is empty or not.
+      // Currently, check only if the first field is empty or not.
       if (empty($line[0])) {
         $messages[] = 464; // Warning no name.
         break;

@@ -30,7 +30,7 @@
  * @see _taxonomy_csv_form_export_default_values_validate()
  * @see _taxonomy_csv_form_export_default_values_submit()
  */
-function taxonomy_csv_form_export($form_state) {
+function taxonomy_csv_form_export($form, &$form_state) {
   // Remember previous values to use in particular when reloading form.
   // If not reloading form, use saved values if exist, else recommended ones.
   $list_recommended_values = _taxonomy_csv_values('export_default_ui');
@@ -506,7 +506,7 @@ function taxonomy_csv_form_export_submit($form, &$form_state) {
       'def_links_vocabularies_ids',
       'result_duplicates',
     ) as $option) {
-    variable_set("taxonomy_csv_$option", $form_state['values'][$option]);
+    variable_set('taxonomy_csv_' . $option, $form_state['values'][$option]);
     $options[$option] = $form_state['values'][$option];
   }
   // Finish to prepare $options. Unset useless options for api.

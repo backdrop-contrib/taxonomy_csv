@@ -7,11 +7,11 @@
 == CHANGELOG ==
   ===========
 
-
-Taxonomy csv import/export 7.x-5.9-dev, 2012-01-28
-Taxonomy csv import/export 6.x-5.9-dev, 2012-01-28
+Taxonomy csv import/export 7.x-5.9-dev, 2012-02-02
+Taxonomy csv import/export 6.x-5.9-dev, 2012-02-02
 ----------------------------------------------
 #969750 by Daniel Berthereau: Fixed check of Javascript, presumed true.
+By Daniel Berthereau: Improved internal documentation and code.
 
 
 Taxonomy csv import/export 7.x-5.8, 2012-01-28

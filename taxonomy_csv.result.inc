@@ -173,6 +173,7 @@ function _taxonomy_csv_message_text($message_code) {
       392 => t('Problem when caching imported term. Please first check your file and file uploading, else reinstall module from a fresh release or submit an issue.') . $error,
 
       400 => t('WARNING'),
+      402 => t('Unable to import a field term.') . $warning,
       405 => t('Unmanaged option.') . $warning,
       408 => t('Number of terms is invalid. Check if all your terms are attached to an existing vocabulary. The module exports only good terms and skips the others automatically.'),
       410 => t("Impossible to get parent of first item, because previous line has less parent(s). You may add one or more parents to current line or change lines order.") . $warning,
@@ -188,6 +189,7 @@ function _taxonomy_csv_message_text($message_code) {
       452 => t('A term cannot be a parent of itself.') . $warning,
       453 => t('A term has no semantic field parent.'),
       454 => t('Term name or id is longer than 255 characters. Check field and delimiter.') . $warning,
+      455 => t('Unable to make a reference to term "0".') . $warning,
       460 => t('Unknown predicate.') . $warning,
       461 => t('No subject.') . $warning,
       462 => t('No predicate.') . $warning,

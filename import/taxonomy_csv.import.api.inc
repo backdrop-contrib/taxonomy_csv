@@ -263,7 +263,7 @@ function _taxonomy_csv_import_soft_tab(&$file, $delimiter) {
 }
 
 /**
- * Prepare the import of a vocabulary.
+ * Prepare the batch to import the vocabulary.
  * If not used in a form, don't forget to use batch_process().
  *
  * @param $options
@@ -296,6 +296,17 @@ function taxonomy_csv_vocabulary_import($options) {
   // Prepare vocabularies. Options are passed by-reference and can be updated.
   $name = _taxonomy_csv_import_vocabulary_prepare($options);
 
+  // Get infos about fields of vocabulary.
+  if ($options['import_format'] == TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS) {
+    $options['instances'] = field_info_instances('taxonomy_term', $options['vocabulary']->machine_name);
+    $options['fields'] = array();
+    if (is_array($options['instances'])) {
+      foreach ($options['instances'] as $key => $value) {
+        $options['fields'][$key] = field_info_field($key);
+      }
+    }
+  }
+
   // Set locale if needed.
   // See http://drupal.org/node/872366
   $options['locale_previous'] = setlocale(LC_CTYPE, 0);
@@ -306,11 +317,11 @@ function taxonomy_csv_vocabulary_import($options) {
   // Prepare import batch.
   // Use a one step batch in order to avoid memory crash in case of big import.
   $batch = array(
-    'title'            => ($name != '') ?
+    'title'            => ($options['source_choice'] == 'text') ?
+        t('Importing !total_lines lines from text...', array(
+          '!total_lines' => $options['total_lines'])) :
         t('Importing !total_lines lines from CSV file "%filename"...', array(
           '%filename'    => $name,
-          '!total_lines' => $options['total_lines'])) :
-        t('Importing !total_lines lines from text...', array(
           '!total_lines' => $options['total_lines'])),
     'init_message'     => t('Starting uploading of datas...') . '<br />'
       . t('Wait some seconds for pre-processing...'),
@@ -341,26 +352,6 @@ function taxonomy_csv_vocabulary_import($options) {
 function _taxonomy_csv_vocabulary_import_process($options, &$context) {
   // Session or batch context are needed, because with batch process, static
   // and $GLOBALS don't work for large import.
-  // Currently, session is used to store some infos about custom fields of
-  // vocabulary and the current csv line in order to be available for the hook
-  // which process extra fields. Context is used to store infos on main process.
-
-  // First callback to prepare SESSION.
-  if (empty($_SESSION['taxonomy_csv_import']) && ($options['import_format'] == TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS)) {
-    $_SESSION['taxonomy_csv_import'] = array();
-    $_SESSION['taxonomy_csv_import']['options'] = $options;
-    // Currently, translatable fields are unmanaged.
-    $_SESSION['taxonomy_csv_import']['language'] = 'und'; // Undefined.
-    $_SESSION['taxonomy_csv_import']['vocabulary'] = taxonomy_vocabulary_load($options['vocabulary_id']);
-    $_SESSION['taxonomy_csv_import']['messages'] = array();
-    $_SESSION['taxonomy_csv_import']['instances'] = field_info_instances('taxonomy_term', $_SESSION['taxonomy_csv_import']['vocabulary']->machine_name);
-    $_SESSION['taxonomy_csv_import']['fields'] = array();
-    if (is_array($_SESSION['taxonomy_csv_import']['instances'])) {
-      foreach ($_SESSION['taxonomy_csv_import']['instances'] as $key => $value) {
-        $_SESSION['taxonomy_csv_import']['fields'][$key] = field_info_field($key);
-      }
-    }
-  }
 
   // First callback to prepare batch context.
   if (empty($context['sandbox'])) {
@@ -375,14 +366,13 @@ function _taxonomy_csv_vocabulary_import_process($options, &$context) {
     $context['results'][0]['current_line'] = 0;
     $context['results'][0]['worst_line'] = 0;
     $context['results'][0]['worst_message'] = 799;
+    $context['results'][0]['terms_count'] = 0;
     $context['results'][0]['handle'] = fopen($options['file']->filepath, 'r');
     $context['sandbox']['handle_pointer'] = 0;
-    $context['sandbox']['count'] = $options['total_lines'];
     $context['sandbox']['previous_items'] = array(
       'name' => array(),
       'tid'  => array(),
     );
-    $context['sandbox']['terms_count'] = 0;
   }
   elseif (!is_resource($context['results'][0]['handle'])) {
     // Recall file and set pointer in case of memory or time out.
@@ -391,12 +381,12 @@ function _taxonomy_csv_vocabulary_import_process($options, &$context) {
   }
 
   // Load and process one line.
+  $line_number    = &$context['results'][0]['current_line'];
   $worst_line     = &$context['results'][0]['worst_line'];
   $worst_message  = &$context['results'][0]['worst_message'];
+  $terms_count    = &$context['results'][0]['terms_count'];
   $handle         = &$context['results'][0]['handle'];
-  $line_number    = &$context['results'][0]['current_line'];
   $previous_items = &$context['sandbox']['previous_items'];
-  $terms_count    = &$context['sandbox']['terms_count'];
 
   // To set locale is needed with fgetcsv and it's needed each time this
   // function is called. See http:/php.net/manual/en/function.fgetcsv.php.
@@ -421,7 +411,7 @@ function _taxonomy_csv_vocabulary_import_process($options, &$context) {
     $previous_items['tid']  = $result['tid'];
     $terms_count            = $result['terms_count'];
 
-    // Remember worst message of imported lines.
+    // Remember first worst message of imported lines.
     $worst_message_new = _taxonomy_csv_worst_message($result['msg']);
     if ($worst_message > $worst_message_new) {
       $worst_message = $worst_message_new;
@@ -479,13 +469,13 @@ function _taxonomy_csv_vocabulary_import_process($options, &$context) {
     $context['message'] = t('Line !line_number of !total_lines processed: !line', array(
       '!line_number' => $line_number,
       '!total_lines' => $options['total_lines'],
-      '!line'        => implode(', ', $line),
+      '!line'        => '"' . implode('", "', $line) . '"',
     ));
 
     // Check worst message of imported lines and update progress.
     if ($worst_message >= TAXONOMY_CSV_PROCESS_WARNING) {
       // Count should be <= 0.99 to avoid batch stop before end (Drupal 7 bug).
-      $context['finished'] = floor($line_number / $context['sandbox']['count'] * 100) / 100;
+      $context['finished'] = floor($line_number / $options['total_lines'] * 100) / 100;
     }
     else {
       $context['finished'] = 1;
@@ -576,7 +566,7 @@ function _taxonomy_csv_vocabulary_import_finished($success, $results, $operation
  *   (Optional) Boolean used to determine if some options are checked or not.
  *
  * @return
- *   Name of the prepared vocabulary.
+ *   Name of the prepared vocabulary. $options can be updated.
  */
 function _taxonomy_csv_import_vocabulary_prepare(&$options, $check = TRUE) {
   $name = '';
@@ -668,6 +658,7 @@ function _taxonomy_csv_import_vocabulary_prepare(&$options, $check = TRUE) {
     // Set default format to items of the custom format.
     foreach ($custom_fields as $key => $value) {
       if (in_array($key, array(
+          'tid',
           'vid',
           'name',
           'description',
@@ -677,6 +668,7 @@ function _taxonomy_csv_import_vocabulary_prepare(&$options, $check = TRUE) {
           'i18n_tsid',
           'guid',
           'vocabulary_machine_name',
+          'parent',
         ))) {
         unset($custom_fields[$key]);
       }
@@ -689,10 +681,10 @@ function _taxonomy_csv_import_vocabulary_prepare(&$options, $check = TRUE) {
     foreach ($options['custom_fields'] as $key => $value) {
       $field_name = (strpos($value, '|') === FALSE) ?
           $value :
-          drupal_substr($value, 0, strpos($value, '|'));
+          trim(drupal_substr($value, 0, strpos($value, '|')));
       $field_type = (strpos($value, '|') === FALSE) ?
           'text' :
-          drupal_substr($value, strpos($value, '|') + 1);
+          trim(drupal_substr($value, strpos($value, '|') + 1));
       $custom_fields[$field_name] = $field_type;
     }
 
@@ -724,7 +716,7 @@ function _taxonomy_csv_import_vocabulary_prepare(&$options, $check = TRUE) {
           ))));
           break;
       }
-      $result = taxonomy_csv_vocabulary_field_add($vocabulary->machine_name, $field);
+      $result = taxonomy_csv_vocabulary_field_attach($vocabulary->machine_name, $field);
     }
   }
 
@@ -773,7 +765,7 @@ function _taxonomy_csv_import_vocabulary_prepare(&$options, $check = TRUE) {
  *   'msg'  => messages arrays:
  *     term position => array of status messages of term,
  *     'line'        => array of status messages of line,
- *   'terms_count' => Total of imported terms.
+ *   'terms_count' => total of imported terms.
  */
 function taxonomy_csv_line_import_process($line, $options, $previous_items = array(), $terms_count = 0) {
   // Define default values.

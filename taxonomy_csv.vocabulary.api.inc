@@ -42,7 +42,7 @@ function taxonomy_csv_thesaurus_create($name = '', $synonym_field = array(), $re
       'cardinality'  => FIELD_CARDINALITY_UNLIMITED,
       'translatable' => FALSE,
     );
-    $result = taxonomy_csv_vocabulary_field_add($vocabulary->machine_name, $synonym_field);
+    $result = taxonomy_csv_vocabulary_field_attach($vocabulary->machine_name, $synonym_field);
   }
 
   // Prepare relations field if needed.
@@ -59,7 +59,7 @@ function taxonomy_csv_thesaurus_create($name = '', $synonym_field = array(), $re
         'parent'     => 0,
       ))),
     );
-    $result = taxonomy_csv_vocabulary_field_add($vocabulary->machine_name, $relation_field);
+    $result = taxonomy_csv_vocabulary_field_attach($vocabulary->machine_name, $relation_field);
   }
 
   return $vocabulary;
@@ -130,7 +130,7 @@ function taxonomy_csv_vocabulary_duplicate($vocabulary_id) {
     // Add specific fields.
     $fields = field_info_instances('taxonomy_term', $original_vocabulary->machine_name);
     foreach ($fields as $field) {
-      taxonomy_csv_vocabulary_field_add($duplicated_vocabulary->machine_name, $field);
+      taxonomy_csv_vocabulary_field_attach($duplicated_vocabulary->machine_name, $field);
     }
 
     // Get all terms and attributes of original vocabulary and copy them in the
@@ -355,17 +355,17 @@ function taxonomy_csv_vocabulary_count_terms($vocabulary_id = 0) {
 }
 
 /**
- * Add or create a field of a vocabulary.
+ * Add or create a field to attach to a vocabulary.
  *
  * @param $vocabulary_machine_name
  *   Vocabulary machine_name.
  * @param $field
- *   Field array to add.
+ *   Field array to attach.
  *
  * @return
  *   TRUE if success, FALSE else.
  */
-function taxonomy_csv_vocabulary_field_add($vocabulary_machine_name, $field) {
+function taxonomy_csv_vocabulary_field_attach($vocabulary_machine_name, $field) {
   // Check if vocabulary exist.
   $vocabulary = taxonomy_vocabulary_machine_name_load($vocabulary_machine_name);
   if ($vocabulary) {
@@ -380,10 +380,10 @@ function taxonomy_csv_vocabulary_field_add($vocabulary_machine_name, $field) {
     // The field exists: check if an update is needed. Update is needed only
     // with taxonomy_term_reference, because this type requires to use specific
     // vocabularies.
-    elseif ($field['field_name'] == 'field_term_relation') {
+    elseif ($field['type'] == 'taxonomy_term_reference') {
       $flag = FALSE;
       foreach ($prior_field['settings']['allowed_values'] as $allowed_values) {
-        // Don't add new allowed values if they exists already.
+        // Don't add new allowed values if they exist already.
         if ($allowed_values == $field['settings']['allowed_values'][0]) {
           $flag = TRUE;
           break;

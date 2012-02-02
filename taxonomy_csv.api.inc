@@ -31,6 +31,7 @@ define('TAXONOMY_CSV_FORMAT_FIELDS',            'fields');
  */
 define('TAXONOMY_CSV_EXISTING_UPDATE',          'update');
 define('TAXONOMY_CSV_EXISTING_UPDATE_REPLACE',  'replace_fields');
+// TODO A full replace is needed for fields.
 define('TAXONOMY_CSV_EXISTING_IGNORE',          'ignore');
 define('TAXONOMY_CSV_EXISTING_IGNORE_ALL',      'ignore_all'); // @todo
 // Internal use only: in fact, same as TAXONOMY_CSV_EXISTING_UPDATE_REPLACE.
