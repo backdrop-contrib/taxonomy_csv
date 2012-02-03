@@ -19,7 +19,8 @@
  * - 1. What to import ?
  *   - 1. Content of the source
  *   - 2. Custom fields order
- *   - 3. Keep order of terms by adding a weight
+ *   - 3. Translate by tid or by name
+ *   - 4. Keep order of terms by adding a weight
  * - 2. Where are items to import ?
  *   - 1. Source select
  *   - 2. Source file or text area
@@ -380,7 +381,8 @@ function taxonomy_csv_form_import($form, &$form_state) {
         . t('"United Kingdom", "Royaume-Uni"') . $li
         . t('"Germany", "Allemagne", "A European country", "Un pays européen"')
       . $description_long
-        . t('The term is in the first column followed by its translation and their description. Names are required, but descriptions are optional.') . ' ' . t(' Language of first term will be "Language neutral" and the language of the second item can be set in the third tab.');
+        . t('The term is in the first column followed by its translation and their description. Names are required, but descriptions are optional.') . ' ' . t(' Language of first term will be "Language neutral" and the language of the second item can be set in the third tab.') . '<br />'
+        . '<strong>' . t('Note') . '</strong>: ' . t('With a vocabulary in Full translation mode, a term with an undefined language cannot be translated, so do not forget to choose a language when original terms are first imported.');
     if (!module_exists('i18n_taxonomy')) {
       $form['tab']['format']['import_format']['#options'][TAXONOMY_CSV_FORMAT_TRANSLATE_TERMS] .= ' [' . t('Unavailable') . ']';
       $form['tab']['format'][TAXONOMY_CSV_FORMAT_TRANSLATE_TERMS]['#description'] .= '<br />'
@@ -411,6 +413,26 @@ function taxonomy_csv_form_import($form, &$form_state) {
     '#states'        => array(
       'visible' => array(
         ':input[name=import_format]' => array('value' => TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS),
+      ),
+    ),
+  );
+
+  // Specific options of Translate.
+  $form['tab']['format']['specific'][TAXONOMY_CSV_FORMAT_TRANSLATE_TERMS]['translate_by'] = array(
+    '#type'          => 'radios',
+    '#title'         => t('Type of source'),
+    '#options'         => array(
+      'name' => t('First item is the source term name'),
+      'tid'  => t('First item is the source term id'),
+    ),
+    '#default_value' => $list_previous_values['translate_by'],
+      '#description'   => t('Choose how to identify the source term.') . ' '  . t("If the source term doesn't exist, it will be created.") . '<ul>'
+        . '<li>' . t('To use name is simpler, but cannot be used if vocabulary has duplicate names.') . '</li>'
+        . '<li>' . t('To use term id is quicker, but you need to export your vocabulary to get tids.') . '</li>'
+      . '</ul>',
+    '#states'        => array(
+      'visible' => array(
+        ':input[name=import_format]' => array('value' => TAXONOMY_CSV_FORMAT_TRANSLATE_TERMS),
       ),
     ),
   );
@@ -1361,7 +1383,7 @@ function _taxonomy_csv_import_check_options(&$options) {
         $messages['language'] = t('You need to choose the language in which to translate names and descriptions.');
       }
       if ($options['language'] == language_default('language')) {
-        $messages['language'] = t('You need to choose another language for translation of term name and description: it cannot be the default one.');
+        $messages['language'] = t('You need to choose another language for translation of terms: it cannot be the default one.');
       }
     }
   }
@@ -1457,6 +1479,7 @@ function taxonomy_csv_form_import_submit($form, &$form_state) {
   foreach (array(
       'import_format',
       'import_custom_format',
+      'translate_by',
       'keep_order',
       'source_choice',
       'import_delimiter',

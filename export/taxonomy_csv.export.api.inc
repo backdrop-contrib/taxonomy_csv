@@ -193,9 +193,9 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
         TAXONOMY_CSV_FORMAT_POLYHIERARCHY,
       ))) {
       $context['sandbox']['terms'] = array();
-      $vocabularies = array();
       // Export only selected vocabularies.
       if ($options['vocabulary_id'] && ($options['vocabulary_id'] != array(0))) {
+        $vocabularies = array();
         foreach ($options['vocabulary_id'] as $vocabulary) {
           $vocabularies[] = taxonomy_vocabulary_load($vocabulary);
         }
@@ -433,7 +433,7 @@ function taxonomy_csv_line_export($line, $options, &$handle, $result = array()) 
  * @param $options
  *   An associative array of export options:
  *   - export_format : see _taxonomy_csv_values('export_format')
- *   //  Specific to def_links:
+ *   // Specific to def_links:
  *   - def_links_terms_ids : 'name_if_needed' (default), 'name' or 'tid'
  *   - def_links_vocabularies_ids : 'none' (default), 'name' or 'vid'
  * @param $terms_list
@@ -459,6 +459,13 @@ function taxonomy_csv_term_export($term, $options, &$terms_list = array(), $dupl
     switch ($options['export_format']) {
       case TAXONOMY_CSV_FORMAT_ALONE_TERMS:
         $result['line'] = array(
+          $term->name,
+        );
+        break;
+
+      case TAXONOMY_CSV_FORMAT_TID_NAME:
+        $result['line'] = array(
+          $term->tid,
           $term->name,
         );
         break;

@@ -331,7 +331,7 @@ function taxonomy_csv_vocabulary_get_terms($vid) {
  *   count terms in all vocabularies.
  *
  * @return
- *   Number of terms in specified vocabulary or in all vocabularies.
+ *   Number of terms in specified vocabularies or in all vocabularies.
  */
 function taxonomy_csv_vocabulary_count_terms($vocabulary_id = 0) {
   if (!is_array($vocabulary_id)) {
@@ -339,7 +339,7 @@ function taxonomy_csv_vocabulary_count_terms($vocabulary_id = 0) {
   }
 
   $sql = "
-    SELECT COUNT(*) AS count
+    SELECT COUNT(*)
     FROM {taxonomy_term_data}
   ";
 

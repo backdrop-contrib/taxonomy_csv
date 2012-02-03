@@ -25,6 +25,7 @@ define('TAXONOMY_CSV_FORMAT_DESCRIPTIONS',      'descriptions');
 define('TAXONOMY_CSV_FORMAT_WEIGHTS',           'weights');
 define('TAXONOMY_CSV_FORMAT_TRANSLATE_TERMS',   'translate_terms');
 define('TAXONOMY_CSV_FORMAT_FIELDS',            'fields');
+define('TAXONOMY_CSV_FORMAT_TID_NAME',          'tid_name');
 
 /**
  * Available import options.
@@ -101,6 +102,7 @@ function _taxonomy_csv_values($list) {
     case 'export_format':
       $items = array(
         TAXONOMY_CSV_FORMAT_ALONE_TERMS      => t('Term names'),
+        TAXONOMY_CSV_FORMAT_TID_NAME         => t('Tid and name of terms'),
         // @todo
         // TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS    => t('Custom fields'),
         TAXONOMY_CSV_FORMAT_DEFINITION_LINKS => t('Full term definition and links'),
@@ -123,6 +125,7 @@ function _taxonomy_csv_values($list) {
       return array(
         'import_format'                 => TAXONOMY_CSV_FORMAT_ALONE_TERMS,
         'import_custom_format'          => 'name',
+        'translate_by'                  => 'name',
         'keep_order'                    => FALSE,
         'source_choice'                 => 'text',
         'import_delimiter'              => 'comma',
@@ -159,6 +162,7 @@ function _taxonomy_csv_values($list) {
       return array(
         'import_format'                 => TAXONOMY_CSV_FORMAT_ALONE_TERMS,
         'custom_format'                 => array(0 => 'name'),
+        'translate_by'                  => 'name',
         'keep_order'                    => FALSE,
         'delimiter'                     => ',',
         'enclosure'                     => '',

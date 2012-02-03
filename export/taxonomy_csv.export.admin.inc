@@ -69,7 +69,7 @@ function taxonomy_csv_form_export($form, &$form_state) {
   $list_export_order = array(
     'name'             => t('Alphabetic order'),
     'weight'           => t('Weight'),
-    'tid'              => t('Internal order'),
+    'tid'              => t('Internal order (tid)'),
   );
 
   // Build form.

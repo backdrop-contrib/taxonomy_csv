@@ -686,15 +686,20 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array(), $t
         if ($options['vocabulary']->i18n_mode == I18N_MODE_LOCALIZE) {
           // 1. Import main term then store and check result.
           $term = new stdClass;
-          $term->name = $line[0];
+          if ($options['translate_by'] == 'name') {
+            $term->name = $line[0];
+          }
+          else {
+            $term->tid = $line[0];
+          }
           $term->vid = $options['vocabulary']->vid;
-            // Other formats aren't allowed for translation of the description.
-          $term->format = 'plain_text';
-            // With this i18n mode, language of main term is always undefined,
-            // whatever the vocabulary language is.
+          // With this i18n mode, language of main term is always undefined,
+          // whatever the vocabulary language is.
           $term->language = 'und';
           $term->vocabulary_machine_name = $options['vocabulary']->machine_name;
           if (isset($line[2]) && $line[2]) {
+              // Other formats aren't allowed for translation of the description.
+              $term->format = 'plain_text';
             $term->description = _taxonomy_csv_set_line_break($line[2]);
           }
 
@@ -741,7 +746,12 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array(), $t
         elseif (($options['vocabulary']->i18n_mode == I18N_MODE_TRANSLATE) || ($options['vocabulary']->i18n_mode == I18N_MODE_MULTIPLE)) {
           // 1. Prepare main term.
           $term = new stdClass;
-          $term->name = $line[0];
+          if ($options['translate_by'] == 'name') {
+            $term->name = $line[0];
+          }
+          else {
+            $term->tid = $line[0];
+          }
           $term->vid = $options['vocabulary']->vid;
           $term->format = $options['filter_format'];
           $term->language = language_default('language');
@@ -794,7 +804,7 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array(), $t
           $translated_term->format = $options['filter_format'];
           $translated_term->language = $options['language'];
           $translated_term->vocabulary_machine_name = $options['vocabulary']->machine_name;
-          if (isset($line[3]) && $line[2] && $line[3]) {
+          if (isset($line[3]) && $line[3]) {
             $translated_term->description = _taxonomy_csv_set_line_break($line[3]);
           }
 
@@ -860,10 +870,10 @@ function _taxonomy_csv_line_result(&$result, $current_result, $terms_count) {
  * given parent.
  *
  * @param $term
- *   A term object to import. Term contains:
+ *   A term object to import. Term contains either:
  *   - 'name'        => term name string,
- *   and eventually, matching options:
  *   - 'tid'         => term id,
+ *   and eventually, matching options:
  *   - 'vid'         => the vocabulary id where to import,
  *   - 'description' => description string,
  *   - 'format'      => the filter format of the description,

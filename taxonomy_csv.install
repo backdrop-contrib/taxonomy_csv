@@ -29,6 +29,7 @@ function taxonomy_csv_uninstall() {
       // Import variables.
       'import_format',
       'import_custom_format',
+      'translate_by',
       'keep_order',
       'source_choice',
       'import_delimiter',

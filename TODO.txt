@@ -73,7 +73,7 @@ Functions
  o         with autodetect, import multiple type with one file
  o         convert and export vocabulary to xml (especially to compare with xml)
  R 643 743 multistep import: autodivide big taxonomies to avoid memory error
- o         import by term identifiant (tid)
+ o     759 import by term identifiant (tid)
  x 643 743 import from url (#529480)
  o         allow direct duplicates with polyhierarchy
  o         option to automatically disable and re-enable non compatible modules

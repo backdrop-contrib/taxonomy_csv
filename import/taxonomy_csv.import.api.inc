@@ -31,6 +31,7 @@
  *   - path           : path to local csv file
  *   - import_format  : see _taxonomy_csv_values (default: 'alone_terms')
  *   - custom_format  : array. list of machinename fields (default: 0 => 'name')
+ *   - translate_by   : string. name (default) or tid.
  *   - keep_order     : boolean. keep order of imported terms or not (default)
  *   - delimiter      : 1 character csv delimiter (default: ',')
  *   - enclosure      : 0 or 1 character csv enclosure (default: none or '"')
