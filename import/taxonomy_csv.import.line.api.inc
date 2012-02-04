@@ -158,7 +158,7 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array(), $t
             // TODO To be rewritten.
             // True fields will be added later.
             // Currently, repetitive items are not managed.
-            $term->fields_to_import[$field_name] = $line[$key];
+            $term->fields_to_import[$field_name][] = $line[$key];
             $term->fields_to_import_instances = $options['instances'];
             $term->fields_to_import_fields = $options['fields'];
           }
@@ -1026,153 +1026,155 @@ function _taxonomy_csv_term_field_import($term, $existing_items = TAXONOMY_CSV_E
   // Currently, translatable fields are unmanaged.
   $language = 'und'; // Undefined.
 
-  foreach ($term->fields_to_import as $field_name => $value) {
+  foreach ($term->fields_to_import as $field_name => $values) {
     $instance = &$term->fields_to_import_instances[$field_name];
     $field = &$term->fields_to_import_fields[$field_name];
 
-    switch ($field['type']) {
-      case 'file':
-        $uri_scheme = $field['settings']['uri_scheme'];
-        $file_directory = $instance['settings']['file_directory'];
-        $file_extensions = $instance['settings']['file_extensions'];
+    foreach ($values as $value) {
+      switch ($field['type']) {
+        case 'file':
+          $uri_scheme = $field['settings']['uri_scheme'];
+          $file_directory = $instance['settings']['file_directory'];
+          $file_extensions = $instance['settings']['file_extensions'];
 
-        $source = $value;
-        $destination = $uri_scheme . '://' . $file_directory;
+          $source = $value;
+          $destination = $uri_scheme . '://' . $file_directory;
 
-        // Import source if it exists.
-        if (file_exists($source)) {
-          $filepath = file_unmanaged_copy($source, $destination, FILE_EXISTS_RENAME);
-          if ($filepath !== FALSE) {
-            $file = new stdClass();
-            $file->uid = 1;
-            $file->filename = basename($filepath);
-            $file->uri = $filepath;
-            $file->filemime = file_get_mimetype($filepath);
-            $file->filesize = filesize($filepath);
-            $file->status = 1;
-            $file->timestamp = time();
+          // Import source if it exists.
+          if (file_exists($source)) {
+            $filepath = file_unmanaged_copy($source, $destination, FILE_EXISTS_RENAME);
+            if ($filepath !== FALSE) {
+              $file = new stdClass();
+              $file->uid = 1;
+              $file->filename = basename($filepath);
+              $file->uri = $filepath;
+              $file->filemime = file_get_mimetype($filepath);
+              $file->filesize = filesize($filepath);
+              $file->status = 1;
+              $file->timestamp = time();
 
-            $file = file_save($file);
+              $file = file_save($file);
 
-            // Complete term if there are already items.
-            if (is_array($term->{$field_name}) && !empty($term->{$field_name})) {
-              foreach ($term->{$field_name} as $field_language => &$delta_array) {
-                $delta_array[] = array(
+              // Complete term if there are already items.
+              if (is_array($term->{$field_name}) && !empty($term->{$field_name})) {
+                foreach ($term->{$field_name} as $field_language => &$delta_array) {
+                  $delta_array[] = array(
+                    'fid'         => $file->fid,
+                    'display'     => 1,
+                    'description' => '',
+                  );
+                }
+              }
+              // Else complete term directly.
+              else {
+                $term->{$field_name}[$language][0] = array(
                   'fid'         => $file->fid,
                   'display'     => 1,
                   'description' => '',
                 );
               }
             }
-            // Else complete term directly.
-            else {
-              $term->{$field_name}[$language][0] = array(
-                'fid'         => $file->fid,
-                'display'     => 1,
-                'description' => '',
-              );
+          }
+          elseif ($source != '') {
+            $messages['notice'] = t('Unable to load attached file.');
+          }
+          // Else nothing to import.
+          break;
+
+        case 'taxonomy_term_reference':
+          // Get machine name of referenced vocabulary.
+          $referenced_vocabulary = $field['settings']['allowed_values'][0]['vocabulary'];
+          $referenced_vocabulary = taxonomy_vocabulary_machine_name_load($referenced_vocabulary);
+
+          $referenced_term = new stdClass;
+          // Presume that item is a tid if it's a number.
+          if (is_numeric($value)) {
+            if (!$value) {
+              $messages['notice'] = t('Unable to make a reference to term "0".');
+              continue 2;
+            }
+            // TODO Check if the term is in allowed vocabularies.
+            $referenced_term->tid = $value;
+          }
+          // Else find the parent normally.
+          else {
+            $referenced_term->name = $value;
+            $referenced_term->vid = $referenced_vocabulary->vid;
+            // TODO Use undefined language or term language?
+            if (isset($term->language)) {
+              $referenced_term->language = $term->language;
+            }
+            $current_result = taxonomy_csv_term_import($referenced_term, $existing_items);
+            if (!$current_result['tid']) {
+              $messages[] = 402; // Unable to import a field term.
+              return $messages;
+            }
+            $referenced_term->tid = $current_result['tid'];
+          }
+
+          $value = array(
+            'tid' => $referenced_term->tid,
+          );
+          switch ($instance['widget']['type']) {
+            case 'taxonomy_autocomplete':
+              // Need tid, vid, name and vocabulary_machine_name (use cache).
+              $referenced_term = taxonomy_term_load($referenced_term->tid);
+              $value['name'] = $referenced_term->name;
+              $value['vid'] = $referenced_term->vid;
+              $value['vocabulary_machine_name'] = $referenced_term->machine_name;
+              break;
+          }
+
+          // Complete term if there are already items.
+          if (is_array($term->{$field_name}) && !empty($term->{$field_name})) {
+            foreach ($term->{$field_name} as $field_language => &$delta_array) {
+              $delta_array[] = $value;
             }
           }
-        }
-        elseif ($source != '') {
-          $messages['notice'] = t('Unable to load attached file.');
-        }
-        // Else nothing to import.
-        break;
-
-      case 'taxonomy_term_reference':
-        // Get machine name of referenced vocabulary.
-        $referenced_vocabulary = $field['settings']['allowed_values'][0]['vocabulary'];
-        $referenced_vocabulary = taxonomy_vocabulary_machine_name_load($referenced_vocabulary);
-
-        $referenced_term = new stdClass;
-        // Presume that item is a tid if it's a number.
-        if (is_numeric($value)) {
-          if (!$value) {
-            $messages['notice'] = t('Unable to make a reference to term "0".');
-            continue 2;
+          // Else complete term directly.
+          else {
+            $term->{$field_name}[$language][0] = $value;
           }
-          // TODO Check if the term is in allowed vocabularies.
-          $referenced_term->tid = $value;
-        }
-        // Else find the parent normally.
-        else {
-          $referenced_term->name = $value;
-          $referenced_term->vid = $referenced_vocabulary->vid;
-          // TODO Use undefined language or term language?
-          if (isset($term->language)) {
-            $referenced_term->language = $term->language;
-          }
-          $current_result = taxonomy_csv_term_import($referenced_term, $existing_items);
-          if (!$current_result['tid']) {
-            $messages[] = 402; // Unable to import a field term.
-            return $messages;
-          }
-          $referenced_term->tid = $current_result['tid'];
-        }
+          break;
 
-        $value = array(
-          'tid' => $referenced_term->tid,
-        );
-        switch ($instance['widget']['type']) {
-          case 'taxonomy_autocomplete':
-            // Need tid, vid, name and vocabulary_machine_name (use cache).
-            $referenced_term = taxonomy_term_load($referenced_term->tid);
-            $value['name'] = $referenced_term->name;
-            $value['vid'] = $referenced_term->vid;
-            $value['vocabulary_machine_name'] = $referenced_term->machine_name;
-            break;
-        }
-
-        // Complete term if there are already items.
-        if (is_array($term->{$field_name}) && !empty($term->{$field_name})) {
-          foreach ($term->{$field_name} as $field_language => &$delta_array) {
-            $delta_array[] = $value;
-          }
-        }
-        // Else complete term directly.
-        else {
-          $term->{$field_name}[$language][0] = $value;
-        }
-        break;
-
-      case 'list_boolean':
-        $value = (($value == '0') || (strtolower($value) == 'false')) ? 0 : 1;
-        $term->{$field_name}[$language][0] = array('value' => $value);
-        break;
-
-      // Managed by default:
-      // case 'number_decimal':
-      // case 'number_integer':
-      // case 'number_float':
-      // case 'text':
-      // case 'text_long':
-      // case 'text_with_summary': // ?
-      // Currently doesn't manage default value.
-      default:
-        switch ($field['type']) {
-          case 'number_decimal':
-            $value = (float) $value;
-            break;
-          case 'number_integer':
-            $value = (integer) $value;
-            break;
-          case 'number_float':
-            $value = (float) $value;
-            break;
-        }
-
-        // Complete term if there are already items.
-        if (is_array($term->{$field_name}) && !empty($term->{$field_name})) {
-          foreach ($term->{$field_name} as $field_language => &$delta_array) {
-            $delta_array[] = array('value' => $value);
-          }
-        }
-        // Else complete term directly.
-        else {
+        case 'list_boolean':
+          $value = (($value == '0') || (strtolower($value) == 'false')) ? 0 : 1;
           $term->{$field_name}[$language][0] = array('value' => $value);
-        }
-        break;
+          break;
+
+        // Managed by default:
+        // case 'number_decimal':
+        // case 'number_integer':
+        // case 'number_float':
+        // case 'text':
+        // case 'text_long':
+        // case 'text_with_summary': // ?
+        // Currently doesn't manage default value.
+        default:
+          switch ($field['type']) {
+            case 'number_decimal':
+              $value = (float) $value;
+              break;
+            case 'number_integer':
+              $value = (integer) $value;
+              break;
+            case 'number_float':
+              $value = (float) $value;
+              break;
+          }
+
+          // Complete term if there are already items.
+          if (is_array($term->{$field_name}) && !empty($term->{$field_name})) {
+            foreach ($term->{$field_name} as $field_language => &$delta_array) {
+              $delta_array[] = array('value' => $value);
+            }
+          }
+          // Else complete term directly.
+          else {
+            $term->{$field_name}[$language][0] = array('value' => $value);
+          }
+          break;
+      }
     }
   }
 

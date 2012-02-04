@@ -83,6 +83,30 @@ function _taxonomy_csv_export_result($options, $worst_level, $summary, $results)
     }
     $messages[] = array($watchdog_level => $message);
 
+    // Info on field format.
+    if (in_array($options['export_format'], array(
+        TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS,
+      ))) {
+      foreach ($options['vocabulary'] as $vocabulary) {
+        $format = array();
+        $format[] = 'name';
+        foreach ($vocabulary->fields as $field_name => &$field) {
+          if (isset($vocabulary->fields_unlimited[$field_name])) {
+            $format = array_merge($format, array_fill(0, $vocabulary->fields_unlimited[$field_name], $field_name));
+          }
+          else {
+            $format = array_merge($format, array_fill(0, $field['cardinality'], $field_name));
+          }
+        }
+
+        $message = t('CSV format of vocabulary "@vocabulary" is:', array(
+          '@vocabulary' => $vocabulary->name,
+        ));
+        $message .= '<br /><pre>' . implode(', ', $format) . '</pre>';
+        $messages[] = array($watchdog_level => $message);
+      }
+    }
+
     // @todo Add line level messages.
     // Currently, it's useless, because there isn't any export message in
     // line export process. It can be added as in import.

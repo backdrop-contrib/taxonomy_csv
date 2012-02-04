@@ -26,6 +26,7 @@ define('TAXONOMY_CSV_FORMAT_WEIGHTS',           'weights');
 define('TAXONOMY_CSV_FORMAT_TRANSLATE_TERMS',   'translate_terms');
 define('TAXONOMY_CSV_FORMAT_FIELDS',            'fields');
 define('TAXONOMY_CSV_FORMAT_TID_NAME',          'tid_name');
+define('TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS_FIRST', 'custom_fields_first');
 
 /**
  * Available import options.
@@ -103,7 +104,8 @@ function _taxonomy_csv_values($list) {
       $items = array(
         TAXONOMY_CSV_FORMAT_ALONE_TERMS      => t('Term names'),
         TAXONOMY_CSV_FORMAT_TID_NAME         => t('Tid and name of terms'),
-        TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS    => t('Custom fields (first value of each field only)'),
+        TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS    => t('Custom fields'),
+        TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS_FIRST => t('Custom fields (first value of each field only)'),
         TAXONOMY_CSV_FORMAT_DEFINITION_LINKS => t('Full term definition and links'),
         // @todo, but useless: use alone_terms.
         // TAXONOMY_CSV_FORMAT_FLAT             => t('Terms (flat vocabulary)'),

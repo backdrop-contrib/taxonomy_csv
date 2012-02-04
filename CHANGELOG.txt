@@ -7,6 +7,11 @@
 == CHANGELOG ==
   ===========
 
+Taxonomy csv import/export 7.x-5.10-dev, 2012-02-04
+-----------------------------------------------
+#1410784 by Daniel Berthereau: Added import/export of multivalued fields.
+
+
 Taxonomy csv import/export 7.x-5.9, 2012-02-04
 ----------------------------------------------
 By Daniel Berthereau: Added import custom fields (by tid and for any fields).

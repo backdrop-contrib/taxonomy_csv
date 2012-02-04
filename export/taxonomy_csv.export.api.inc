@@ -143,9 +143,16 @@ function taxonomy_csv_vocabulary_export($options) {
       $vocabulary = &$options['vocabulary'][$vocabulary_id];
       $vocabulary->instances = field_info_instances('taxonomy_term', $vocabulary->machine_name);
       $vocabulary->fields = array();
+      $vocabulary->fields_unlimited = array();
       if (is_array($vocabulary->instances)) {
-        foreach ($vocabulary->instances as $key => $value) {
-          $vocabulary->fields[$key] = field_info_field($key);
+        foreach ($vocabulary->instances as $field_name => $value) {
+          $vocabulary->fields[$field_name] = field_info_field($field_name);
+          // Get the list of fields with an unlimited number of values to avoid
+          // the loop of check (used with custom fields export).
+          // The minimum is set to one to avoid zero value.
+          if ($vocabulary->fields[$field_name]['cardinality'] == -1) {
+            $vocabulary->fields_unlimited[$field_name] = 1;
+          }
         }
       }
     }
@@ -224,7 +231,7 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
         $context['sandbox']['terms'] = array_merge($context['sandbox']['terms'], taxonomy_get_tree($vocabulary->vid));
       }
     }
-    // Prepare a list of normal terms. They will be completed only if needed.
+    // Prepare a list of normal terms.
     // @todo Prepare a simple list of term names or definitions without links in
     // order to reduce memory usage for some formats.
     // @todo Use a one term approach to reduce memory usage (anyway, all terms
@@ -243,6 +250,28 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
       }
 
       $context['sandbox']['terms'] = array_values(taxonomy_term_load_multiple(array_keys($terms['taxonomy_term'])));
+    }
+
+    // Get max number of values for fields with a undefined number of values.
+    if ($options['export_format'] == TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS) {
+      // Currently, manage only undefined language.
+      $language = 'und';
+
+      foreach ($context['sandbox']['terms'] as $term) {
+        foreach (array_keys($options['vocabulary'][$term->vid]->fields_unlimited) as $field_name) {
+          if (isset($term->{$field_name})) {
+            // Remember the number of items if this term field has got more
+            // items than previous one.
+            if (count($term->{$field_name}[$language]) > $options['vocabulary'][$term->vid]->fields_unlimited[$field_name]) {
+              $options['vocabulary'][$term->vid]->fields_unlimited[$field_name] = count($term->{$field_name}[$language]);
+            }
+          }
+        }
+      }
+
+      // Keep list of vocabulary with undefined fields.
+      $context['results'][0]['vocabulary'] = $options['vocabulary'];
+      $context['sandbox']['vocabulary'] = $options['vocabulary'];
     }
 
     // Display a warning if terms count in taxonomy_term_data table is different
@@ -276,6 +305,12 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
   elseif (!is_resource($context['results'][0]['handle'])) {
     // Reopen file in case of memory out.
     $context['results'][0]['handle'] = fopen($options['file']->filepath, 'a+');
+  }
+
+  // Get list of unlimited multivalued fields.
+  // @todo Currently, these fields are not saved in batch.
+  if ($options['export_format'] == TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS) {
+    $options['vocabulary'] = $context['sandbox']['vocabulary'];
   }
 
   // To simplify use of variables.
@@ -487,15 +522,52 @@ function taxonomy_csv_term_export($term, $options, &$terms_list = array(), $dupl
         break;
 
       case TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS:
+        // Currently, manage only undefined language.
+        $language = 'und';
+
         $result['line'] = array(
           $term->name,
         );
+        // Use of field_get_items is slower.
         foreach ($options['vocabulary'][$term->vid]->fields as $field_name => $field) {
-          if (!empty($term->{$field_name}) && isset($term->{$field_name}['und'][0])) {
-            // Key is generally a value, but it can be tid or something else.
-            // Use of field_get_items is slower.
-            reset($term->{$field_name}['und'][0]);
-            $result['line'][] = current($term->{$field_name}['und'][0]);
+          $count = 0;
+          if (!empty($term->{$field_name})) {
+            // Key is generally 'value', but it can be 'tid' or something else.
+            reset($field['columns']);
+            if (isset($term->{$field_name}[$language])) {
+              foreach ($term->{$field_name}[$language] as &$item) {
+                $result['line'][] = $item[key($field['columns'])];
+              }
+              $count = count($term->{$field_name}[$language]);
+            }
+          }
+
+          // Add empty value the max number of values in the vocabulary times.
+          if (isset($options['vocabulary'][$term->vid]->fields_unlimited[$field_name])) {
+            if ($count < $options['vocabulary'][$term->vid]->fields_unlimited[$field_name]) {
+              $result['line'] = array_merge($result['line'], array_fill(0, $options['vocabulary'][$term->vid]->fields_unlimited[$field_name] - $count, ''));
+            }
+          }
+          else {
+            if ($count < $field['cardinality']) {
+              $result['line'] = array_merge($result['line'], array_fill(0, $field['cardinality'] - $count, ''));
+            }
+          }
+        }
+        break;
+
+      case TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS_FIRST:
+        // Currently, manage only undefined language.
+        $language = 'und';
+
+        $result['line'] = array(
+          $term->name,
+        );
+        // Use of field_get_items is slower.
+        foreach ($options['vocabulary'][$term->vid]->fields as $field_name => $field) {
+          if (!empty($term->{$field_name}) && isset($term->{$field_name}[$language][0])) {
+            // Key is generally 'value', but it can be 'tid' or something else.
+            $result['line'][] = $term->{$field_name}[$language][0][key($field['columns'])];
           }
           // Add an empty csv value.
           else {

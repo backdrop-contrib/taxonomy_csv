@@ -404,11 +404,12 @@ function taxonomy_csv_form_import($form, &$form_state) {
     '#default_value' => $list_previous_values['import_custom_format'],
     '#size'          => 60,
     '#maxlength'     => 1024,
-    '#description'   => t("Set custom order of csv input separated by comma. First field need to be 'name' or 'tid'.") . ' ' . t('Currently, only fixed number of items are supported, but terms can be updated.') . '<br />'
+    '#description'   => t("Set custom order of csv input separated by comma. First field need to be 'name' or 'tid'.") . ' ' . t('Items can be repeated for multivalued fields.') . '<br />'
       . t('Examples:')
       . '<ul>'
         . '<li><code>' . t('name, field_mycustomfield_1_machinename, field_mycustomfield_2_machinename') . '</code></li>'
         . '<li><code>' . t('name, description, field_country, field_year_started') . '</code></li>'
+        . '<li><code>' . t('name, description, weight, parent, synonym, synonym, synonym, related_term, related_term, related_term, related_term') . '</code></li>'
       . '</ul>',
     '#states'        => array(
       'visible' => array(
@@ -1237,19 +1238,32 @@ function _taxonomy_csv_import_check_options(&$options) {
     elseif ($options['custom_format'][0] != 'name' && $options['custom_format'][0] != 'tid') {
       $messages['custom_format'] = t("First field has to be 'name' or 'tid'.");
     }
-    // Name need to be unique..
-    elseif (count(array_keys($options['custom_format'], 'name')) > 1) {
-      $messages['custom_format'] = t("Fields can have only one 'name'.");
-    }
-    // tid need to be unique..
-    elseif (count(array_keys($options['custom_format'], 'tid')) > 1) {
-      $messages['custom_format'] = t("Fields can have only one 'tid'.");
-    }
     elseif (array_map('strtolower', $options['custom_format']) != $options['custom_format']) {
       $messages['custom_format'] = t("Fields have to be in lower case.");
     }
     elseif (str_replace(' ', '', implode(',', $options['custom_format'])) != implode(',', $options['custom_format'])) {
       $messages['custom_format'] = t("Fields can't have spaces.");
+    }
+    // Check items that must be unique.
+    else {
+      foreach (array(
+          'tid',
+          'vid',
+          'name',
+          'description',
+          'format',
+          'weight',
+          'language',
+          'i18n_tsid',
+          'guid',
+          'vocabulary_machine_name',
+        ) as $item) {
+        if (count(array_keys($options['custom_format'], $item)) > 1) {
+          $messages['custom_format'] = t("Fields can have only one '!item'.", array(
+            '!item' => $item,
+          ));
+        }
+      }
     }
   }
 
