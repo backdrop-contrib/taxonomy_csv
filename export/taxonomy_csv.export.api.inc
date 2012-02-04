@@ -135,6 +135,22 @@ function taxonomy_csv_vocabulary_export($options) {
   // Calculates number of terms to be exported.
   $options['total_terms'] = taxonomy_csv_vocabulary_count_terms($options['vocabulary_id']);
 
+  // Get infos about fields of vocabulary.
+  if ($options['export_format'] == TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS) {
+    $options['vocabulary'] = array();
+    foreach ($options['vocabulary_id'] as $vocabulary_id) {
+      $options['vocabulary'][$vocabulary_id] = taxonomy_vocabulary_load($vocabulary_id);
+      $vocabulary = &$options['vocabulary'][$vocabulary_id];
+      $vocabulary->instances = field_info_instances('taxonomy_term', $vocabulary->machine_name);
+      $vocabulary->fields = array();
+      if (is_array($vocabulary->instances)) {
+        foreach ($vocabulary->instances as $key => $value) {
+          $vocabulary->fields[$key] = field_info_field($key);
+        }
+      }
+    }
+  }
+
   // Prepare export batch.
   $batch = array(
     'title'            => t('Exporting !total_terms terms to CSV file...', array('!total_terms' => $options['total_terms'])),
@@ -468,6 +484,24 @@ function taxonomy_csv_term_export($term, $options, &$terms_list = array(), $dupl
           $term->tid,
           $term->name,
         );
+        break;
+
+      case TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS:
+        $result['line'] = array(
+          $term->name,
+        );
+        foreach ($options['vocabulary'][$term->vid]->fields as $field_name => $field) {
+          if (!empty($term->{$field_name}) && isset($term->{$field_name}['und'][0])) {
+            // Key is generally a value, but it can be tid or something else.
+            // Use of field_get_items is slower.
+            reset($term->{$field_name}['und'][0]);
+            $result['line'][] = current($term->{$field_name}['und'][0]);
+          }
+          // Add an empty csv value.
+          else {
+            $result['line'][] = '';
+          }
+        }
         break;
 
       case TAXONOMY_CSV_FORMAT_DEFINITION_LINKS:

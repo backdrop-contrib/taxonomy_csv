@@ -711,10 +711,10 @@ function _taxonomy_csv_import_vocabulary_prepare(&$options, $check = TRUE) {
           break;
         case 'list_boolean':
           $field += array(
-            'settings'     => array('allowed_values' => array(0 => array(
+            'settings'     => array('allowed_values' => array(
                 '0' => 'FALSE',
                 '1' => 'TRUE',
-          ))));
+          )));
           break;
       }
       $result = taxonomy_csv_vocabulary_field_attach($vocabulary->machine_name, $field);

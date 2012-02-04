@@ -7,13 +7,14 @@
 == CHANGELOG ==
   ===========
 
-Taxonomy csv import/export 7.x-5.9-dev, 2012-02-02
+Taxonomy csv import/export 7.x-5.9, 2012-02-04
 ----------------------------------------------
 By Daniel Berthereau: Added import custom fields (by tid and for any fields).
 By Daniel Berthereau: Added import of translations by tid.
+By Daniel Berthereau: Added export of fields.
 
-Taxonomy csv import/export 7.x-5.9-dev, 2012-02-02
-Taxonomy csv import/export 6.x-5.9-dev, 2012-02-02
+Taxonomy csv import/export 7.x-5.9, 2012-02-04
+Taxonomy csv import/export 6.x-5.9, 2012-02-04
 ----------------------------------------------
 #969750 by Daniel Berthereau: Fixed check of Javascript, presumed true.
 By Daniel Berthereau: Improved internal documentation and code.
