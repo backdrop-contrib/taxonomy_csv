@@ -8,8 +8,8 @@
 /**
  * Invoke associated include file.
  */
-  $module_dir = drupal_get_path('module', 'taxonomy_csv');
-  require_once("$module_dir/taxonomy_csv.result.inc");
+$module_dir = drupal_get_path('module', 'taxonomy_csv');
+require_once($module_dir . '/taxonomy_csv.result.inc');
 
 /**
  * Display result messages of export process.

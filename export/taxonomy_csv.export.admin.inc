@@ -7,11 +7,9 @@
 
 /**
  * Invoke associated files.
- * taxonomy_csv.export.api.inc is invoked only when form is submitted.
  */
-  // Invoke taxonomy_csv api (defines and functions).
-  $module_dir = drupal_get_path('module', 'taxonomy_csv');
-  require_once("$module_dir/taxonomy_csv.api.inc");
+$module_dir = drupal_get_path('module', 'taxonomy_csv');
+require_once($module_dir . '/taxonomy_csv.api.inc');
 
 /**
  * Generates the taxonomy CSV export form.
@@ -404,8 +402,8 @@ function _taxonomy_csv_export_check_options(&$options) {
   elseif ($options['vocabulary_id']) {
     // Replace machine name with vocabulary id.
     if (!(is_numeric($options['vocabulary_id']) || is_array($options['vocabulary_id']))) {
-       $vocabulary = taxonomy_vocabulary_machine_name_load($options['vocabulary_id']);
-       $options['vocabulary_id'] = array($vocabulary->vid);
+      $vocabulary = taxonomy_vocabulary_machine_name_load($options['vocabulary_id']);
+      $options['vocabulary_id'] = array($vocabulary->vid);
     }
     // Replace vocabulary_id by an array if only one item is selected.
     elseif (!is_array($options['vocabulary_id'])) {

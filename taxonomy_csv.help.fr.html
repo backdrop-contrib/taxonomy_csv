@@ -168,23 +168,37 @@
     <div class="codeblock">
       <code>name, field_monchampperso_1_machinename, field_monchampperso_2_machinename...</code>
     </div>
-    <p>Les champs personnalisés sont créés automatiquement s'ils n'existent pas et is sont ensuite attachés au vocabulaire.</p>
-    <p>Actuellement, les champs personnalisés disponibles sont texte ('text'), reference à un autre terme ('taxonomy_term_reference') et même fichier ('file').</p>
-    <p>Le format par défaut est 'text'. Si vous voulez en utiliser un autre, vous devez l'indiquer avec le sympbole '|' dans la section 'Vocabulaire' du formulaire, sauf si le champ existe déjà.</p>
-    <p>Par exemple, vous voulez importer ces éléments (<a href="http://drupal.org/node/1027068#comment-4194716">origine de l'exemple</a>):</p>
+    <p>Les éléments peuvent être répétés pour les champs multivalués (Taxonomy CSV 7.x-10.x-dev).</p>
+    <div class="codeblock">
+      <code>name, description, weight, parent, synonyme, synonyme, synonyme, terme_lien, terme_lien, terme_lien, terme_lien</code>
+    </div>
+    <p>Le module peut importer tous les types de champs (Field) tant que leur valeur principale est 'value'. Ces champs ont été vérifiés :
+    <ul>
+      <li><code>text</code></li>
+      <li><code>text_long</code></li>
+      <li><code>text_with_summary</code></li>
+      <li><code>number_decimal</code></li>
+      <li><code>number_integer</code></li>
+      <li><code>number_float</code></li>
+      <li><code>list_boolean</code></li>
+      <li><code>taxonomy_term_reference</code></li>
+      <li><code>file</code></li>
+    </ul></p>
+    <p>Les champs personnalisés sont créés automatiquement s'ils n'existent pas et is sont ensuite attachés au vocabulaire. Le format par défaut est 'text'. Si vous voulez en utiliser un autre, vous devez l'indiquer avec le symbole '|' dans la section 'Vocabulaire' du formulaire. Le champ n'est pas créé ni modifié s'il existe déjà.</p>
+    <p>Par exemple, vous voulez importer ces éléments (<a href="http://drupal.org/node/1027068#comment-4194716">origine de l'example</a>) :</p>
     <div class="codeblock"><ul>
-      <li><code>nom par défault 1,nom tax gtin 1,description 1, /home/robertom/file1.pdf, statut 1</code></li>
-      <li><code>nom par défault 2,nom tax gtin 2,description 2, /home/robertom/file2.pdf, statut 2</code></li>
-      <li><code>nom par défault 3,nom tax gtin 3,description 3, /home/robertom/file3.pdf, statut 3</code></li>
+      <li><code>nom 1, nom tax gtin 1, description 1, /home/robertom/file1.pdf, statut 1, terme lié 1, terme lié 2, terme lié 3</code></li>
+      <li><code>nom 2, nom tax gtin 2, description 2, /home/robertom/file2.pdf, statut 2, terme lié 1, term lié 4</code></li>
+      <li><code>nom 3, nom tax gtin 3, description 3, /home/robertom/file3.pdf, statut 3</code></li>
     </ul></div>
     <p>Le format personnalisé pourra être :</p>
-    <div class="codeblock"><ul>
-      <li><code>name, field_nom_interne, description, field_fichier, field_statut</code></li>
-    </ul></div>
-    <p>Les champs personnalisés seront :</p>
-    <div class="codeblock"><ul>
-      <li><code>field_fichier|file</code></li>
-    </ul></div>
+    <div class="codeblock">
+      <code>name, field_nom_interne, description, field_fichier, field_statut, terme_lien, terme_lien, terme_lien</code>
+    </div>
+    <p>Les champs personalisés seront :</p>
+    <div class="codeblock">
+      <code>field_fichier|file, terme_lien|taxonomy_term_reference</code>
+    </div>
   <h4 id="def_links"><a href="#contents">3. Champs et liens des termes</a></h4>
     <p>Cette option permet d'importer la définition complète d'un terme ainsi que ses liens avec les autres termes.</p>
     <p>Le format est : nom du terme, identifiant du terme, identifiant du vocabulaire, description, poids, nombre de synonymes, nombre de parents de premier niveau, nombre d'enfants de premier niveau, nombre de termes associés, liste des synonymes, liste des identifiants des parents de premier niveau, liste des identifiants des enfants de premier niveau, liste des identifiants des termes associés, liste des identifiants des vocabulaires des termes associés.</p>

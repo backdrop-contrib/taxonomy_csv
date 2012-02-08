@@ -87,7 +87,8 @@ function taxonomy_csv_term_find($term, $all_vocabularies = FALSE, $parent_tid = 
 /**
  * Find duplicate terms in a vocabulary or in all vocabularies.
  *
- * @todo use taxonomy_term_load_multiple or regular Drupal 7 query.
+ * @todo
+ * Use taxonomy_term_load_multiple or regular Drupal 7 query.
  *
  * @param $vid
  *  (Optional) Vocabulary to check in.
@@ -251,6 +252,7 @@ function taxonomy_csv_term_get_synonyms($term_tid) {
 
 /**
  * Return an array of all related term ids of a given term id or object.
+ *
  * Wrapper of taxonomy_csv_term_get_field_values.
  */
 function taxonomy_csv_term_get_relations($term_tid) {
@@ -259,6 +261,7 @@ function taxonomy_csv_term_get_relations($term_tid) {
 
 /**
  * Return an array of all related term ids of a given term id or object.
+ *
  * Wrapper of taxonomy_csv_term_get_field_values.
  */
 function taxonomy_csv_term_get_relations_tids($term_tid) {
@@ -267,6 +270,7 @@ function taxonomy_csv_term_get_relations_tids($term_tid) {
 
 /**
  * Return an array of all related term names of a given term id or object.
+ *
  * Wrapper of taxonomy_csv_term_get_field_names.
  */
 function taxonomy_csv_term_get_relations_names($term_tid) {

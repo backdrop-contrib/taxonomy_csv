@@ -7,16 +7,13 @@
 
 /**
  * Invoke associated include file.
- * taxonomy_csv.import.admin.inc is invoked only if user wants to check input
- * options.
- * taxonomy_csv.import.result.inc is invoked only if user wants result messages.
  */
-  $module_dir = drupal_get_path('module', 'taxonomy_csv');
-  require_once("$module_dir/taxonomy_csv.api.inc");
-  require_once("$module_dir/import/taxonomy_csv.import.parser.api.inc");
-  require_once("$module_dir/import/taxonomy_csv.import.line.api.inc");
-  require_once("$module_dir/taxonomy_csv.vocabulary.api.inc");
-  require_once("$module_dir/taxonomy_csv.term.api.inc");
+$module_dir = drupal_get_path('module', 'taxonomy_csv');
+require_once($module_dir . '/taxonomy_csv.api.inc');
+require_once($module_dir . '/import/taxonomy_csv.import.parser.api.inc');
+require_once($module_dir . '/import/taxonomy_csv.import.line.api.inc');
+require_once($module_dir . '/taxonomy_csv.vocabulary.api.inc');
+require_once($module_dir . '/taxonomy_csv.term.api.inc');
 
 /**
  * Process the import of an input.
@@ -265,6 +262,8 @@ function _taxonomy_csv_import_soft_tab(&$file, $delimiter) {
 
 /**
  * Prepare the batch to import the vocabulary.
+ *
+ * @note
  * If not used in a form, don't forget to use batch_process().
  *
  * @param $options
@@ -760,13 +759,14 @@ function _taxonomy_csv_import_vocabulary_prepare(&$options, $check = TRUE) {
  *   (Optional integer) Total of imported terms (duplicate included) is needed
  *   to set weight of terms and to keep order of items, if wished.
  *
- * @return Result array:
- *   'name' => array of imported terms names,
- *   'tid'  => array of imported terms tids,
- *   'msg'  => messages arrays:
- *     term position => array of status messages of term,
- *     'line'        => array of status messages of line,
- *   'terms_count' => total of imported terms.
+ * @return
+ *   Result array:
+ *   - 'name' => array of imported terms names,
+ *   - 'tid'  => array of imported terms tids,
+ *   - 'msg'  => messages arrays:
+ *       term position => array of status messages of term,
+ *       'line'        => array of status messages of line,
+ *   - 'terms_count' => total of imported terms.
  */
 function taxonomy_csv_line_import_process($line, $options, $previous_items = array(), $terms_count = 0) {
   // Define default values.
@@ -841,7 +841,8 @@ function taxonomy_csv_line_import_process($line, $options, $previous_items = arr
  * @param &$messages
  *   (Optional) By reference array of messages codes to be returned.
  *
- * @return Array of cleaned imported line.
+ * @return
+ *   Array of cleaned imported line.
  */
 function _taxonomy_csv_line_import_clean($line, &$messages = array()) {
   $cleaned_line = array();

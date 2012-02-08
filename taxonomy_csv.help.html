@@ -168,23 +168,37 @@
     <div class="codeblock">
       <code>name, field_mycustomfield_1_machinename, field_mycustomfield_2_machinename...</code>
     </div>
-    <p>Custom fields are automatically created if they don't exist and then attached to the vocabulary.</p>
-    <p>Currently, custom fields can be 'text', reference to another term ('taxonomy_term_reference') and even 'file'.</p>
-    <p>The default type of field is 'text'. If you want to use another one, you have to set it with '|' symbol in the vocabulary section of the form, except if the field exists already.</p>
+    <p>Items can be repeated for multivalued fields (Taxonomy CSV 7.x-10.x-dev).</p>
+    <div class="codeblock">
+      <code>name, description, weight, parent, synonym, synonym, synonym, related_term, related_term, related_term, related_term</code>
+    </div>
+    <p>The module supports all field types as long as they have a 'value' in their definition. These fields has been checked:
+    <ul>
+      <li><code>text</code></li>
+      <li><code>text_long</code></li>
+      <li><code>text_with_summary</code></li>
+      <li><code>number_decimal</code></li>
+      <li><code>number_integer</code></li>
+      <li><code>number_float</code></li>
+      <li><code>list_boolean</code></li>
+      <li><code>taxonomy_term_reference</code></li>
+      <li><code>file</code></li>
+    </ul></p>
+    <p>Custom fields are automatically created if they don't exist and then attached to the vocabulary. By default, a 'text' field is created when the field doesn't exist. If you want to create another type of field, you have to set it with '|' symbol in the vocabulary section of the form. The field is not created or modified if it exists.</p>
     <p>For exemple, you want to import these items (<a href="http://drupal.org/node/1027068#comment-4194716">origine of example</a>):</p>
     <div class="codeblock"><ul>
-      <li><code>default name 1, tax gtin name 1, description 1, /home/robertom/file1.pdf, status 1</code></li>
-      <li><code>default name 2, tax gtin name 2, description 2, /home/robertom/file2.pdf, status 2</code></li>
-      <li><code>default name 3, tax gtin name 3, description 3, /home/robertom/file3.pdf, status 3</code></li>
+      <li><code>name 1, tax gtin name 1, description 1, /home/robertom/file1.pdf, status 1, related term 1, related term 2, related term 3</code></li>
+      <li><code>name 2, tax gtin name 2, description 2, /home/robertom/file2.pdf, status 2, related term 1, related term 4</code></li>
+      <li><code>name 3, tax gtin name 3, description 3, /home/robertom/file3.pdf, status 3</code></li>
     </ul></div>
     <p>Your custom format will be:</p>
-    <div class="codeblock"><ul>
-      <li><code>name, field_internal_name, description, field_file, field_status</code></li>
-    </ul></div>
+    <div class="codeblock">
+      <code>name, field_internal_name, description, field_file, field_status, related_term, related_term, related_term</code>
+    </div>
     <p>Your custom fields will be:</p>
-    <div class="codeblock"><ul>
-      <li><code>field_file|file</code></li>
-    </ul></div>
+    <div class="codeblock">
+      <code>field_file|file, related_term|taxonomy_term_reference</code>
+    </div>
   <h4 id="def_links"><a href="#contents">3. Full term fields and links</a></h4>
     <p>This option allows to import full term definitions and direct links to other terms.</p>
     <p>Format is: term name, term id, vocabulary id, term description, weight, number of synonyms, number of first level parents, number of first level children, number of related terms, list of synonyms, list of first level parents ids, list of first level children ids, list of related terms ids, list of vocabulary ids of related terms.</p>

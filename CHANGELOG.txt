@@ -10,6 +10,7 @@
 Taxonomy csv import/export 7.x-5.10-dev, 2012-02-04
 -----------------------------------------------
 #1410784 by Daniel Berthereau: Added import/export of multivalued fields.
+By Daniel Berthereau: Updated documentation and checked code with Coder.
 
 
 Taxonomy csv import/export 7.x-5.9, 2012-02-04

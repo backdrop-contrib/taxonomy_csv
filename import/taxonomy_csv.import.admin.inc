@@ -7,10 +7,9 @@
 
 /**
  * Invoke associated files.
- * taxonomy_csv.import.api.inc is invoked only when form is submitted.
  */
-  $module_dir = drupal_get_path('module', 'taxonomy_csv');
-  require_once("$module_dir/taxonomy_csv.api.inc");
+$module_dir = drupal_get_path('module', 'taxonomy_csv');
+require_once($module_dir . '/taxonomy_csv.api.inc');
 
 /**
  * Generates the taxonomy CSV import form.
@@ -381,7 +380,7 @@ function taxonomy_csv_form_import($form, &$form_state) {
         . t('"United Kingdom", "Royaume-Uni"') . $li
         . t('"Germany", "Allemagne", "A European country", "Un pays européen"')
       . $description_long
-        . t('The term is in the first column followed by its translation and their description. Names are required, but descriptions are optional.') . ' ' . t(' Language of first term will be "Language neutral" and the language of the second item can be set in the third tab.') . '<br />'
+        . t('The term is in the first column followed by its translation and their description. Names are required, but descriptions are optional.') . ' ' . t('Language of first term will be "Language neutral" and the language of the second item can be set in the third tab.') . '<br />'
         . '<strong>' . t('Note') . '</strong>: ' . t('With a vocabulary in Full translation mode, a term with an undefined language cannot be translated, so do not forget to choose a language when original terms are first imported.');
     if (!module_exists('i18n_taxonomy')) {
       $form['tab']['format']['import_format']['#options'][TAXONOMY_CSV_FORMAT_TRANSLATE_TERMS] .= ' [' . t('Unavailable') . ']';
@@ -427,7 +426,7 @@ function taxonomy_csv_form_import($form, &$form_state) {
       'tid'  => t('First item is the source term id'),
     ),
     '#default_value' => $list_previous_values['translate_by'],
-      '#description'   => t('Choose how to identify the source term.') . ' '  . t("If the source term doesn't exist, it will be created.") . '<ul>'
+      '#description'   => t('Choose how to identify the source term.') . ' ' . t("If the source term doesn't exist, it will be created.") . '<ul>'
         . '<li>' . t('To use name is simpler, but cannot be used if vocabulary has duplicate names.') . '</li>'
         . '<li>' . t('To use term id is quicker, but you need to export your vocabulary to get tids.') . '</li>'
       . '</ul>',
@@ -619,7 +618,7 @@ function taxonomy_csv_form_import($form, &$form_state) {
     '#options'       => $list_filter_format,
     '#default_value' => $list_previous_values['filter_format'],
     '#description'   => t('Choose the default format used for the description. This parameter is set in your imported term even if there is no description.') . '<br />'
-      . t('Note') . ': ' .t('You can select only formats you can use.') . '<br >'
+      . t('Note') . ': ' . t('You can select only formats you can use.') . '<br >'
       . t('Note') . ': ' . t('Check is made by Drupal only when description is displayed.') . '<br />'
       . t('Note') . ': ' . t('If your vocabulary is localizable and you want to translate description, you should use "plain text" format or change the translation mode of the vocabulary.'),
   );
@@ -630,8 +629,8 @@ function taxonomy_csv_form_import($form, &$form_state) {
     '#options'       => $list_filter_format_custom,
     '#default_value' => $list_previous_values['filter_format_custom'],
     '#description'   => t('Choose the default format used for custom fields and synonyms.') . '<br />'
-      . t('Note') . ': ' .t('You can select only formats you can use. It can be changed later.') . '<br />'
-      . t('Note') . ': ' .t('Sanitization is made during import.'),
+      . t('Note') . ': ' . t('You can select only formats you can use. It can be changed later.') . '<br />'
+      . t('Note') . ': ' . t('Sanitization is made during import.'),
   );
 
   $form['tab']['csv_format']['import_language'] = array(
@@ -788,15 +787,15 @@ function taxonomy_csv_form_import($form, &$form_state) {
     '#description'   =>  t('Fields of custom format are automatically attached if they exist, else they are created before.') . ' ' . t('When a field is created, options are set to Drupal defaults for a text field with a unlimited number of values.') . ' ' . t("If you want another type, you have to create it before or set it here with the '|' symbol.") . '<br />'
       . t('Currently only these field types are managed by default:')
       . '<ul>'
-        .'<li>' . 'text' . '</li>'
-        .'<li>' . 'text_long' . '</li>'
-        .'<li>' . 'text_with_summary' . '</li>'
-        .'<li>' . 'number_decimal' . '</li>'
-        .'<li>' . 'number_integer' . '</li>'
-        .'<li>' . 'number_float' . '</li>'
-        .'<li>' . 'list_boolean' . '</li>'
-        .'<li>' . 'taxonomy_term_reference' . '</li>'
-        .'<li>' . 'file' . '</li>'
+        . '<li>' . 'text' . '</li>'
+        . '<li>' . 'text_long' . '</li>'
+        . '<li>' . 'text_with_summary' . '</li>'
+        . '<li>' . 'number_decimal' . '</li>'
+        . '<li>' . 'number_integer' . '</li>'
+        . '<li>' . 'number_float' . '</li>'
+        . '<li>' . 'list_boolean' . '</li>'
+        . '<li>' . 'taxonomy_term_reference' . '</li>'
+        . '<li>' . 'file' . '</li>'
       . '</ul>'
       . t('Other types are well imported too if their content is a "value".') . '<br />'
       . t('Be careful with "taxonomy_term_reference", because this field allows references to one vocabulary only, so referenced vocabulary is set to current one, which can be an issue if the same field is used somewhere else.') . '<br />'
@@ -1307,8 +1306,8 @@ function _taxonomy_csv_import_check_options(&$options) {
 
   // Replace machine name with vocabulary id.
   if (!is_numeric($options['vocabulary_id'])) {
-     $vocabulary = taxonomy_vocabulary_machine_name_load($options['vocabulary_id']);
-     $options['vocabulary_id'] = $vocabulary->vid;
+    $vocabulary = taxonomy_vocabulary_machine_name_load($options['vocabulary_id']);
+    $options['vocabulary_id'] = $vocabulary->vid;
   }
 
   // Calculates number of lines to be imported.

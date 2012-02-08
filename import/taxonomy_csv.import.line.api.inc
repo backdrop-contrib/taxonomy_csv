@@ -31,11 +31,12 @@
  *   (Optional integer) Total of imported terms (duplicate included) is needed
  *   to set weight of terms and to keep order of items, if wished.
  *
- * @return Result array:
- *   'name' => array of imported terms names,
- *   'tid'  => array of imported terms tids,
- *   'msg'  => array of message codes,
- *   'terms_count' => number of imported terms.
+ * @return
+ *   Result array:
+ *   - 'name' => array of imported terms names,
+ *   - 'tid'  => array of imported terms tids,
+ *   - 'msg'  => array of message codes,
+ *   - 'terms_count' => number of imported terms.
  */
 function taxonomy_csv_line_import($line, $options, $previous_items = array(), $terms_count = 0) {
   // Define default values.
@@ -136,8 +137,8 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array(), $t
                 $current_result['msg'] = 455; // Reference to term 0.
                 continue;
               }
-              // TODO Check if it isn't the current term id.
-              // TODO Check if parent is in current vocabulary.
+              // @todo Check if it isn't the current term id.
+              // @todo Check if parent is in current vocabulary.
               $term->parent[] = $line[$key];
             }
             // Else find the parent normally.
@@ -155,7 +156,7 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array(), $t
             }
           }
           elseif (isset($options['fields'][$field_name])) {
-            // TODO To be rewritten.
+            // @todo To be rewritten.
             // True fields will be added later.
             // Currently, repetitive items are not managed.
             $term->fields_to_import[$field_name][] = $line[$key];
@@ -866,8 +867,7 @@ function _taxonomy_csv_line_result(&$result, $current_result, $terms_count) {
 }
 
 /**
- * Update or create a term with the given name in the given vocabulary and
- * given parent.
+ * Update/create a term with the given name and parent in the given vocabulary.
  *
  * @param $term
  *   A term object to import. Term contains either:
@@ -1093,14 +1093,14 @@ function _taxonomy_csv_term_field_import($term, $existing_items = TAXONOMY_CSV_E
               $messages['notice'] = t('Unable to make a reference to term "0".');
               continue 2;
             }
-            // TODO Check if the term is in allowed vocabularies.
+            // @todo Check if the term is in allowed vocabularies.
             $referenced_term->tid = $value;
           }
           // Else find the parent normally.
           else {
             $referenced_term->name = $value;
             $referenced_term->vid = $referenced_vocabulary->vid;
-            // TODO Use undefined language or term language?
+            // @todo Use undefined language or term language?
             if (isset($term->language)) {
               $referenced_term->language = $term->language;
             }
@@ -1138,7 +1138,7 @@ function _taxonomy_csv_term_field_import($term, $existing_items = TAXONOMY_CSV_E
           break;
 
         case 'list_boolean':
-          $value = (($value == '0') || (strtolower($value) == 'false')) ? 0 : 1;
+          $value = (($value == '0') || (drupal_strtolower($value) == 'false')) ? 0 : 1;
           $term->{$field_name}[$language][0] = array('value' => $value);
           break;
 
@@ -1265,7 +1265,9 @@ function _taxonomy_csv_field_create_taxonomy_term_reference($value, $language = 
  * @param $field_name
  *   Field to update.
  * @param $term
+ *   Term object.
  * @param $existing_term
+ *   Previous term object.
  *
  * @return
  *   Nothing: $term object is passed by reference.
@@ -1314,7 +1316,9 @@ function _taxonomy_csv_field_update_text($field_name, $term, $existing_term) {
  * @param $field_name
  *   Field to update.
  * @param $term
+ *   Term object.
  * @param $existing_term
+ *   Previous term object.
  *
  * @return
  *   Nothing: $term object is passed by reference.
@@ -1363,7 +1367,9 @@ function _taxonomy_csv_field_update_taxonomy_term_reference($field_name, $term, 
  * @param $term
  *   A taxonomy term object with custom fields.
  * @param $field_name
+ *   Field to update.
  * @param $language
+ *   (Optional) Language code.
  *
  * @return
  *   Nothing: $term object is passed by reference.

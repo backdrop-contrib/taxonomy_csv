@@ -7,14 +7,11 @@
 
 /**
  * Invoke associated include file.
- * taxonomy_csv.export.admin.inc is invoked only if user wants to check input
- * options.
- * taxonomy_csv.export.result.inc is invoked only if user wants result messages.
  */
-  $module_dir = drupal_get_path('module', 'taxonomy_csv');
-  require_once("$module_dir/taxonomy_csv.api.inc");
-  require_once("$module_dir/taxonomy_csv.term.api.inc");
-  require_once("$module_dir/taxonomy_csv.vocabulary.api.inc");
+$module_dir = drupal_get_path('module', 'taxonomy_csv');
+require_once($module_dir . '/taxonomy_csv.api.inc');
+require_once($module_dir . '/taxonomy_csv.term.api.inc');
+require_once($module_dir . '/taxonomy_csv.vocabulary.api.inc');
 
 /**
  * Process the export of a vocabulary.
@@ -103,6 +100,8 @@ function _taxonomy_csv_export_output_presave(&$options) {
 
 /**
  * Prepare the export of a vocabulary.
+ *
+ * @note
  * If not used in a form, don't forget to use batch_process().
  *
  * @param $options
@@ -449,8 +448,8 @@ function _taxonomy_csv_vocabulary_export_finished($success, $results, $operation
  * @param $result_message
  *   (Optional) Array of messages.
  *
- * @return Result array:
- *   Array of messages.
+ * @return
+ *   Result array of messages.
  */
 function taxonomy_csv_line_export($line, $options, &$handle, $result = array()) {
   // Check if separator, enclosure or line ending exist in line.
@@ -494,9 +493,10 @@ function taxonomy_csv_line_export($line, $options, &$handle, $result = array()) 
  *   (Optional) Array of duplicate terms names indexed by tid.
  *   Duplicate terms are managed only with def_links.
  *
- * @return Result array:
- *   'line' => array of exported items,
- *   'msg'  => array of messages arrays.
+ * @return
+ *   Result array with:
+ *   - 'line' => array of exported items,
+ *   - 'msg'  => array of messages arrays.
  */
 function taxonomy_csv_term_export($term, $options, &$terms_list = array(), $duplicate_terms = array()) {
   // Define default values.

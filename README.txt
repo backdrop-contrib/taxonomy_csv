@@ -54,8 +54,7 @@ to check your csv file before import in a true vocabulary.
 -- TROUBLESHOOTING --
   -----------------
 
-See online issues:
-  http://drupal.org/project/issues/taxonomy_csv
+See online issue at http://drupal.org/project/issues/taxonomy_csv.
 
 
 -- FAQ --

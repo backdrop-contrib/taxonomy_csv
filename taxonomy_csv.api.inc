@@ -33,7 +33,7 @@ define('TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS_FIRST', 'custom_fields_first');
  */
 define('TAXONOMY_CSV_EXISTING_UPDATE',          'update');
 define('TAXONOMY_CSV_EXISTING_UPDATE_REPLACE',  'replace_fields');
-// TODO A full replace is needed for fields.
+// @todo A full replace is needed for fields.
 define('TAXONOMY_CSV_EXISTING_IGNORE',          'ignore');
 define('TAXONOMY_CSV_EXISTING_IGNORE_ALL',      'ignore_all'); // @todo
 // Internal use only: in fact, same as TAXONOMY_CSV_EXISTING_UPDATE_REPLACE.
@@ -51,7 +51,9 @@ define('TAXONOMY_CSV_PROCESS_INFO',    600); // Successfully processed.
 define('TAXONOMY_CSV_PROCESS_DEBUG',   700); // Internal use only.
 
 /**
- * Information about import process. Use too default Drupal constants:
+ * Information about import process.
+ *
+ * Use too default Drupal constants:
  * - SAVED_NEW     = 1
  * - SAVED_UPDATED = 2
  * Possibly use of:
