@@ -56,14 +56,9 @@ function _taxonomy_csv_export_result($options, $worst_level, $summary, $results)
     $messages[] = array($watchdog_level => $message);
 
     // Infos on duplicate term names.
-    // List has been prepared only for some formats.
-    if (!in_array($options['export_format'], array(
-        TAXONOMY_CSV_FORMAT_DEFINITION_LINKS,
-      ))) {
-      $options['duplicate_terms'] = array();
-      foreach ($options['vocabulary_id'] as $item) {
-        $options['duplicate_terms'] += taxonomy_csv_term_find_duplicate($item);
-      }
+    $options['duplicate_terms'] = array();
+    foreach ($options['vocabulary_id'] as $item) {
+      $options['duplicate_terms'] += taxonomy_csv_term_find_duplicate($item);
     }
 
     $duplicate_count = count($options['duplicate_terms']);
@@ -84,32 +79,38 @@ function _taxonomy_csv_export_result($options, $worst_level, $summary, $results)
     $messages[] = array($watchdog_level => $message);
 
     // Info on field format.
-    if (in_array($options['export_format'], array(
-        TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS,
-      ))) {
-      foreach ($options['vocabulary'] as $vocabulary) {
-        $format = array();
-        $format[] = 'name';
-        foreach ($vocabulary->fields as $field_name => &$field) {
-          if (isset($vocabulary->fields_unlimited[$field_name])) {
-            $format = array_merge($format, array_fill(0, $vocabulary->fields_unlimited[$field_name], $field_name));
+    switch ($options['export_format']) {
+      case TAXONOMY_CSV_FORMAT_FIELDS:
+        foreach ($options['vocabulary'] as $vocabulary) {
+          $format = array();
+          foreach ($vocabulary->fields as $field_name => &$field) {
+            if (isset($vocabulary->fields_unlimited[$field_name])) {
+              $format = array_merge($format, array_fill(0, $vocabulary->fields_unlimited[$field_name], $field_name));
+            }
+            else {
+              $format = array_merge($format, array_fill(0, $field['cardinality'], $field_name));
+            }
           }
-          else {
-            $format = array_merge($format, array_fill(0, $field['cardinality'], $field_name));
+
+          $message = t('CSV format of vocabulary "@vocabulary" is:', array(
+            '@vocabulary' => $vocabulary->name,
+          ));
+          $message .= '<br /><pre>' . implode(', ', $format) . '</pre>';
+          $messages[] = array($watchdog_level => $message);
+        }
+        break;
+
+      case TAXONOMY_CSV_FORMAT_TREE:
+        foreach ($options['vocabulary'] as $vocabulary) {
+          if ($vocabulary->hierarchy == 2) {
+            $message = t('Vocabulary "@vocabulary" is polyhierarchical. With the selected format (tree), only the first parent of each term was exported.', array(
+              '@vocabulary' => $vocabulary->name,
+            ));
+            $messages[] = array(WATCHDOG_NOTICE => $message);
           }
         }
-
-        $message = t('CSV format of vocabulary "@vocabulary" is:', array(
-          '@vocabulary' => $vocabulary->name,
-        ));
-        $message .= '<br /><pre>' . implode(', ', $format) . '</pre>';
-        $messages[] = array($watchdog_level => $message);
-      }
+        break;
     }
-
-    // @todo Add line level messages.
-    // Currently, it's useless, because there isn't any export message in
-    // line export process. It can be added as in import.
   }
 
   _taxonomy_csv_message_result($messages);

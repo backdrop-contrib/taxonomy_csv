@@ -10,7 +10,6 @@
  */
 $module_dir = drupal_get_path('module', 'taxonomy_csv');
 require_once($module_dir . '/taxonomy_csv.api.inc');
-require_once($module_dir . '/import/taxonomy_csv.import.parser.api.inc');
 require_once($module_dir . '/import/taxonomy_csv.import.line.api.inc');
 require_once($module_dir . '/taxonomy_csv.vocabulary.api.inc');
 require_once($module_dir . '/taxonomy_csv.term.api.inc');
@@ -26,34 +25,29 @@ require_once($module_dir . '/taxonomy_csv.term.api.inc');
  *   - text           : csv text to import
  *   - url            : url to distant or local csv file
  *   - path           : path to local csv file
- *   - import_format  : see _taxonomy_csv_values (default: 'alone_terms')
- *   - custom_format  : array. list of machinename fields (default: 0 => 'name')
+ *   - import_format  : see _taxonomy_csv_values (default: 'flat')
+ *   - fields_format  : array. list of machinename fields (default: 0 => 'name')
  *   - translate_by   : string. name (default) or tid.
  *   - keep_order     : boolean. keep order of imported terms or not (default)
  *   - delimiter      : 1 character csv delimiter (default: ',')
  *   - enclosure      : 0 or 1 character csv enclosure (default: none or '"')
  *   - filter_format  : string. description field format (default: 'plain_text')
- *   - filter_format_custom : string. custom fields format (default: 'none')
+ *   - filter_format_custom: string. custom fields format (default: 'none')
  *   - language       : string. terms' default language (default: neutral 'und')
  *   - check_line     : boolean. check or not (default) format of lines
  *   - check_utf8     : boolean. check or not (default) utf8 format
  *   - locale_custom  : string. specific locale of imported file
  *   - vocabulary_target: 'autocreate' (default), 'duplicate' or 'existing'
- *   - vocabulary_id  : vid or machine_name of the vocabulary to duplicate or to
- *                      import into
+ *   - vocabulary_id  : vid or machine_name of the vocabulary to import into
  *   - i18n_mode      : integer. internationalization mode of autocreated
  *                      vocabulary (default: 0 (I18N_MODE_NONE))
  *   - vocabulary_language: string. language code of autocreated vocabulary
  *                      (default: 'und' (undefined))
- *   - custom_fields  : array. custom fields to add or create (default: array())
+ *   - fields_custom  : array. custom fields to add or create (default: array())
  *   - delete_terms   : delete all terms before import (default: FALSE)
  *   - check_hierarchy: boolean. check (default) or not vocabulary hierarchy
  *   - set_hierarchy  : if hierarchy isn't checked, set it (0, 1 or 2 (default))
- *   - existing_items : see _taxonomy_csv_values (default: 'update')
- *   // Specific to relations import:
- *   - relations_create_subrelations: boolean. (default: FALSE)
- *   - relations_all_vocabularies   : boolean. (default: FALSE)
- *   // Level of result process infos.
+ *   - update_or_ignore : depends on import_format: 'update' (default) or 'ignore'
  *   - check_options  : boolean. check or not (default) this array of options
  *   - result_display : boolean. display or not (default)
  *   - result_stats   : boolean. display or not (default) stats
@@ -294,10 +288,10 @@ function taxonomy_csv_vocabulary_import($options) {
   $options['total_lines'] = count(file($options['file']->filepath));
 
   // Prepare vocabularies. Options are passed by-reference and can be updated.
-  $name = _taxonomy_csv_import_vocabulary_prepare($options);
+  $options['vocabulary'] = _taxonomy_csv_import_vocabulary_prepare($options);
 
   // Get infos about fields of vocabulary.
-  if ($options['import_format'] == TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS) {
+  if ($options['import_format'] == TAXONOMY_CSV_FORMAT_FIELDS) {
     $options['instances'] = field_info_instances('taxonomy_term', $options['vocabulary']->machine_name);
     $options['fields'] = array();
     if (is_array($options['instances'])) {
@@ -321,7 +315,7 @@ function taxonomy_csv_vocabulary_import($options) {
         t('Importing !total_lines lines from text...', array(
           '!total_lines' => $options['total_lines'])) :
         t('Importing !total_lines lines from CSV file "%filename"...', array(
-          '%filename'    => $name,
+          '%filename'    => $options['vocabulary']->name,
           '!total_lines' => $options['total_lines'])),
     'init_message'     => t('Starting uploading of datas...') . '<br />'
       . t('Wait some seconds for pre-processing...'),
@@ -396,7 +390,6 @@ function _taxonomy_csv_vocabulary_import_process($options, &$context) {
     setlocale(LC_CTYPE, $options['locale_custom']);
   }
   $line = fgetcsv($handle, 4096, $options['delimiter'], $options['enclosure']);
-
   if ($line) {
     ++$line_number;
 
@@ -420,16 +413,15 @@ function _taxonomy_csv_vocabulary_import_process($options, &$context) {
 
     // Remember only wanted messages.
     if (($options['result_stats'] || $options['result_terms'])
-        && $result['tid']) {
+        && $result['tid']
+      ) {
       // Some formats use $result to save other infos, so it needs to be cleaned
       // before to be saved.
-      $format = taxonomy_csv_format_get($options['import_format']);
-      if (($options['import_format'] == TAXONOMY_CSV_FORMAT_DEFINITION_LINKS)
-          && isset($result['tid']['term'])) {
-        // Def_links saved all terms each times in a sub array.
-        $context['results'][0]['imported_terms'][0] = array_values($result['tid']['term']);
-      }
-      elseif ($format && $format['import_previous']) {
+      if (in_array($format['import_format'], array(
+        TAXONOMY_CSV_FORMAT_STRUCTURE,
+        TAXONOMY_CSV_FORMAT_TREE,
+        TAXONOMY_CSV_FORMAT_POLYHIERARCHY,
+      ))) {
         // Don't remember previous previous items.
         $context['results'][0]['imported_terms'][0] = array_values($result['tid']);
       }
@@ -480,13 +472,6 @@ function _taxonomy_csv_vocabulary_import_process($options, &$context) {
     else {
       $context['finished'] = 1;
     }
-  }
-
-  // With some formats, remember vocabularies to be checked.
-  if (in_array($options['import_format'], array(
-      TAXONOMY_CSV_FORMAT_DEFINITION_LINKS,
-    ))) {
-    $context['results'][0]['vocabularies'] = $previous_items['tid']['vocabulary'];
   }
 }
 
@@ -566,7 +551,7 @@ function _taxonomy_csv_vocabulary_import_finished($success, $results, $operation
  *   (Optional) Boolean used to determine if some options are checked or not.
  *
  * @return
- *   Name of the prepared vocabulary. $options can be updated.
+ *   Prepared vocabulary object. $options can be updated.
  */
 function _taxonomy_csv_import_vocabulary_prepare(&$options, $check = TRUE) {
   $name = '';
@@ -584,13 +569,6 @@ function _taxonomy_csv_import_vocabulary_prepare(&$options, $check = TRUE) {
     elseif (isset($options['file']->filename) && $options['file']->filename != '') {
       $name = $options['file']->filename;
     }
-
-    // With some formats, vocabularies are created during import.
-    if (in_array($options['import_format'], array(
-        TAXONOMY_CSV_FORMAT_DEFINITION_LINKS,
-      ))) {
-      return $name;
-    }
   }
 
   // Create, duplicate or use an existing vocabulary.
@@ -605,11 +583,6 @@ function _taxonomy_csv_import_vocabulary_prepare(&$options, $check = TRUE) {
         $vocabulary->language = $options['vocabulary_language'];
         $result = taxonomy_vocabulary_save($vocabulary);
       }
-      break;
-
-    case 'duplicate':
-      $vocabulary = taxonomy_csv_vocabulary_duplicate($options['vocabulary_id']);
-      $options['vocabulary_id'] = $vocabulary->vid;
       break;
 
     case 'existing':
@@ -632,31 +605,11 @@ function _taxonomy_csv_import_vocabulary_prepare(&$options, $check = TRUE) {
     }
   }
 
-  // Prepare default synonyms field if needed.
-  $synonym_field = (in_array($options['import_format'], array(
-      TAXONOMY_CSV_FORMAT_DEFINITION_LINKS,
-      TAXONOMY_CSV_FORMAT_DEFINITIONS,
-      TAXONOMY_CSV_FORMAT_SYNONYMS,
-    ))) ?
-    array() :
-    FALSE;
-
-  // Prepare default relations field if needed.
-  $relation_field = (in_array($options['import_format'], array(
-      TAXONOMY_CSV_FORMAT_DEFINITION_LINKS,
-      TAXONOMY_CSV_FORMAT_RELATIONS,
-    ))) ?
-    array() :
-    FALSE;
-
-  // Add or create synonyms and relations fields for the vocabulary, if needed.
-  $options['vocabulary'] = taxonomy_csv_thesaurus_create($vocabulary->name, $synonym_field, $relation_field);
-
   // Add or create custom fields if needed.
-  if ($options['import_format'] == TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS) {
-    $custom_fields = array_flip($options['custom_format']);
+  if ($options['import_format'] == TAXONOMY_CSV_FORMAT_FIELDS) {
+    $fields_custom = array_flip($options['fields_format']);
     // Set default format to items of the custom format.
-    foreach ($custom_fields as $key => $value) {
+    foreach ($fields_custom as $key => $value) {
       if (in_array($key, array(
           'tid',
           'vid',
@@ -670,26 +623,26 @@ function _taxonomy_csv_import_vocabulary_prepare(&$options, $check = TRUE) {
           'vocabulary_machine_name',
           'parent',
         ))) {
-        unset($custom_fields[$key]);
+        unset($fields_custom[$key]);
       }
       else {
-        $custom_fields[$key] = 'text';
+        $fields_custom[$key] = 'text';
       }
     }
 
     // Add items of the custom fields. Allowed types are already checked.
-    foreach ($options['custom_fields'] as $key => $value) {
+    foreach ($options['fields_custom'] as $key => $value) {
       $field_name = (strpos($value, '|') === FALSE) ?
           $value :
           trim(drupal_substr($value, 0, strpos($value, '|')));
       $field_type = (strpos($value, '|') === FALSE) ?
           'text' :
           trim(drupal_substr($value, strpos($value, '|') + 1));
-      $custom_fields[$field_name] = $field_type;
+      $fields_custom[$field_name] = $field_type;
     }
 
     // Add or create each custom fields.
-    foreach ($custom_fields as $field_name => $field_type) {
+    foreach ($fields_custom as $field_name => $field_type) {
       // Set default field type.
       $field = array(
         'field_name'   => $field_name,
@@ -720,13 +673,7 @@ function _taxonomy_csv_import_vocabulary_prepare(&$options, $check = TRUE) {
     }
   }
 
-  // Check external formats. Use it only if it works.
-  $funcname = "_taxonomy_csv_import_vocabulary_prepare_{$options['import_format']}";
-  if (taxonomy_csv_format_check($options['import_format'], $funcname)) {
-    $result = $funcname($vocabulary);
-  }
-
-  return $vocabulary->name;
+  return $vocabulary;
 }
 
 /**
@@ -736,25 +683,15 @@ function _taxonomy_csv_import_vocabulary_prepare(&$options, $check = TRUE) {
  *   Array which contains items of a csv line.
  * @param $options
  *   An associative array of import options:
- *   - import_format : see _taxonomy_csv_values('import_format')
+ *   - import_format : format of the csv line (see taxonomy.api.inc)
  *   - keep_order    : boolean. keep order of imported terms or not (default)
  *   - vocabulary_id : vocabulary id to import into
- *   - existing_items: see _taxonomy_csv_values('import_option')
+ *   - update_or_ignore: indicates what will become existing terms, if any.
  *   - check_line    : boolean. Tweak to check (default) or not format of lines
  *   - check_utf8    : boolean. Tweak to check (default) or not utf8 format
- *   // Specific to relations import:
- *   - relations_create_subrelations: boolean.
- *   - relations_all_vocabularies   : boolean.
  * @param $previous_items
  *   (Optional) Cleaned and checked previous imported line names and tids array.
- *   Needed with some contents as one term array structure or Taxonomy manager.
- *   Specificities:
- *   - taxonomy_manager:
- *       tid array is indexed with old tids.
- *   - def_links:
- *       'name' and 'tid' arrays contain sub-arrays 'vocabulary' and 'term' with
- *       imported identifiant as key and name or tid/vid as value in order to
- *       allow duplicate names import and use of number identifiants.
+ *   Needed with some contents as one term array structure.
  * @param $terms_count
  *   (Optional integer) Total of imported terms (duplicate included) is needed
  *   to set weight of terms and to keep order of items, if wished.
@@ -860,10 +797,8 @@ function _taxonomy_csv_line_import_clean($line, &$messages = array()) {
   else {
     $cleaned_line = $line;
 
-    foreach ($line as $item) {
-      if (!drupal_validate_utf8($item)) {
-        $messages[] = 321; // Error validate.
-      }
+    if (!drupal_validate_utf8(implode(',', $line))) {
+      $messages[] = 321; // Error validate.
     }
 
     // Trim and check empty line: useful for some non-Ascii lines.
@@ -881,4 +816,127 @@ function _taxonomy_csv_line_import_clean($line, &$messages = array()) {
   }
 
   return $cleaned_line;
+}
+
+/**
+ * Check a line to find duplicate items, empty items...
+ *
+ * @param $line
+ *   Array of items from a cleaned line.
+ * @param $options
+ *   Array of available options. See taxonomy_csv_line_import_process.
+ * @param $previous_items
+ *   (Optional) Cleaned and checked previous imported line names and tids array.
+ *   Needed with some contents as one term array structure.
+ * @param &$messages
+ *   (Optional) By reference array of messages codes to be returned.
+ *
+ * @return
+ *   Array of checked items of imported line.
+ */
+function _taxonomy_csv_line_import_check($line, $options, $previous_items = array(), &$messages = array()) {
+  $checked_items = array();
+
+  // Simplify used options.
+  $update_or_ignore = &$options['update_or_ignore'];
+
+  // No input check because line and previous line are already checked.
+  // @todo A php callback function may be used to simplify checking.
+  // @todo To be factorized and simplified.
+  switch ($options['import_format']) {
+    case TAXONOMY_CSV_FORMAT_FLAT:
+      if (count($line) == 0) {
+        $messages[] = 491; // Warning no item.
+        break;
+      }
+      $checked_items = array_unique(array_filter($line));
+      if (count($checked_items) < count($line)) {
+        $messages[] = 531; // Notice duplicates, which are removed.
+      }
+      foreach ($checked_items as $name) {
+        if (drupal_strlen($name) > 255) {
+          $messages[] = 454; // Warning too long.
+          break;
+        }
+      }
+      break;
+
+    case TAXONOMY_CSV_FORMAT_STRUCTURE:
+    case TAXONOMY_CSV_FORMAT_TREE:
+    case TAXONOMY_CSV_FORMAT_POLYHIERARCHY:
+      // Check last empty column before first item with previous imported items.
+      for ($first_non_empty = 0; ($first_non_empty < count($line)) && (empty($line[$first_non_empty])); $first_non_empty++) {
+      }
+      // Example: Previous line("Term 1,Item 2") ; Current line(",,,Item4")
+      if ($first_non_empty && (!isset($previous_items['name'][$first_non_empty - 1]))) {
+        $messages[] = 410; // Warning impossible to get parent.
+        break;
+      }
+      // Example: Previous line("Term 1,Item 2") ; Current line(",,,Item4")
+      // "0" value are lost, but that is not important for a taxonomy.
+      $imported_items = array_filter(array_slice($line, $first_non_empty));
+      if (count($imported_items) == 0) {
+        $messages[] = 491; // Warning no item.
+        break;
+      }
+      if (count($imported_items) < (count($line) - $first_non_empty)) {
+        $messages[] = 510; // Notice empty items.
+      }
+      if (count(array_unique($imported_items)) < count($imported_items)) {
+        $messages[] = 632; // Info duplicates (not removed).
+      }
+      if ($first_non_empty == 0) {
+        $checked_items = $imported_items;
+      }
+      else {
+        $checked_items = array_merge(array_fill(0, $first_non_empty, ''), $imported_items);
+      }
+      foreach ($checked_items as $name) {
+        if (drupal_strlen($name) > 255) {
+          $messages[] = 454; // Warning too long.
+          break;
+        }
+      }
+      break;
+
+    case TAXONOMY_CSV_FORMAT_FIELDS:
+      // Get number of items.
+      $number_items = count($options['fields_format']);
+      if (count($line) < count($options['fields_format'])) {
+        $messages[] = 570; // Notice too little items.
+      }
+      elseif (count($line) > count($options['fields_format'])) {
+        $messages[] = 564; // Notice too many items.
+      }
+      if (count(array_keys($options['fields_format'], '')) >= 1) {
+        $messages[] = 513; // Notice empty items.
+      }
+
+      // @todo Add format check: required or not, type of datas...
+
+      // Currently, check only if the first field is empty or not.
+      if (empty($line[0])) {
+        $messages[] = 464; // Warning no name.
+        break;
+      }
+      $checked_items = $line;
+      break;
+
+    case TAXONOMY_CSV_FORMAT_TRANSLATE:
+      if (empty($line[0])) {
+        $messages[] = 484; // Warning no first/second column.
+        break;
+      }
+      if ((count($line) < 2) || empty($line[1])) {
+        $messages[] = 484; // Warning no first/second column.
+        break;
+      }
+      $checked_items = $line;
+      break;
+
+    default:
+      $messages[] = 306; // Error unknown source content.
+  }
+
+  return array_values($checked_items);
 }

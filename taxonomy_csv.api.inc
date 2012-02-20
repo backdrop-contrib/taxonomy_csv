@@ -8,35 +8,21 @@
  */
 
 /**
- * Available internal import/export schemas.
+ * Available internal import/export formats.
  */
-define('TAXONOMY_CSV_FORMAT_ALONE_TERMS',       'alone_terms');
-define('TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS',     'custom_fields');
-define('TAXONOMY_CSV_FORMAT_DEFINITION_LINKS',  'def_links');
-define('TAXONOMY_CSV_FORMAT_FLAT',              'flat');
-define('TAXONOMY_CSV_FORMAT_TREE_STRUCTURE',    'tree_structure');
-define('TAXONOMY_CSV_FORMAT_POLYHIERARCHY',     'polyhierarchy');
-define('TAXONOMY_CSV_FORMAT_PARENTS',           'parents');
-define('TAXONOMY_CSV_FORMAT_CHILDREN',          'children');
-define('TAXONOMY_CSV_FORMAT_RELATIONS',         'relations');
-define('TAXONOMY_CSV_FORMAT_SYNONYMS',          'synonyms');
-define('TAXONOMY_CSV_FORMAT_DEFINITIONS',       'definitions');
-define('TAXONOMY_CSV_FORMAT_DESCRIPTIONS',      'descriptions');
-define('TAXONOMY_CSV_FORMAT_WEIGHTS',           'weights');
-define('TAXONOMY_CSV_FORMAT_TRANSLATE_TERMS',   'translate_terms');
-define('TAXONOMY_CSV_FORMAT_FIELDS',            'fields');
-define('TAXONOMY_CSV_FORMAT_TID_NAME',          'tid_name');
-define('TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS_FIRST', 'custom_fields_first');
+define('TAXONOMY_CSV_FORMAT_STRUCTURE',     'structure');
+define('TAXONOMY_CSV_FORMAT_FLAT',          'flat');
+define('TAXONOMY_CSV_FORMAT_TREE',          'tree');
+define('TAXONOMY_CSV_FORMAT_POLYHIERARCHY', 'polyhierarchy');
+define('TAXONOMY_CSV_FORMAT_FIELDS',        'fields');
+define('TAXONOMY_CSV_FORMAT_TRANSLATE',     'translate');
 
 /**
  * Available import options.
  */
 define('TAXONOMY_CSV_EXISTING_UPDATE',          'update');
-define('TAXONOMY_CSV_EXISTING_UPDATE_REPLACE',  'replace_fields');
-// @todo A full replace is needed for fields.
 define('TAXONOMY_CSV_EXISTING_IGNORE',          'ignore');
-define('TAXONOMY_CSV_EXISTING_IGNORE_ALL',      'ignore_all'); // @todo
-// Internal use only: in fact, same as TAXONOMY_CSV_EXISTING_UPDATE_REPLACE.
+// Internal use only.
 define('TAXONOMY_CSV_EXISTING_IGNORE_PREVIOUS', 'ignore_previous');
 
 /**
@@ -68,15 +54,12 @@ define('TAXONOMY_CSV_UNCHANGED',   5);
  *
  * @param $list
  *   A string matching list to be returned:
- *   - 'import_format'     : internal and external available formats for import.
- *   - 'export_format'     : internal and external available formats for export.
+ *   - 'import_format'     : available formats for import.
+ *   - 'export_format'     : available formats for export.
  *   - 'import_default_ui' : default options to import by user interface.
  *   - 'import_default_api': default options to import by api.
  *   - 'export_default_ui' : default options to export by user interface.
  *   - 'export_default_api': default options to export by api.
- *   - 'import_option'     : descriptions of options for existing items.
- *   - 'import_allowed'    : allowed options for existing items when importing.
- *   Lists are completed with external formats.
  *
  * @return
  *   Array of wanted content.
@@ -84,50 +67,26 @@ define('TAXONOMY_CSV_UNCHANGED',   5);
 function _taxonomy_csv_values($list) {
   switch ($list) {
     case 'import_format':
-      $items = array(
-        TAXONOMY_CSV_FORMAT_ALONE_TERMS      => t('Term names (ignore additional columns)'),
-        TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS    => t('Custom fields'),
-        TAXONOMY_CSV_FORMAT_DEFINITION_LINKS => t('Full term definition and links'),
-        TAXONOMY_CSV_FORMAT_FLAT             => t('Terms (flat vocabulary)'),
-        TAXONOMY_CSV_FORMAT_TREE_STRUCTURE   => t('Hierarchical tree structure or one term by line structure'),
-        TAXONOMY_CSV_FORMAT_POLYHIERARCHY    => t('Polyhierarchical structure'),
-        TAXONOMY_CSV_FORMAT_PARENTS          => t('First level parents'),
-        TAXONOMY_CSV_FORMAT_CHILDREN         => t('First level children'),
-        TAXONOMY_CSV_FORMAT_RELATIONS        => t('Related terms'),
-        TAXONOMY_CSV_FORMAT_SYNONYMS         => t('Synonyms names'),
-        TAXONOMY_CSV_FORMAT_DEFINITIONS      => t('Full term definitions'),
-        TAXONOMY_CSV_FORMAT_DESCRIPTIONS     => t('Term descriptions'),
-        TAXONOMY_CSV_FORMAT_WEIGHTS          => t('Term weights'),
-        TAXONOMY_CSV_FORMAT_TRANSLATE_TERMS  => t('Translate terms'),
+      return array(
+        TAXONOMY_CSV_FORMAT_STRUCTURE => t('Structure'),
+        TAXONOMY_CSV_FORMAT_FIELDS    => t('Fields'),
+        TAXONOMY_CSV_FORMAT_TRANSLATE => t('Translation'),
       );
-      break;
 
     case 'export_format':
-      $items = array(
-        TAXONOMY_CSV_FORMAT_ALONE_TERMS      => t('Term names'),
-        TAXONOMY_CSV_FORMAT_TID_NAME         => t('Tid and name of terms'),
-        TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS    => t('Custom fields'),
-        TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS_FIRST => t('Custom fields (first value of each field only)'),
-        TAXONOMY_CSV_FORMAT_DEFINITION_LINKS => t('Full term definition and links'),
-        // @todo, but useless: use alone_terms.
-        // TAXONOMY_CSV_FORMAT_FLAT             => t('Terms (flat vocabulary)'),
-        TAXONOMY_CSV_FORMAT_TREE_STRUCTURE   => t('Hierarchical tree structure or one term by line structure'),
-        // TAXONOMY_CSV_FORMAT_POLYHIERARCHY    => t('Polyhierarchical structure'),
-        TAXONOMY_CSV_FORMAT_PARENTS          => t('First level parents'),
-        TAXONOMY_CSV_FORMAT_CHILDREN         => t('First level children'),
-        TAXONOMY_CSV_FORMAT_RELATIONS        => t('Related terms'),
-        TAXONOMY_CSV_FORMAT_SYNONYMS         => t('Synonyms names'),
-        TAXONOMY_CSV_FORMAT_DEFINITIONS      => t('Full term definitions'),
-        TAXONOMY_CSV_FORMAT_DESCRIPTIONS     => t('Term descriptions'),
-        TAXONOMY_CSV_FORMAT_WEIGHTS          => t('Term weights'),
-        // TAXONOMY_CSV_FORMAT_TRANSLATE_TERMS  => t('Name and description translation'),
+      return array(
+        TAXONOMY_CSV_FORMAT_FLAT      => t('Term names'),
+        TAXONOMY_CSV_FORMAT_TREE      => t('Hierarchical tree structure'),
+        TAXONOMY_CSV_FORMAT_FIELDS    => t('Fields'),
+        // @todo
+        // TAXONOMY_CSV_FORMAT_TRANSLATE => t('Translation'),
       );
-      break;
 
     case 'import_default_ui':
       return array(
-        'import_format'                 => TAXONOMY_CSV_FORMAT_ALONE_TERMS,
-        'import_custom_format'          => 'name',
+        'import_format'                 => TAXONOMY_CSV_FORMAT_STRUCTURE,
+        'structure_type'                => TAXONOMY_CSV_FORMAT_FLAT,
+        'import_fields_format'          => 'name',
         'translate_by'                  => 'name',
         'keep_order'                    => FALSE,
         'source_choice'                 => 'text',
@@ -146,14 +105,11 @@ function _taxonomy_csv_values($list) {
         'vocabulary_id'                 => 'choose_vocabulary',
         'i18n_mode'                     => 0, // I18N_MODE_NONE.
         'language'                      => 'und', // Undefined.
-        'import_custom_fields'          => '',
+        'import_fields_custom'          => '',
         'delete_terms'                  => FALSE,
         'check_hierarchy'               => TRUE,
         'set_hierarchy'                 => 2, // Polyhierarchy.
-        'existing_items'                => TAXONOMY_CSV_EXISTING_UPDATE,
-        // Specific to relations import.
-        'relations_create_subrelations' => FALSE,
-        'relations_all_vocabularies'    => FALSE,
+        'update_or_ignore'                => TAXONOMY_CSV_EXISTING_UPDATE,
         // General options.
         'result_stats'                  => 'result_stats',
         'result_terms'                  => 'result_terms',
@@ -163,8 +119,8 @@ function _taxonomy_csv_values($list) {
 
     case 'import_default_api':
       return array(
-        'import_format'                 => TAXONOMY_CSV_FORMAT_ALONE_TERMS,
-        'custom_format'                 => array(0 => 'name'),
+        'import_format'                 => TAXONOMY_CSV_FORMAT_FLAT,
+        'fields_format'                 => array(0 => 'name'),
         'translate_by'                  => 'name',
         'keep_order'                    => FALSE,
         'delimiter'                     => ',',
@@ -180,14 +136,11 @@ function _taxonomy_csv_values($list) {
         'vocabulary_id'                 => 'choose_vocabulary',
         'i18n_mode'                     => 0, // I18N_MODE_NONE.
         'vocabulary_language'           => 'und', // Undefined.
-        'custom_fields'                 => array(),
+        'fields_custom'                 => array(),
         'delete_terms'                  => FALSE,
         'check_hierarchy'               => TRUE,
         'set_hierarchy'                 => 2, // Polyhierarchy.
-        'existing_items'                => TAXONOMY_CSV_EXISTING_UPDATE,
-        // Specific to relations import.
-        'relations_create_subrelations' => FALSE,
-        'relations_all_vocabularies'    => FALSE,
+        'update_or_ignore'                => TAXONOMY_CSV_EXISTING_UPDATE,
         // General options.
         'check_options'                 => FALSE,
         'result_display'                => FALSE,
@@ -199,8 +152,8 @@ function _taxonomy_csv_values($list) {
 
     case 'export_default_ui':
       return array(
-        'export_format'                 => TAXONOMY_CSV_FORMAT_ALONE_TERMS,
-        'export_custom_format'          => 'name',
+        'export_format'                 => TAXONOMY_CSV_FORMAT_FLAT,
+        'export_fields_format'          => 'name',
         'export_vocabulary_id'          => 0,
         'export_delimiter'              => 'comma',
         'export_delimiter_custom'       => '',
@@ -217,8 +170,8 @@ function _taxonomy_csv_values($list) {
 
     case 'export_default_api':
       return array(
-        'export_format'                 => TAXONOMY_CSV_FORMAT_ALONE_TERMS,
-        'custom_format'                 => array(0 => 'name'),
+        'export_format'                 => TAXONOMY_CSV_FORMAT_FLAT,
+        'fields_format'                 => array(0 => 'name'),
         'vocabulary_id'                 => 0,
         'delimiter'                     => ',',
         'enclosure'                     => '"',
@@ -232,209 +185,7 @@ function _taxonomy_csv_values($list) {
         'check_options'                 => FALSE,
         'result_display'                => FALSE,
       );
-
-    case 'import_option':
-      return array(
-        TAXONOMY_CSV_EXISTING_UPDATE         => t('Update it and merge fields (avoid duplicate terms)'),
-        TAXONOMY_CSV_EXISTING_UPDATE_REPLACE => t('Update it with new fields (avoid duplicate terms)'),
-        TAXONOMY_CSV_EXISTING_IGNORE         => t('Ignore it and create a new term (duplicate terms may be created)'),
-        TAXONOMY_CSV_EXISTING_IGNORE_ALL     => t('Ignore it and create a new term for each term on the line (duplicate terms may be created)'),
-      );
-
-    case 'import_allowed':
-      $items = array(
-        TAXONOMY_CSV_FORMAT_ALONE_TERMS      => array(
-          TAXONOMY_CSV_EXISTING_UPDATE,
-          TAXONOMY_CSV_EXISTING_IGNORE,
-        ),
-        TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS    => array(
-          TAXONOMY_CSV_EXISTING_UPDATE,
-//           TAXONOMY_CSV_EXISTING_UPDATE_REPLACE,
-          TAXONOMY_CSV_EXISTING_IGNORE,
-        ),
-        TAXONOMY_CSV_FORMAT_DEFINITION_LINKS => array(
-          TAXONOMY_CSV_EXISTING_UPDATE,
-        ),
-        TAXONOMY_CSV_FORMAT_FLAT             => array(
-          TAXONOMY_CSV_EXISTING_UPDATE,
-          TAXONOMY_CSV_EXISTING_IGNORE,
-        ),
-        TAXONOMY_CSV_FORMAT_TREE_STRUCTURE   => array(
-          TAXONOMY_CSV_EXISTING_UPDATE_REPLACE,
-          TAXONOMY_CSV_EXISTING_IGNORE,
-        ),
-        TAXONOMY_CSV_FORMAT_POLYHIERARCHY    => array(
-          TAXONOMY_CSV_EXISTING_UPDATE,
-        ),
-        TAXONOMY_CSV_FORMAT_PARENTS          => array(
-          TAXONOMY_CSV_EXISTING_UPDATE,
-          TAXONOMY_CSV_EXISTING_UPDATE_REPLACE,
-          TAXONOMY_CSV_EXISTING_IGNORE,
-//           TAXONOMY_CSV_EXISTING_IGNORE_ALL,
-        ),
-        TAXONOMY_CSV_FORMAT_CHILDREN         => array(
-          TAXONOMY_CSV_EXISTING_UPDATE,
-          TAXONOMY_CSV_EXISTING_UPDATE_REPLACE,
-          TAXONOMY_CSV_EXISTING_IGNORE,
-//           TAXONOMY_CSV_EXISTING_IGNORE_ALL,
-        ),
-        TAXONOMY_CSV_FORMAT_RELATIONS        => array(
-          TAXONOMY_CSV_EXISTING_UPDATE,
-          TAXONOMY_CSV_EXISTING_UPDATE_REPLACE,
-          TAXONOMY_CSV_EXISTING_IGNORE,
-//           TAXONOMY_CSV_EXISTING_IGNORE_ALL,
-        ),
-        TAXONOMY_CSV_FORMAT_SYNONYMS         => array(
-          TAXONOMY_CSV_EXISTING_UPDATE,
-          TAXONOMY_CSV_EXISTING_UPDATE_REPLACE,
-          TAXONOMY_CSV_EXISTING_IGNORE,
-        ),
-        TAXONOMY_CSV_FORMAT_DEFINITIONS      => array(
-          TAXONOMY_CSV_EXISTING_UPDATE,
-          TAXONOMY_CSV_EXISTING_UPDATE_REPLACE,
-          TAXONOMY_CSV_EXISTING_IGNORE,
-        ),
-        TAXONOMY_CSV_FORMAT_DESCRIPTIONS     => array(
-          TAXONOMY_CSV_EXISTING_UPDATE,
-          TAXONOMY_CSV_EXISTING_UPDATE_REPLACE,
-          TAXONOMY_CSV_EXISTING_IGNORE,
-        ),
-        TAXONOMY_CSV_FORMAT_WEIGHTS          => array(
-          TAXONOMY_CSV_EXISTING_UPDATE,
-          TAXONOMY_CSV_EXISTING_IGNORE,
-        ),
-        TAXONOMY_CSV_FORMAT_TRANSLATE_TERMS => array(
-          TAXONOMY_CSV_EXISTING_UPDATE,
-          TAXONOMY_CSV_EXISTING_UPDATE_REPLACE,
-          TAXONOMY_CSV_EXISTING_IGNORE,
-        ),
-        TAXONOMY_CSV_FORMAT_FIELDS           => array(
-          TAXONOMY_CSV_EXISTING_UPDATE,
-          TAXONOMY_CSV_EXISTING_UPDATE_REPLACE,
-          TAXONOMY_CSV_EXISTING_IGNORE,
-        ),
-      );
-      break;
-
-    default:
-      return;
   }
-
-  // Complete some lists with external formats.
-  $formats = taxonomy_csv_formats_get();
-  foreach ($formats as $format) {
-    if (isset($format[$list])) {
-      $items[$format['format']] = $format[$list];
-    }
-  }
-
-  return $items;
-}
-
-/**
- * Fetch available external formats.
- *
- * Scan the sub directory "formats" of the module for *.format.inc files.
- * An included file should contain appropriate functions to get infos, to create
- * a vocabulary, to import a line and to export a term.
- *
- * @return
- *   Array of available formats indexed by format name.
- */
-function taxonomy_csv_formats_get() {
-  static $formats = array();
-
-  if (!$formats) {
-    $module_dir = drupal_get_path('module', 'taxonomy_csv');
-    $files = file_scan_directory("$module_dir/formats", '/.format.inc$/');
-
-    $formats = array();
-    foreach ($files as $filepath => $file) {
-      // Use this format only if it works.
-      $format_name = preg_replace('/.format.inc$/', '', $file->filename);
-      $funcname = "taxonomy_csv_format_{$format_name}";
-      if (taxonomy_csv_format_check($format_name, $funcname)) {
-        $format = $funcname();
-        if (!isset($format['needed_module'])
-            || ($format['needed_module'] == '')
-            || module_exists($format['needed_module'])) {
-          $formats[$format_name] = $format;
-        }
-      }
-    }
-  }
-  return $formats;
-}
-
-/**
- * Helper to get a format.
- *
- * Wrapper of taxonomy_csv_formats_get().
- *
- * @param $format
- *   String. Format to get.
- *
- * @return
- *   Asked format array, FALSE else.
- */
-function taxonomy_csv_format_get($format) {
-  $formats = taxonomy_csv_formats_get();
-  return isset($formats[$format]) ?
-    $formats[$format] :
-    FALSE;
-}
-
-/**
- * Helper to include format files each time it's needed and to check function.
- *
- * @param $format
- *   String. Format to check and include.
- * @param $funcname
- *   (Optional) String. Function to check if needed.
- *
- * @return
- *   TRUE if no error, FALSE else.
- */
-function taxonomy_csv_format_check($format, $funcname = '') {
-  $module_dir = drupal_get_path('module', 'taxonomy_csv');
-  $file = "$module_dir/formats/$format.format.inc";
-  if (file_exists($file)) {
-    include_once($file);
-    if ($funcname == '') {
-      return TRUE;
-    }
-    if (function_exists($funcname)) {
-      return TRUE;
-    }
-  }
-  return FALSE;
-}
-
-/**
- * Helper to check if a vocabulary has specific fields.
- *
- * @param $vid
- *   Vocabulary id to check.
- * @param $format
- *   (Optional) String. If set, check only only for this format.
- *
- * @return
- *   Array of all formats of this specific vocabulary.
- */
-function taxonomy_csv_format_check_vocabulary($vid, $format = '') {
-  $vocabulary_formats = array();
-
-  $formats = empty($format) ?
-    taxonomy_csv_formats_get() :
-    array($format);
-
-  foreach ($formats as $format) {
-    $funcname = "taxonomy_csv_vocabulary_check_{$format['format']}";
-    if (function_exists($funcname) && $funcname($vid)) {
-      $vocabulary_formats[] = $format['format'];
-    }
-  }
-  return $vocabulary_formats;
 }
 
 /**

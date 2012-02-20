@@ -95,15 +95,13 @@ function _taxonomy_csv_info_chosen_options($options) {
   }
 
   // Content.
-  $list = _taxonomy_csv_values('import_format');
   $message .= '<br />' . t('Source content: "!import_format".', array(
-    '!import_format' => $list[$options['import_format']],
+    '!import_format' => $options['import_format'],
   )) . '<br />';
 
   // Existing items.
-  $list = _taxonomy_csv_values('import_option');
   $message .= t('Existing terms choice: "!import_items".', array(
-    '!import_items' => $list[$options['existing_items']],
+    '!import_items' => $options['update_or_ignore'],
   )) . '<br />';
 
   // Internationalization.
@@ -127,12 +125,7 @@ function _taxonomy_csv_info_chosen_options($options) {
 function _taxonomy_csv_info_vocabulary($options) {
   $messages = array();
   // General info on used or created vocabularies.
-  // With some formats, multiple vocabularies can be created.
-  $vocabularies = (in_array($options['import_format'], array(
-      TAXONOMY_CSV_FORMAT_DEFINITION_LINKS,
-    ))) ?
-      $options['vocabularies'] :
-      array($options['vocabulary_id']);
+  $vocabularies = array($options['vocabulary_id']);
   $messages[] = t('%count used or created.', array(
     '%count' => format_plural(count($vocabularies), 'A vocabulary has been', '@count vocabularies have been', array())
   ));
@@ -142,7 +135,7 @@ function _taxonomy_csv_info_vocabulary($options) {
     // Check or update hierarchy of vocabularies.
     $vocabulary = taxonomy_vocabulary_load($vocabulary_id);
     if ($options['check_hierarchy']) {
-      $result = _taxonomy_csv_check_vocabulary_hierarchy($vocabulary, '');
+      $result = taxonomy_check_vocabulary_hierarchy($vocabulary, array('tid' => 0));
     }
     // Set vocabulary hierarchy only if needed.
     else {
@@ -155,11 +148,7 @@ function _taxonomy_csv_info_vocabulary($options) {
     $new_hierarchy[$vocabulary_id] = $result;
 
     // Display general info about vocabulary.
-    $message .= (in_array($options['import_format'], array(
-          TAXONOMY_CSV_FORMAT_DEFINITION_LINKS,
-        ))) ?
-        t('Vocabulary "%vocabulary_name" has been used or created.', array('%vocabulary_name' => $vocabulary->name)) :
-        _taxonomy_csv_info_vocabulary_destination($vocabulary, $options['vocabulary_target']);
+    $message .= _taxonomy_csv_info_vocabulary_destination($vocabulary, $options['vocabulary_target']);
     $message .=  '<br />';
 
     if (isset($vocabulary->language) && module_exists('i18n_taxonomy')) {
@@ -246,18 +235,7 @@ function _taxonomy_csv_info_vocabulary_result($vocabulary, $vocabulary_target, $
   )) . '<br />';
   $message .= t('You can view terms at <a href="!vocabulary_list">Administer > Structure > Taxonomy > list terms</a>.', array(
     '!vocabulary_list' => url("admin/structure/taxonomy/$vocabulary->machine_name"),
-  )) . '<br />';
-  if (module_exists('taxonomy_manager')) {
-    $message .= t('It is recommended to use <a href="!link" title="Taxonomy manager module">Administer > Structure > Taxonomy manager > Vocabularies</a> with big taxonomies because a memory error can occur with default Drupal "List terms" menu.', array(
-      '!link' => url("admin/structure/taxonomy_manager/voc/$vocabulary->machine_name"),
-    ));
-  }
-  else {
-    $message .= t('Warning: with default Drupal "List terms" function, a memory error can occur with big taxonomies, so use another manager as <a href="!link" title="Taxonomy manager">Taxonomy manager</a>.', array(
-      '!link' => url('http://drupal.org/project/taxonomy_manager'),
-    ));
-  }
-  $message .= ' ' . t('Note: Current release of Taxonomy manager [7.x-1.0-beta2] does not indicate language of terms.');
+  ));
   return $message;
 }
 

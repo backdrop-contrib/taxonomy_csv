@@ -23,7 +23,7 @@
  *   language. Of course, if tid is set, the found term is the existing one.
  * @param $all_vocabularies
  *   (Optional) Boolean. Search in all vocabularies or only in $term->vid
- *   vocabulary (default), which need to be set. Used with relations import.
+ *   vocabulary (default), which need to be set.
  * @param $parent_tid
  *   (Optional) The direct parent term id where to restrict search.
  *   Used for structure import. Default to NULL (no parent restriction).
@@ -121,163 +121,6 @@ function taxonomy_csv_term_find_duplicate($vid = 0) {
 }
 
 /**
- * Return an array of all parents term ids of a given term id.
- */
-function taxonomy_csv_term_get_parents_tids($tid) {
-  return array_keys(taxonomy_get_parents($tid));
-}
-
-/**
- * Return an array of all parents term names of a given term id.
- */
-function taxonomy_csv_term_get_parents_names($tid) {
-  $names = array();
-  foreach (taxonomy_get_parents($tid) as $parent) {
-    $names[] = $parent->name;
-  }
-  return $names;
-}
-
-/**
- * Return an array of all children term ids of a given term id.
- */
-function taxonomy_csv_term_get_children_tids($tid) {
-  return array_keys(taxonomy_get_children($tid));
-}
-
-/**
- * Return an array of all children term names of a given term id.
- */
-function taxonomy_csv_term_get_children_names($tid) {
-  $names = array();
-  foreach (taxonomy_get_children($tid) as $child) {
-    $names[] = $child->name;
-  }
-  return $names;
-}
-
-/**
- * Return an array of values of a field of a given term id or object.
- *
- * @todo To be removed by using of field api.
- *
- * Values can be names or ids depending on field type (text or term reference).
- *
- * @param $term_tid
- *   Term object or term id from which to get values. Use of object is quicker.
- * @param $field_name
- *   Field to get.
- * @param $langcode
- *   (Optional) Language code to use.
- *
- * @return
- *   Result array of items.
- */
-function taxonomy_csv_term_get_field_values($term_tid, $field_name, $langcode = 'und') {
-  $items = array();
-
-  $term = is_object($term_tid) ? $term_tid : taxonomy_term_load($term_tid);
-
-  $value = ($field_name == 'field_term_relation') ?
-    'tid' :
-    'value';
-
-  if (isset($term->{$field_name}[$langcode])) {
-    foreach ($term->{$field_name}[$langcode] as $delta) {
-      $items[] = $delta[$value];
-    }
-  }
-
-  return $items;
-}
-
-/**
- * Return an array of all term objects of a reference field of a given term ID.
- *
- * @param $term_tid
- *   Term object or term id from which to get term objects. Use of object is
- *   quicker.
- * @param $field_name
- *   Term reference field to get.
- *
- * @return
- *   Result array of term objects.
- */
-function taxonomy_csv_term_get_field_terms($term_tid, $field_name) {
-  $items = array();
-
-  $values = taxonomy_csv_term_get_field_values($term_tid, $field_name);
-
-  foreach ($values as $tid) {
-    $items[] = taxonomy_term_load($tid);
-  }
-
-  return $items;
-}
-
-/**
- * Return an array of all names of a term reference field of a given term ID.
- *
- * @param $term_tid
- *   Term object or term id from which to get names. Use of object is quicker.
- * @param $field_name
- *   Term reference field to get.
- *
- * @return
- *   Result array of items.
- */
-function taxonomy_csv_term_get_field_names($term_tid, $field_name) {
-  $items = array();
-
-  $values = taxonomy_csv_term_get_field_values($term_tid, $field_name);
-
-  foreach ($values as $tid) {
-    $term = taxonomy_term_load($tid);
-    $items[] = $term->name;
-  }
-
-  return $items;
-}
-
-/**
- * Return an array of all synonyms of a given term id or object.
- *
- * A synonym is not a term, so it hasn't a tid, but only a name. It's a text
- * field and not a term reference.
- * Wrapper of taxonomy_csv_term_get_field_values.
- */
-function taxonomy_csv_term_get_synonyms($term_tid) {
-  return taxonomy_csv_term_get_field_values($term_tid, 'field_term_synonym');
-}
-
-/**
- * Return an array of all related term ids of a given term id or object.
- *
- * Wrapper of taxonomy_csv_term_get_field_values.
- */
-function taxonomy_csv_term_get_relations($term_tid) {
-  return taxonomy_csv_term_get_field_terms($term_tid, 'field_term_relation');
-}
-
-/**
- * Return an array of all related term ids of a given term id or object.
- *
- * Wrapper of taxonomy_csv_term_get_field_values.
- */
-function taxonomy_csv_term_get_relations_tids($term_tid) {
-  return taxonomy_csv_term_get_field_values($term_tid, 'field_term_relation');
-}
-
-/**
- * Return an array of all related term names of a given term id or object.
- *
- * Wrapper of taxonomy_csv_term_get_field_names.
- */
-function taxonomy_csv_term_get_relations_names($term_tid) {
-  return taxonomy_csv_term_get_field_names($term_tid, 'field_term_relation');
-}
-
-/**
  * Return the first path to the root of a term.
  *
  * @note
@@ -299,6 +142,11 @@ function taxonomy_csv_term_get_first_path($term, &$tree) {
   // Items need to be ordered from 0 to get first parent easy.
   if (isset($term->parent)) {
     $term->parent = array_values($term->parent);
+  }
+  // Sometime, taxonomy_term_load() return a 'parents', not a 'parent'.
+  elseif (isset($term->parents)) {
+    $term->parent = $term->parents;
+    unset($term->parents);
   }
 
   // To use a counter prevents infinite loop when the hierarchy is inconsistent.

@@ -23,12 +23,12 @@ require_once($module_dir . '/taxonomy_csv.api.inc');
  * - 3. Order and specific options
  *
  * @ingroup forms
- * @see taxonomy_csv_form_export_validate()
- * @see taxonomy_csv_form_export_submit()
- * @see _taxonomy_csv_form_export_default_values_validate()
- * @see _taxonomy_csv_form_export_default_values_submit()
+ * @see taxonomy_csv_export_form_validate()
+ * @see taxonomy_csv_export_form_submit()
+ * @see taxonomy_csv_export_form_default_values_validate()
+ * @see taxonomy_csv_export_form_default_values_submit()
  */
-function taxonomy_csv_form_export($form, &$form_state) {
+function taxonomy_csv_export_form($form, &$form_state) {
   // Remember previous values to use in particular when reloading form.
   // If not reloading form, use saved values if exist, else recommended ones.
   $list_recommended_values = _taxonomy_csv_values('export_default_ui');
@@ -85,22 +85,6 @@ function taxonomy_csv_form_export($form, &$form_state) {
   }
   // Else there are vocabularies.
 
-  // Advertise that javascript is not enabled. Presume it is set by default.
-  if (isset($_COOKIE['has_js']) && !$_COOKIE['has_js']) {
-    $form['javascript'] = array(
-      '#type'        => 'fieldset',
-      '#title'       => t('WARNING'),
-      '#collapsible' => TRUE,
-      '#collapsed'   => FALSE,
-    );
-    $form['javascript']['info'] = array(
-      '#type'        => 'item',
-      '#title'       => t('Javascript is not activated!'),
-      '#description' => t("As you see this notice, javascript is disabled on your browser. All fields are shown, but only those matching your choices needs to be set. Others won't be used. If you want specific examples and options, activate javascript or see <a href=\"!more_help_link\"> advanced help</a>.", array('!more_help_link' => url('admin/help/taxonomy_csv'))),
-      '#required'    => TRUE,
-    );
-  }
-
   $form['tab'] = array(
     '#type'        => 'vertical_tabs',
     '#default_tab' => 'content',
@@ -114,7 +98,7 @@ function taxonomy_csv_form_export($form, &$form_state) {
   );
 
   $form['tab']['content']['export_format'] = array(
-    '#type'          => 'select',
+    '#type'          => 'radios',
     '#title'         => 'CSV format',
     '#options'       => $list_export_format,
     '#default_value' => $list_previous_values['export_format'],
@@ -123,7 +107,7 @@ function taxonomy_csv_form_export($form, &$form_state) {
   $form['tab']['content']['info'] = array(
     '#type'        => 'item',
     '#description' => t('See <a href="!more_help_link">advanced help</a> for informations about formats.', array('!more_help_link' => url('admin/help/taxonomy_csv'))) . '<br />'
-    . t('Only "fields and links" format manages duplicate term names. In all case, you will be notified if a duplicate is found.'),
+    . t('In all cases, you will be notified if a duplicate is found.'),
   );
 
   $form['tab']['content']['export_vocabulary_id'] = array(
@@ -215,7 +199,7 @@ function taxonomy_csv_form_export($form, &$form_state) {
     '#description'   => t('Choose order of exported terms.'),
     '#states' => array(
       'invisible' => array(
-        ':input[name=export_format]' => array('value' => TAXONOMY_CSV_FORMAT_TREE_STRUCTURE),
+        ':input[name=export_format]' => array('value' => TAXONOMY_CSV_FORMAT_TREE),
       ),
     ),
   );
@@ -223,48 +207,6 @@ function taxonomy_csv_form_export($form, &$form_state) {
   $form['tab']['advanced_options']['info'] = array(
     '#type'          => 'item',
     '#description'   => t('Specific options are shown only if suitable.'),
-    '#states' => array(
-      'invisible' => array(
-        ':input[name=export_format]' => array('value' => TAXONOMY_CSV_FORMAT_DEFINITION_LINKS),
-      ),
-    ),
-  );
-
-  // Specific options to export def_links.
-  $form['tab']['advanced_options']['def_links'] = array(
-    '#type'        => 'fieldset',
-    '#title'       => t('Specific settings of:') . ' ' . t('Full term fields and links'),
-    '#collapsible' => TRUE,
-    '#collapsed'   => FALSE,
-    '#description' => t('Set these options only if you export:') . ' ' . t('Full term fields and links') . '.',
-    '#states' => array(
-      'visible' => array(
-        ':input[name=export_format]' => array('value' => TAXONOMY_CSV_FORMAT_DEFINITION_LINKS),
-      ),
-    ),
-  );
-  $form['tab']['advanced_options']['def_links']['def_links_terms_ids'] = array(
-    '#type'          => 'select',
-    '#title'         => t('Which identifiant do you want to use for terms?'),
-    '#options'       => array(
-      'name_if_needed' => t('Term name only when useful'),
-      'name'           => t('Term name'),
-      'tid'            => t('Serial number (internal term id)'),
-    ),
-    '#default_value' => $list_previous_values['def_links_terms_ids'],
-    '#description'   => t('Choose how terms will be exported. In first and second choices, duplicate terms are identified with name and a serial number. First choice is lighter, because main term tid is set only if it is a duplicate term. All options can manage duplicate term names. Third choice is more difficult to read.'),
-  );
-  $form['tab']['advanced_options']['def_links']['def_links_vocabularies_ids'] = array(
-    '#type'          => 'select',
-    '#title'         => t('Which identifiant do you want to use for vocabularies?'),
-    '#options'       => array(
-      'none' => t('Nothing (unique vocabulary export)'),
-      'name' => t('Vocabulary name'),
-      'vid'  => t('Serial number (internal vocabulary id)'),
-    ),
-    '#default_value' => $list_previous_values['def_links_vocabularies_ids'],
-    '#description'   => t('Choose how vocabularies will be identified.') . '<br />'
-      . t('"Nothing" can be used only when a single vocabulary is exported (not all vocabularies in one time) and when there is no relation to terms of another vocabulary. In such a case, vocabulary name will be used instead.'),
   );
 
   $form['tab']['advanced_options']['result_duplicates'] = array(
@@ -282,8 +224,8 @@ function taxonomy_csv_form_export($form, &$form_state) {
   $form['export_default_values'] = array(
     '#type'     => 'submit',
     '#value'    => t('Reset to defaults'),
-    '#validate' => array('_taxonomy_csv_form_export_default_values_validate'),
-    '#submit'   => array('_taxonomy_csv_form_export_default_values_submit'),
+    '#validate' => array('taxonomy_csv_export_form_default_values_validate'),
+    '#submit'   => array('taxonomy_csv_export_form_default_values_submit'),
   );
 
   return $form;
@@ -292,12 +234,12 @@ function taxonomy_csv_form_export($form, &$form_state) {
 /**
  * Handles CSV export form validation.
  *
- * @see taxonomy_csv_form_export()
+ * @see taxonomy_csv_export_form()
  */
-function taxonomy_csv_form_export_validate($form, &$form_state) {
+function taxonomy_csv_export_form_validate($form, &$form_state) {
   // Invoke taxonomy_csv api (defines and functions).
   $module_dir = drupal_get_path('module', 'taxonomy_csv');
-  require_once("$module_dir/export/taxonomy_csv.export.api.inc");
+  require_once($module_dir . '/export/taxonomy_csv.export.api.inc');
 
   $options = &$form_state['values'];
 
@@ -388,13 +330,6 @@ function taxonomy_csv_form_export_validate($form, &$form_state) {
 function _taxonomy_csv_export_check_options(&$options) {
   $messages = array();
 
-  $list_export_format = _taxonomy_csv_values('export_format');
-  if (!array_key_exists($options['export_format'], $list_export_format)) {
-    $messages['export_format'] = t('Export format "!export_format" is not managed.', array(
-      '!export_format' => $list_export_format[$options['export_format']],
-    ));
-  }
-
   $list_vocabularies = taxonomy_get_vocabularies();
   if (!$list_vocabularies) {
     $messages['vocabulary_id'] = t('No vocabulary to export.');
@@ -448,33 +383,6 @@ function _taxonomy_csv_export_check_options(&$options) {
     $messages['order'] = t('Order should be "name", "tid" or "weight".');
   }
 
-  if (!in_array($options['def_links_terms_ids'], array(
-      'name_if_needed',
-      'name',
-      'tid',
-    ))) {
-    $messages['def_links_terms_ids'] = t('Terms identifiants should be "name_if_needed", "name" or "tid".');
-  }
-
-  if (!in_array($options['def_links_vocabularies_ids'], array(
-      'none',
-      'name',
-      'vid',
-    ))) {
-    $messages['def_links_vocabularies_ids'] = t('Vocabularies identifiants should be "none", "name" or "vid".');
-  }
-
-  // When multiple vocabularies are exported, names or tids are always needed.
-  if ($options['def_links_vocabularies_ids'] == 'none') {
-    if (($options['vocabulary_id'] == array(0)) || (count($options['vocabulary_id']) > 1)) {
-      $options['def_links_vocabularies_ids'] = 'name';
-    }
-    else {
-      // Check if all related terms are related to main vocabulary.
-      // @todo Currently, check is made for each term in line_export.
-    }
-  }
-
   // Calculates number of terms to be exported.
   $options['total_terms'] = taxonomy_csv_vocabulary_count_terms($options['vocabulary_id']);
   if (!$options['total_terms']) {
@@ -487,9 +395,9 @@ function _taxonomy_csv_export_check_options(&$options) {
 /**
  * Handles CSV export form submission and launch batch set.
  *
- * @see taxonomy_csv_form_export()
+ * @see taxonomy_csv_export_form()
  */
-function taxonomy_csv_form_export_submit($form, &$form_state) {
+function taxonomy_csv_export_form_submit($form, &$form_state) {
   // Remember last preferences and prepare only options to be sent to api.
   foreach (array(
       'export_format',
@@ -500,8 +408,6 @@ function taxonomy_csv_form_export_submit($form, &$form_state) {
       'export_enclosure_custom',
       'export_line_ending',
       'export_order',
-      'def_links_terms_ids',
-      'def_links_vocabularies_ids',
       'result_duplicates',
     ) as $option) {
     variable_set('taxonomy_csv_' . $option, $form_state['values'][$option]);
@@ -531,13 +437,13 @@ function taxonomy_csv_form_export_submit($form, &$form_state) {
 /**
  * Restore recommended default values in the export form. Empty validate hook.
  */
-function _taxonomy_csv_form_export_default_values_validate($form, &$form_state) {
+function taxonomy_csv_export_form_default_values_validate($form, &$form_state) {
 }
 
 /**
  * Restore recommended default values in the export form.
  */
-function _taxonomy_csv_form_export_default_values_submit($form, &$form_state) {
+function taxonomy_csv_export_form_default_values_submit($form, &$form_state) {
   foreach (_taxonomy_csv_values('export_default_ui') as $option => $value) {
     variable_set("taxonomy_csv_$option", $value);
   }

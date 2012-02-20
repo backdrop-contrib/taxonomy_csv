@@ -27,7 +27,7 @@ require_once($module_dir . '/taxonomy_csv.api.inc');
  *   - 1. Source delimiter
  *   - 2. Source enclosure
  *   - 3. Description filter format
- *   - 4. Synonyms, relations and custom fields filter format
+ *   - 4. Custom fields filter format
  *   - 5. Language of imported terms
  *   - 6. Line and utf8 checks
  * - 4. Which vocabulary to import into (destination) ?
@@ -45,23 +45,16 @@ require_once($module_dir . '/taxonomy_csv.api.inc');
  *   - 2. List of terms
  *   - 3. How to be notified
  *
- * As what will become existing terms depends on what is imported, dynamic
- * options are used: only possible parameters are shown. All options are
- * displayed if javascript is not activated.
- *
  * @ingroup forms
- * @see taxonomy_csv_form_import_validate()
- * @see taxonomy_csv_form_import_submit()
- * @see _taxonomy_csv_form_import_default_values_validate()
- * @see _taxonomy_csv_form_import_default_values_submit()
+ * @see taxonomy_csv_import_form_validate()
+ * @see taxonomy_csv_import_form_submit()
+ * @see taxonomy_csv_import_form_default_values_validate()
+ * @see taxonomy_csv_import_form_default_values_submit()
  */
-function taxonomy_csv_form_import($form, &$form_state) {
-  // User is used to get formats the current user has access to.
+function taxonomy_csv_import_form($form, &$form_state) {
+  // User is used to get filter formats the current user has access to.
   global $user;
 
-  // Remember previous values to use specially when reloading form.
-  // If not reloading form, use saved values if exist, else recommended ones.
-  // Warning: specific values 'text', 'path' and 'url are not saved here.
   $list_recommended_values = _taxonomy_csv_values('import_default_ui');
   $list_previous_values = array();
   foreach ($list_recommended_values as $key => $value) {
@@ -71,8 +64,6 @@ function taxonomy_csv_form_import($form, &$form_state) {
   }
 
   $list_import_format = _taxonomy_csv_values('import_format');
-
-  $list_external_format = taxonomy_csv_formats_get();
 
   $list_import_delimiter = array(
     'comma'            => t('« , » (Comma)'),
@@ -116,56 +107,10 @@ function taxonomy_csv_form_import($form, &$form_state) {
 
   $list_vocabulary_target = array(
     'autocreate' => t('Autocreate a new vocabulary'),
-    // @todo Finish to duplicate a vocabulary.
-    // 'duplicate'  => t('Duplicate an existing vocabulary'),
     'existing'   => t('Import in an existing vocabulary'),
   );
 
-  $list_import_option = _taxonomy_csv_values('import_option');
-
   // Build form.
-
-  // Warn when modules incompatible with taxonomy_csv are enabled.
-  // Problems can't be reproduced with a memory of 256 MB, even with big
-  // taxonomies. Only pathauto slows down import process.
-  // See http://drupal.org/node/495548
-  // See http://drupal.org/node/447852
-  // See http://drupal.org/node/540916 (Pathauto).
-  // @todo To be rechecked when these modules will be released for Drupal 7.
-  $issues_modules = array(
-    'taxonomynode',
-    'taxonomy_vtn',
-    'pathauto',
-  );
-  foreach ($issues_modules as $value) {
-    if (module_exists($value) && empty($form_state['post'])) {
-      drupal_set_message(t('<strong>Warning</strong>: An incompatible module is running.') . '<br />'
-      . t('Memory or compatibility problems have been reported with these modules when under Drupal 6: !modules', array(
-        '!modules' => '"' . implode('", "', $issues_modules) . '"',
-      )) . '<br />'
-      . t('It is advised to increase server and php memory temporary (no problem reported with 256 MB) or to disable these modules manually in !modules_section. Settings are not lost when you disable a module (and not uninstall it). After import process, you can decrease memory and reactivate modules.', array(
-        '!modules_section' => l(t("modules section"), 'admin/build/modules'),
-      )), 'warning');
-      break;
-    }
-  }
-
-  // Advertise that javascript is not enabled. Presume it is set by default.
-  if (isset($_COOKIE['has_js']) && !$_COOKIE['has_js']) {
-    $form['javascript'] = array(
-      '#type'        => 'fieldset',
-      '#title'       => t('WARNING'),
-      '#collapsible' => TRUE,
-      '#collapsed'   => FALSE,
-    );
-    $form['javascript']['info'] = array(
-      '#type'        => 'item',
-      '#title'       => t('Javascript is not activated!'),
-      '#description' => t("As you see this notice, javascript is disabled on your browser. All fields are shown, but only those matching your choices needs to be set. Others won't be used. If you want specific examples and options, activate javascript or see <a href=\"!more_help_link\"> advanced help</a>.", array('!more_help_link' => url('admin/help/taxonomy_csv'))),
-      '#required'    => TRUE,
-    );
-  }
-
   $form['tab'] = array(
     '#type'        => 'vertical_tabs',
     '#default_tab' => 'format',
@@ -176,235 +121,144 @@ function taxonomy_csv_form_import($form, &$form_state) {
     '#title'       => t('1. What do you want to import?'),
     '#collapsible' => TRUE,
     '#collapsed'   => FALSE,
+    '#description' => t('Choose the type of import. Help for each type is displayed below when format is selected.'),
   );
 
   $form['tab']['format']['import_format'] = array(
-    '#type'          => 'select',
+    '#type'          => 'radios',
     '#title'         => '',
     '#options'       => $list_import_format,
     '#default_value' => $list_previous_values['import_format'],
   );
 
-  if (!isset($_COOKIE['has_js']) || $_COOKIE['has_js']) {
-    // Prepare descriptions.
-    $line_format = '<br /><br />'
-      . '<strong><em>' . t('Line format') . '</em></strong><br />'
-      . '<code>';
-    $example = '</code><br /><br />'
-      . '<strong><em>' . t('Examples') . '</em></strong>'
-      . '<ul><li><code>';
-    $li = '</code></li><li><code>';
-    $description_long = '</code></li></ul>';
-
-    // Generic form for import format help.
-    foreach ($list_import_format as $key => $value) {
-      $form['tab']['format'][$key] = array(
-        '#type'   => 'item',
-        '#states' => array(
-          'visible' => array(
-            ':input[name=import_format]' => array('value' => $key),
-          ),
+  // Generic form for import format help.
+  foreach ($list_import_format as $key => $value) {
+    $form['tab']['format'][$key] = array(
+      '#type'   => 'item',
+      '#states' => array(
+        'visible' => array(
+          ':input[name=import_format]' => array('value' => $key),
         ),
-      );
-
-      // Complete generic form with specific help for external import formats.
-      if (in_array($key, array_keys($list_external_format))) {
-        $form['tab']['format'][$key]['#description'] = $list_external_format[$key]['description']
-          . $line_format
-            . $list_external_format[$key]['description_format']
-          . $example
-            . $list_external_format[$key]['description_example']
-          . $description_long
-            . $list_external_format[$key]['description_long'];
-      }
-    }
-
-    // Complete generic form with specific help for each import format.
-    $form['tab']['format'][TAXONOMY_CSV_FORMAT_ALONE_TERMS]['#description'] = t('Only the term in the first column of each line is imported. Additional columns are ignored.')
-      . $line_format
-        . t('term name')
-      . $example
-        . t('foo') . $li
-        . t('bar')
-      . $description_long;
-
-    $form['tab']['format'][TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS]['#description'] = t('Allow to choose a custom order of fields on a csv line.')
-      . $line_format
-        . t('term name, field_1, field_2...')
-      . $example
-        . t('foo, foo field 1, foo field 2') . $li
-        . t('bar, bar field 1, bar field 2')
-      . $description_long;
-
-    $form['tab']['format'][TAXONOMY_CSV_FORMAT_DEFINITION_LINKS]['#description'] = t('Allow to import full term definitions and links.')
-      . $line_format
-        . t('term name, term id, vocabulary id, term description, weight, number of synonyms, number of first level parents, number of first level children, number of related terms, list of synonyms, list of first level parents ids, list of first level children ids, list of related terms ids, list of vocabulary ids of related terms')
-      . $example
-        . t('foo, , , "Description of foo", 10, 1, 1, 2, 2, Synonym of foo, bar parent 1, bar child 1, bar child 2, bar related 1, bar related 2, , vocabulary of related 2') . $li
-        . t('France, , Places, "A free country", 1, 1, 1, 3, 3, French Republic, Europe, Paris, Lyon, Vichy, USA, Japan, China') . $li
-        . t('Japan, , Places, "An old country", 1, 1, 1, 2, 2, Land of the Rising Sun, Asia, Tokyo, Kyoto, China, France') . $li
-        . t('China, , Places, "A big country", 2, 1, 1, 1, 2, Middle Kingdom, Asia, Beijing, Japan, France') . $li
-        . t('Asia, , Places, "A large continent", 1, 0, 0, 2, 0, Japan, China')
-      . $description_long
-        . t('Only term name should be defined. Other values can be empty. Ids are not internal term ids or vocabulary ids, but a unique identifiant. Ids can be a number or a name. In most case, you can use true name. In fact, term ids need to be specific only for duplicate term names in order to identify each item. So for duplicates, you can use term name with a serial number. Main term id is only needed when term is a duplicate one.') . '<br />'
-        . '<br />'
-        . t('Note about vocabularies:') . '<br />'
-        . t('With this import format, destination vocabulary is determined not only by the fourth group of options, but by the import source too.') . '<br />'
-        . t('* If the third column is empty, null or "0", a vocabulary is autocreated, duplicated or used matching the destination vocabulary option. If the vocabulary of a related term is not defined, the vocabulary of the main term is used.') . '<br />'
-        . t('* If the third column or the vocabulary of a related term is a name or a number, it has priority over destination vocabulary option:') . '<br />'
-        . t("- When the matching vocabulary doesn't exist, a new vocabulary is created, regardless the destination vocabulary option.") . '<br />'
-        . t("- When the matching vocabulary exists, it will be always used, regardless the destination option or the chosen vocabulary.") . '<br />'
-        . '<br />'
-        . t('Notes:') . '<br />'
-        . t('- If a weight is defined for terms, do not use "Keep order of term" option.') . '<br />'
-        . t('- If you use "Keep order of term" option, all terms, even parents, children and related, should have a line with a full definition.') . '<br />'
-        . t("- It's not recommended to change the vocabulary of a term with links.") . '<br />'
-        . t('- To make a relation between terms of different vocabularies is not allowed by the Drupal\'s default user interface for taxonomy, but is possible. Such a relation can be viewed with another UI, for example <a href="!link" title="Taxonomy manager module">Taxonomy manager</a>.', array(
-          '!link' => url('http://drupal.org/project/taxonomy_manager'),
-          ));
-
-    $form['tab']['format'][TAXONOMY_CSV_FORMAT_FLAT]['#description'] = t('All items will be imported as terms.')
-      . $line_format
-        . t('term name, term 2 name, term 3 name...')
-      . $example
-        . t('foo, bar, name 3') . $li
-        . t('France, UK, Belgium')
-      . $description_long;
-
-    $form['tab']['format'][TAXONOMY_CSV_FORMAT_TREE_STRUCTURE]['#description'] = t('Allow to create a tree structure (geography, classification...).')
-      . $line_format
-        . t('term name, child term name, sub-child term name...')
-      . $example
-        . t('foo, bar, small bar') . $li
-        . t('Europe, France, Paris') . $li
-        . t('Europe, France, Lyon') . $li
-        . t('Europe, UK, London') . $li
-        . t('America, USA, Washington') . $li
-        . t(', , Hollywood')
-      . $description_long
-        . t('The first term is imported as a root level parent, the second as child of first term, the third as child of second term and so on. The lower child is the last term of a line. Others are hierarchical parents.') . '<br />'
-        . t('To repeat previously imported items on each line is not needed: import process can manage one term by line.') . ' ' . t('If terms are repeated each line and lines are ordered, result and speed are same as with one term by line format.');
-
-    $form['tab']['format'][TAXONOMY_CSV_FORMAT_POLYHIERARCHY]['#description'] = t('Allow to create a polyhierarchical structure (genealogy, complex nomenclatures...).')
-      . $line_format
-        . t('term name, child term name, sub-child term name...')
-      . $example
-        . t('foo, bar, small bar') . $li
-        . t('Grand-Mother, Mother, Daughter') . $li
-        . t('Grand-Father, Mother, Son') . $li
-        . t('Grand-Mother 2, Father, Daughter') . $li
-        . t('Grand-Father 2, Father, Son') . $li
-        . t(', , Son 2') . $li
-        . t(', Uncle') . $li
-        . t('Grand-Mother 2, Uncle') . $li
-        . t('Father, Son 3')
-      . $description_long
-        . t('The first term is imported as a root level parent, the second as child of first term, the third as child of second term and so on. The lower child is the last term of a line. Others are hierarchical parents.');
-
-    $form['tab']['format'][TAXONOMY_CSV_FORMAT_PARENTS]['#description'] = t('Allow to create a polyhierarchical taxonomy (genealogy...).')
-      . $line_format
-        . t('term name, parent term name, parent term 2 name...')
-      . $example
-        . t('foo, bar, sibling bar') . $li
-        . t('Daughter, Mother, Father') . $li
-        . t('Son, Mother, Father') . $li
-        . t('Son 2, Father') . $li
-        . t('Son 3, Father') . $li
-        . t('Mother, Grand-Mother, Grand-Father') . $li
-        . t('Father, Grand-Mother 2, Grand-Father 2') . $li
-        . t('Uncle, Grand-Mother 2, Grand-Father 2')
-      . $description_long
-        . t('First item is imported as a term and next ones as parents of first term. Unlike structure import, all parents are first level parents.');
-
-    $form['tab']['format'][TAXONOMY_CSV_FORMAT_CHILDREN]['#description'] = t('Allow to create a polyhierarchical taxonomy (genealogy...).')
-      . $line_format
-        . t('term name, child term name, child term 2 name...')
-      . $example
-        . t('foo, bar, sibling bar') . $li
-        . t('Mother, Daughter, Son') . $li
-        . t('Father, Daughter, Son, Son 2, Son 3') . $li
-        . t('Grand-Mother, Mother') . $li
-        . t('Grand-Father, Mother') . $li
-        . t('Grand-Mother 2, Father, Uncle') . $li
-        . t('Grand-Father 2, Father, Uncle')
-      . $description_long
-        . t('First item is imported as a term and next ones as children of first term. Unlike structure import, all children are first level children.');
-
-    $form['tab']['format'][TAXONOMY_CSV_FORMAT_RELATIONS]['#description'] = t('Allow to create relations between the term in the first column and next terms of the line.')
-      . $line_format
-        . t('term name, related term 1 name, related term 2 name...')
-      . $example
-        . t('foo, bar, bar 2') . $li
-        . t('Baobab, Madagascar, Ghost')
-      . $description_long;
-
-    $form['tab']['format'][TAXONOMY_CSV_FORMAT_SYNONYMS]['#description'] = t('Allow to import synonyms of terms. Each line contains a name in the first column and next items are matching synonyms.')
-      . $line_format
-        . t('term name, synonym 1, synonym 2...')
-      . $example
-        . t('foo, bar, bar 2') . $li
-        . t('"United Kingdom", "Great Britain", "England"')
-      . $description_long;
-
-    $form['tab']['format'][TAXONOMY_CSV_FORMAT_DEFINITIONS]['#description'] = t('Import a full term definition.')
-      . $line_format
-        . t('term name, weight, description, synonym 1, synonym 2...')
-      . $example
-        . t('foo, 10, description of foo, bar, bar 2') . $li
-        . t('"United Kingdom", 50, "A European country", "Great Britain", "England"')
-      . $description_long;
-
-    $form['tab']['format'][TAXONOMY_CSV_FORMAT_DESCRIPTIONS]['#description'] = t('Allow to import descriptions of terms.')
-      . $line_format
-        . t('term name, description')
-      . $example
-        . t('foo, description of foo') . $li
-        . t('"United Kingdom", "A European country"')
-      . $description_long
-        . t('The term is in the first column and the matching description is in the second column.');
-
-    $form['tab']['format'][TAXONOMY_CSV_FORMAT_WEIGHTS]['#description'] = t('Allow to import a weight of a term.')
-      . $line_format
-        . t('term name, weight')
-      . $example
-        . t('foo, 12') . $li
-        . t('"United Kingdom", 50')
-      . $description_long
-        . t('The term is in the first column and the matching weight is in the second column.');
-
-    $form['tab']['format'][TAXONOMY_CSV_FORMAT_TRANSLATE_TERMS]['#description'] = t('Allow to import name and descriptions and their translation.')
-      . $line_format
-        . t('term name, translation of term name, description, description of term name')
-      . $example
-        . t('foo, bar, description of foo, description of bar') . $li
-        . t('"United Kingdom", "Royaume-Uni"') . $li
-        . t('"Germany", "Allemagne", "A European country", "Un pays européen"')
-      . $description_long
-        . t('The term is in the first column followed by its translation and their description. Names are required, but descriptions are optional.') . ' ' . t('Language of first term will be "Language neutral" and the language of the second item can be set in the third tab.') . '<br />'
-        . '<strong>' . t('Note') . '</strong>: ' . t('With a vocabulary in Full translation mode, a term with an undefined language cannot be translated, so do not forget to choose a language when original terms are first imported.');
-    if (!module_exists('i18n_taxonomy')) {
-      $form['tab']['format']['import_format']['#options'][TAXONOMY_CSV_FORMAT_TRANSLATE_TERMS] .= ' [' . t('Unavailable') . ']';
-      $form['tab']['format'][TAXONOMY_CSV_FORMAT_TRANSLATE_TERMS]['#description'] .= '<br />'
-        . t('This format is available only if the submodule <a href="!link">Taxonomy internationalization</a> is enabled.', array(
-          '!link' => url('http://drupal.org/project/i18n'),
-        ));
-    }
+      ),
+    );
   }
-  $form['tab']['format']['info'] = array(
-    '#type'        => 'item',
-    '#description' => t('See <a href="!more_help_link">advanced help</a> for more informations about import types.', array('!more_help_link' => url('admin/help/taxonomy_csv'))),
-  );
+
+  // Prepare descriptions.
+  $line_format = '<br /><br />'
+    . '<strong><em>' . t('Line format') . '</em></strong><br />'
+    . '<code>';
+  $example = '</code><br /><br />'
+    . '<strong><em>' . t('Examples') . '</em></strong>'
+    . '<ul><li><code>';
+  $li = '</code></li><li><code>';
+  $description_long = '</code></li></ul>';
+
+  // Complete generic form with specific help for each import format.
+  $form['tab']['format'][TAXONOMY_CSV_FORMAT_STRUCTURE]['#description'] = t('Allow to create a flat vocabulary, a tree structure (geography, classification...) or a polyhierarchy (genealogy, complex nomenclatures...).')
+    . $line_format
+      . t('term name, child term name, sub-child term name...')
+    // Example Flat.
+    . '</code><br /><br />'
+    . '<strong><em>' . t('Examples (flat)') . '</em></strong>'
+    . '<ul><li><code>'
+      . t('foo') . $li
+      . t('bar, small bar')
+    . '</code></li></ul>'
+    // Example Tree.
+    . '</code><br />'
+    . '<strong><em>' . t('Examples (simple tree)') . '</em></strong>'
+    . '<ul><li><code>'
+      . t('foo, bar, small bar') . $li
+      . t('Europe, France, Paris') . $li
+      . t('Europe, France, Lyon') . $li
+      . t('Europe, UK, London') . $li
+      . t('America, USA, Washington') . $li
+      . t(', , Hollywood')
+    . '</code></li></ul>'
+    // Example Polyhierarchy.
+    . '</code><br />'
+    . '<strong><em>' . t('Examples (Polyhierarchy)') . '</em></strong>'
+    . '<ul><li><code>'
+      . t('foo, bar, small bar') . $li
+      . t('Grand-Mother, Mother, Daughter') . $li
+      . t('Grand-Father, Mother, Son') . $li
+      . t('Grand-Mother 2, Father, Daughter') . $li
+      . t('Grand-Father 2, Father, Son') . $li
+      . t(', , Son 2') . $li
+      . t(', Uncle') . $li
+      . t('Grand-Mother 2, Uncle') . $li
+      . t('Father, Son 3')
+  . $description_long
+      . '<br />'
+      . t('The first term is imported as a root level parent, the second as child of first term, the third as child of second term and so on. The lower child is the last term of a line. Others are hierarchical parents.') . '<br />'
+      . t('To repeat previously imported items on each line is not needed: import process can manage one term by line.') . ' ' . t('If terms are repeated each line and lines are ordered, result and speed are same as with one term by line format.');
+
+  $form['tab']['format'][TAXONOMY_CSV_FORMAT_FIELDS]['#description'] = t('Allow to choose a custom order of fields on a csv line.')
+    . $line_format
+      . t('term name/id, field_1, field_2...')
+    . $example
+      . t('foo, foo field 1, foo field 2') . $li
+      . t('bar, bar field 1, bar field 2')
+    . $description_long;
+      // See below.
+
+  $form['tab']['format'][TAXONOMY_CSV_FORMAT_TRANSLATE]['#description'] = t('Allow to import name and descriptions and their translation.')
+    . $line_format
+      . t('term name/id, translation of term name, description, description of term name')
+    . $example
+      . t('foo, bar, description of foo, description of bar') . $li
+      . t('"United Kingdom", "Royaume-Uni"') . $li
+      . t('"Germany", "Allemagne", "A European country", "Un pays européen"')
+    . $description_long
+      . t('The term is in the first column followed by its translation and their description. Names are required, but descriptions are optional.') . ' ' . t('Language of first term will be "Language neutral" and the language of the second item can be set in the third tab.') . '<br />'
+      . '<strong>' . t('Note') . '</strong>:' . '<br />'
+      . '<ul>'
+        . '<li>' . t('With a vocabulary in Full translation mode, a term with an undefined language cannot be translated, so do not forget to choose a language when original terms are first imported.') . '</li>'
+      . '</ul>';
+  if (!module_exists('i18n_taxonomy')) {
+    $form['tab']['format']['import_format']['#options'][TAXONOMY_CSV_FORMAT_TRANSLATE] .= ' [' . t('Unavailable') . ']';
+    $form['tab']['format'][TAXONOMY_CSV_FORMAT_TRANSLATE]['#description'] .= '<br />'
+      . t('This format is available only if the submodule <a href="!link">Taxonomy internationalization</a> is enabled.', array(
+        '!link' => url('http://drupal.org/project/i18n'),
+      ));
+  }
 
   // Specific options.
-  // Specific options to Custom fields.
-  $form['tab']['format']['specific'][TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS]['import_custom_format'] = array(
+  // Specific options of Structure.
+  $form['tab']['format']['specific'][TAXONOMY_CSV_FORMAT_STRUCTURE]['structure_type'] = array(
+    '#type'          => 'radios',
+    '#title'         => t('Type of structure'),
+    '#options'         => array(
+      TAXONOMY_CSV_FORMAT_FLAT          => t('Flat vocabulary'),
+      TAXONOMY_CSV_FORMAT_TREE          => t('Simple tree'),
+      TAXONOMY_CSV_FORMAT_POLYHIERARCHY => t('Polyhierarchy'),
+    ),
+    '#default_value' => $list_previous_values['structure_type'],
+    '#description'   => t('Choose if terms have no parent, one parent only, or multiple parents.'),
+    '#states'        => array(
+      'visible' => array(
+        ':input[name=import_format]' => array('value' => TAXONOMY_CSV_FORMAT_STRUCTURE),
+      ),
+    ),
+  );
+
+  // Specific options of Fields.
+  $form['tab']['format']['specific'][TAXONOMY_CSV_FORMAT_FIELDS]['import_fields_format'] = array(
     '#type'          => 'textfield',
     '#title'         => t('Set order of items on a csv line'),
-    '#default_value' => $list_previous_values['import_custom_format'],
+    '#default_value' => $list_previous_values['import_fields_format'],
     '#size'          => 60,
     '#maxlength'     => 1024,
-    '#description'   => t("Set custom order of csv input separated by comma. First field need to be 'name' or 'tid'.") . ' ' . t('Items can be repeated for multivalued fields.') . '<br />'
-      . t('Examples:')
+    '#description'   => t('Set custom order of csv input separated by comma.') . '<br />'
+      . '<strong>' . t('Notes:') . '</strong>'
+      . '<ul>'
+        . '<li>' . t("First field need to be 'name' or 'tid'.") . '</li>'
+        . '<li>' . t('Items can be repeated for multivalued fields.') . '</li>'
+        . '<li>' . t("If you choose to set 'vid' or 'vocabulary_machine_name', the vocabulary should exist before import.") . '</li>'
+        . '<li>' . t("It's not recommended to import translations at the same time than parents and term references, unless all of them are in the same vocabulary and have the same language.") . '</li>'
+        . '<li>' . t('Duplicate terms are not fully managed for parents (it is recommended to use "Structure" import) and term references.') . '</li>'
+      . '</ul>'
+      . '<strong>' . t('Examples:') . '</strong>'
       . '<ul>'
         . '<li><code>' . t('name, field_mycustomfield_1_machinename, field_mycustomfield_2_machinename') . '</code></li>'
         . '<li><code>' . t('name, description, field_country, field_year_started') . '</code></li>'
@@ -412,13 +266,13 @@ function taxonomy_csv_form_import($form, &$form_state) {
       . '</ul>',
     '#states'        => array(
       'visible' => array(
-        ':input[name=import_format]' => array('value' => TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS),
+        ':input[name=import_format]' => array('value' => TAXONOMY_CSV_FORMAT_FIELDS),
       ),
     ),
   );
 
   // Specific options of Translate.
-  $form['tab']['format']['specific'][TAXONOMY_CSV_FORMAT_TRANSLATE_TERMS]['translate_by'] = array(
+  $form['tab']['format']['specific'][TAXONOMY_CSV_FORMAT_TRANSLATE]['translate_by'] = array(
     '#type'          => 'radios',
     '#title'         => t('Type of source'),
     '#options'         => array(
@@ -432,42 +286,10 @@ function taxonomy_csv_form_import($form, &$form_state) {
       . '</ul>',
     '#states'        => array(
       'visible' => array(
-        ':input[name=import_format]' => array('value' => TAXONOMY_CSV_FORMAT_TRANSLATE_TERMS),
+        ':input[name=import_format]' => array('value' => TAXONOMY_CSV_FORMAT_TRANSLATE),
       ),
     ),
   );
-
-  // Specific options to Related terms.
-  $form['tab']['format']['specific'][TAXONOMY_CSV_FORMAT_RELATIONS]['relations_create_subrelations'] = array(
-    '#type'          => 'checkbox',
-    '#title'         => t('Import subrelations'),
-    '#default_value' => $list_previous_values['relations_create_subrelations'],
-    '#description'   => t('This checkbox allows to import subrelations of related terms and not only relations of first column term with others.') . '<br />'
-      . t('For example, with the line < <code>"Paris", "London", "Bern", "Roma"</code> >, default import is to make a link between < <code>Paris</code> > and each of three terms. There is no link between < <code>London</code> > and < <code>Bern</code> > nor < <code>Roma</code> >. Checking this option creates not only relations with first term, but all subrelations too: < <code>London</code> > and < <code>Bern</code> >, < <code>London</code> > and < <code>Roma</code> > and finally < <code>Bern</code> > and < <code>Roma</code> >.'),
-    '#states'        => array(
-      'visible' => array(
-        ':input[name=import_format]' => array('value' => TAXONOMY_CSV_FORMAT_RELATIONS),
-      ),
-    ),
-  );
-  // Internal use only.
-  $form['tab']['format']['specific'][TAXONOMY_CSV_FORMAT_RELATIONS]['relations_all_vocabularies'] = array(
-    '#type'          => 'value',
-    '#title'         => t('Make relations with existing terms of all vocabularies'),
-    '#default_value' => $list_previous_values['relations_all_vocabularies'],
-    '#description'   => t("This checkbox allows to create relations with existing terms in other vocabularies if they don't exist in selected vocabulary."),
-    '#states'        => array(
-      'visible' => array(
-        ':input[name=import_format]' => array('value' => TAXONOMY_CSV_FORMAT_RELATIONS),
-      ),
-    ),
-    '#disabled'      => TRUE,
-  );
-
-  // External specific options.
-  // @todo when needed.
-  // foreach ($list_external_format as $key => $value) {
-  // }
 
   $form['tab']['format']['keep_order'] = array(
     '#type'          => 'checkbox',
@@ -475,12 +297,7 @@ function taxonomy_csv_form_import($form, &$form_state) {
     '#default_value' => $list_previous_values['keep_order'],
     '#description'   => t('If checked, a weight will be added to each term, so order of lines will be preserved. If unchecked, order will be alphabetic.') . '<br />' .
     t('Note: With polyhierarchical vocabulary (multiple parents for a term) and duplicate terms, unpredictable results may occur, because weight of a term is incremented each time it appears and a term can only have one weight, without context.') . '<br />' .
-    t('This option is not available with some formats as Weight and Definitions.'),
-    '#states'        => array(
-      'invisible' => array(
-        ':input[name=import_format]' => array(),
-      ),
-    ),
+    t("You shouldn't use this option if your custom format has a 'weight' field."),
   );
 
   $form['tab']['import'] = array(
@@ -491,7 +308,7 @@ function taxonomy_csv_form_import($form, &$form_state) {
   );
 
   $form['tab']['import']['source_choice'] = array(
-    '#type'          => 'select',
+    '#type'          => 'radios',
     '#title'         => '',
     '#options'       => array(
       'text' => t('In the below text area'),
@@ -510,6 +327,11 @@ function taxonomy_csv_form_import($form, &$form_state) {
         $form_state['values']['text'] :
         '',
     '#description'   => t('Write your csv formatted terms directly in this text area.'),
+    '#states' => array(
+      'visible' => array(
+        ':input[name=source_choice]' => array('value' => 'text'),
+      ),
+    ),
   );
 
   $form['tab']['import']['file'] = array(
@@ -520,21 +342,23 @@ function taxonomy_csv_form_import($form, &$form_state) {
           t('Due to server restrictions, the <strong>maximum upload file size is !max_size</strong>. Files that exceed this size will be disregarded.', array('!max_size' => format_size($max_size))) . '<br >'
           . t('Use "distant file" import to go beyond, even with local file.') :
           ''),
+    '#states' => array(
+      'visible' => array(
+        ':input[name=source_choice]' => array('value' => 'file'),
+      ),
+    ),
   );
 
   $form['tab']['import']['url'] = array(
     '#type'          => 'textfield',
     '#title'         => t('CSV file'),
     '#description'   => t('Enter the url (http, ftp, file, path...)'),
-  );
-
-  foreach (array('text', 'file', 'url') as $value) {
-    $form['tab']['import'][$value]['#states'] = array(
+    '#states' => array(
       'visible' => array(
-        ':input[name=source_choice]' => array('value' => $value),
+        ':input[name=source_choice]' => array('value' => 'url'),
       ),
-    );
-  }
+    ),
+  );
 
   $form['tab']['csv_format'] = array(
     '#type'        => 'fieldset',
@@ -625,10 +449,10 @@ function taxonomy_csv_form_import($form, &$form_state) {
 
   $form['tab']['csv_format']['filter_format_custom'] = array(
     '#type'          => 'select',
-    '#title'         => t('Default format of synonyms, relations and custom fields'),
+    '#title'         => t('Default format of custom fields'),
     '#options'       => $list_filter_format_custom,
     '#default_value' => $list_previous_values['filter_format_custom'],
-    '#description'   => t('Choose the default format used for custom fields and synonyms.') . '<br />'
+    '#description'   => t('Choose the default format used for custom fields.') . '<br />'
       . t('Note') . ': ' . t('You can select only formats you can use. It can be changed later.') . '<br />'
       . t('Note') . ': ' . t('Sanitization is made during import.'),
   );
@@ -694,7 +518,7 @@ function taxonomy_csv_form_import($form, &$form_state) {
     '#description' => t('Terms can be imported into a new vocabulary or in an existing one. You can choose to duplicate an existing vocabulary too in order to check import. You might want to !add-new-vocab.', array(
         '!add-new-vocab' => l(t('add a new vocabulary'), 'admin/structure/taxonomy/add', array('query' => drupal_get_destination())),
       )) . '<br />'
-      . t('With some import formats as "Fields and links", vocabulary destination is defined by source content and this option is not used.'),
+      . t('If you import Fields and one of them is "vid" or "vocabulary_machine_name", this vocabulary need to exist before import, else error can occur.'),
   );
 
   if (count($list_vocabularies) == 0) {
@@ -713,7 +537,7 @@ function taxonomy_csv_form_import($form, &$form_state) {
   }
   else {
     $form['tab']['destination']['vocabulary_target'] = array(
-      '#type'          => 'select',
+      '#type'          => 'radios',
       '#options'       => $list_vocabulary_target,
       '#default_value' => $list_previous_values['vocabulary_target'],
       '#description'   => t('Choose the vocabulary where you want to import your items.'),
@@ -778,10 +602,10 @@ function taxonomy_csv_form_import($form, &$form_state) {
     );
   }
 
-  $form['tab']['destination']['import_custom_fields'] = array(
+  $form['tab']['destination']['import_fields_custom'] = array(
     '#type'          => 'textfield',
     '#title'         => t('Set custom fields of the vocabulary'),
-    '#default_value' => $list_previous_values['import_custom_fields'],
+    '#default_value' => $list_previous_values['import_fields_custom'],
     '#size'          => 60,
     '#maxlength'     => 1024,
     '#description'   =>  t('Fields of custom format are automatically attached if they exist, else they are created before.') . ' ' . t('When a field is created, options are set to Drupal defaults for a text field with a unlimited number of values.') . ' ' . t("If you want another type, you have to create it before or set it here with the '|' symbol.") . '<br />'
@@ -794,7 +618,7 @@ function taxonomy_csv_form_import($form, &$form_state) {
         . '<li>' . 'number_integer' . '</li>'
         . '<li>' . 'number_float' . '</li>'
         . '<li>' . 'list_boolean' . '</li>'
-        . '<li>' . 'taxonomy_term_reference' . '</li>'
+        . '<li>' . 'taxonomy_term_reference' . ' <em>' . t('[Note: if value is a number, the field will be linked to the term with that tid; if value is a string, the field will be linked to an existing or a new term with that name.]') . '</em>' . '</li>'
         . '<li>' . 'file' . '</li>'
       . '</ul>'
       . t('Other types are well imported too if their content is a "value".') . '<br />'
@@ -805,7 +629,7 @@ function taxonomy_csv_form_import($form, &$form_state) {
       . '<li><code>' . t('field_country|text, field_year_started|text') . '</code></li></ul>',
     '#states'        => array(
       'visible' => array(
-        ':input[name=import_format]' => array('value' => TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS),
+        ':input[name=import_format]' => array('value' => TAXONOMY_CSV_FORMAT_FIELDS),
       ),
     ),
   );
@@ -843,8 +667,6 @@ function taxonomy_csv_form_import($form, &$form_state) {
     ),
     '#default_value' => $list_previous_values['set_hierarchy'],
     '#states'        => array(
-      // @todo Change invisible with disabled when #states will work, and move
-      // it above, and directly include title.
       'invisible' => array(
         ':input[name=check_hierarchy]' => array('checked' => TRUE),
       ),
@@ -859,145 +681,25 @@ function taxonomy_csv_form_import($form, &$form_state) {
     '#description' => t('What will existing term become when a term with same name and same language will be imported?'),
   );
 
-  if (!isset($_COOKIE['has_js']) || $_COOKIE['has_js']) {
-    $list_import_allowed = _taxonomy_csv_values('import_allowed');
-    foreach ($list_import_format as $key => $value) {
-      $form['tab']['import_options']["existing_items_$key"] = array(
-        '#type'          => 'radios',
-        '#options'       => array_intersect_key($list_import_option, array_flip($list_import_allowed[$key])),
-        '#default_value' => $list_previous_values['existing_items'],
-        // '#description is needed to avoid a #states bug.
-        '#description'   => '',
-        '#states'        => array(
-          'visible' => array(
-            ':input[name=import_format]' => array('value' => $key),
-          ),
-        ),
-      );
-      // Preselection if import format has only one option.
-      if (count($form['tab']['import_options']["existing_items_$key"]['#options']) == 1) {
-        $options = array_keys($form['tab']['import_options']["existing_items_$key"]['#options']);
-        $form['tab']['import_options']["existing_items_$key"]['#default_value'] = array_pop($options);
-      }
-    }
-
-    // Generic form for import format help.
-    foreach ($list_import_format as $key => $value) {
-      $form['tab']['import_options'][$key] = array(
-        '#type'   => 'item',
-        '#markup' => t('Help for import format:') . ' ' . $value,
-        '#states' => array(
-          'visible' => array(
-            ':input[name=import_format]' => array('value' => $key),
-          ),
-        ),
-      );
-
-      // Complete generic form with specific help for external import formats.
-      if (in_array($key, array_keys($list_external_format))) {
-        $form['tab']['import_options'][$key]['#description'] = $list_external_format[$key]['import_options_help'];
-      }
-    }
-
-    // Complete generic form with specific help for each import format.
-    $form['tab']['import_options'][TAXONOMY_CSV_FORMAT_ALONE_TERMS]['#description'] = t('This option indicates whether existing terms with the same name should be updated or ignored. If ignored, duplicates may be created.');
-
-    $form['tab']['import_options'][TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS]['#description'] = t('This option indicates whether existing terms with the same name should be updated or ignored. If ignored, duplicates may be created.');
-
-    $form['tab']['import_options'][TAXONOMY_CSV_FORMAT_DEFINITION_LINKS]['#description'] = t('This option indicates whether and how existing terms with the same name should be updated or ignored.') . '<br />'
-      . t('Only one option can be chosen with this format.') . '<br />'
-      . '<ul>
-          <li>' . t('"<em>Update"</em>: update term and merge eventual item with new one.') . '</li>
-        </ul>';
-
-    $form['tab']['import_options'][TAXONOMY_CSV_FORMAT_FLAT]['#description'] = t('This option indicates whether existing terms with the same name should be updated or ignored. If ignored, duplicates may be created.');
-
-    $form['tab']['import_options'][TAXONOMY_CSV_FORMAT_TREE_STRUCTURE]['#description'] = t('This option indicates whether and how existing terms with the same name should be updated or ignored.') . '<br />'
-      . t('This option is used with last term of the line.') . '<br />'
-      . '<ul>
-          <li>' . t('<em>"Update and replace"</em>: keep existing fields of the term, but use only new parents.') . '</li>
-          <li>' . t('<em>"Ignore"</em>: child is always created and eventually its parents if they don\'t exist.') . ' ' . t('It is recommended if you use duplicate terms.') . '</li>
-        </ul>';
-
-    $form['tab']['import_options'][TAXONOMY_CSV_FORMAT_POLYHIERARCHY]['#description'] = t('This option indicates whether and how existing terms with the same name should be updated or ignored.') . '<br />'
-      . t('Only one option can be chosen with this format.') . '<br />'
-      . '<ul>
-          <li>' . t('<em>"Update"</em>: each child and parents are merged with old ones, except if the child has the same name than parent, in which case a new term is created, because a child cannot be a parent of itself. Warning: on next lines, direct children of this term name will be attached to the first imported term.') . '</li>
-        </ul>';
-
-    $form['tab']['import_options'][TAXONOMY_CSV_FORMAT_PARENTS]['#description'] = t('This option indicates whether and how existing terms with the same name should be updated or ignored.') . '<br />'
-      . '<ul>
-          <li>' . t('<em>"Update"</em>: each child and parents are merged with old ones. No duplicate are created.') . '</li>
-          <li>' . t('<em>"Update and replace"</em>: each parent replaces eventual older ones.') . '</li>
-          <li>' . t('<em>"Ignore"</em>: child is always created and eventually its parents if they don\'t exist.') . '</li>
-        </ul>';
-
-    $form['tab']['import_options'][TAXONOMY_CSV_FORMAT_CHILDREN]['#description'] = t('This option indicates whether and how existing terms with the same name should be updated or ignored.') . '<br />'
-      . '<ul>
-          <li>' . t('<em>"Update"</em>: each child and parents are merged with old ones.') . '</li>
-          <li>' . t('<em>"Update and replace"</em>: each parent replaces eventual older ones.') . '</li>
-          <li>' . t('<em>"Ignore"</em>: child is always created and eventually its parents if they don\'t exist.') . '</li>
-        </ul>';
-
-    $form['tab']['import_options'][TAXONOMY_CSV_FORMAT_RELATIONS]['#description'] = t('This option indicates whether existing terms with the same name should be updated or ignored.
-    <p>For example, if existing related terms of term < <code>foo</code> > are < <code>bar 1</code> > and < <code>bar 2</code> > and an imported line in the csv file is < <code>"foo", "bar 3", "bar 2"</code> >, then:') . '<br >'
-      . '<ul>
-          <li>' . t('<em>"Update"</em> choice makes related terms of < <code>foo</code> > are now < <code>bar 1</code> >, < <code>bar 2</code> > and < <code>bar 3</code> >;') . '</li>
-          <li>' . t('<em>"Update and replace"</em> choice makes related terms of < <code>foo</code> > are now < <code>bar 3</code> > and < <code>bar 2</code> >;') . '</li>
-          <li>' . t('<em>"Ignore"</em> choice makes two < <code>foo</code> > terms, one with existing related and other items and another one with the imported related terms < <code>bar 3</code> > and < <code>bar 1</code> >, which one has not been duplicated.') . '</li>
-        </ul></p>';
-
-    $form['tab']['import_options'][TAXONOMY_CSV_FORMAT_SYNONYMS]['#description'] = t('This option indicates whether and how existing terms with the same name should be updated or ignored.') . '<br />'
-      . '<ul>
-          <li>' . t('<em>"Update"</em>: update term or create it if not exists and merge eventual synonyms with new ones. Always remove duplicate synonyms.') . '</li>
-          <li>' . t('<em>"Update and replace"</em>: update term or create it if not exists and replace eventual synonyms with new ones.') . '</li>
-          <li>' . t('<em>"Ignore"</em>: term is always created.') . '</li>
-        </ul>';
-
-    $form['tab']['import_options'][TAXONOMY_CSV_FORMAT_DEFINITIONS]['#description'] = t('This option indicates whether existing terms with the same name should be updated or ignored. If ignored, duplicates may be created.') . '<br />'
-      . '<ul>
-          <li>' . t('<em>"Update"</em>: update term or create it if not exists and merge eventual description with new one.') . '</li>
-          <li>' . t('<em>"Update and replace"</em>: update term or create it if not exists and replace eventual description with new one.') . '</li>
-          <li>' . t('<em>"Ignore"</em>: term is always created.') . '</li>
-        </ul>';
-
-    $form['tab']['import_options'][TAXONOMY_CSV_FORMAT_DESCRIPTIONS]['#description'] = t('This option indicates whether and how existing terms with the same name should be updated or ignored.') . '<br />'
-      . '<ul>
-          <li>' . t('<em>"Update"</em>: update term or create it if not exists and merge eventual description with new one.') . '</li>
-          <li>' . t('<em>"Update and replace"</em>: update term or create it if not exists and replace eventual description with new one.') . '</li>
-          <li>' . t('<em>"Ignore"</em>: term is always created.') . '</li>
-        </ul>';
-
-    $form['tab']['import_options'][TAXONOMY_CSV_FORMAT_WEIGHTS]['#description'] = t('This option indicates whether and how existing terms with the same name should be updated or ignored.');
-
-    $form['tab']['import_options'][TAXONOMY_CSV_FORMAT_TRANSLATE_TERMS]['#description'] = t('This option indicates whether and how existing terms with the same name should be updated or ignored.') . '<br />'
-      . '<ul>
-          <li>' . t('<em>"Update"</em>: update term or create it if not exists and merge eventual description with new one.') . '</li>
-          <li>' . t('<em>"Update and replace"</em>: update term or create it if not exists and replace eventual description with new one.') . ' ' . t('If the existing term is in a translation set, it is simply updated.') . '</li>
-          <li>' . t('<em>"Ignore"</em>: term is always created.') . ' ' . t('In Translate mode, the eventual existing term will be simply removed from the translation set.') . '</li>
-        </ul>';
-  }
-  else {
-    $form['tab']['import_options']['help_no_javascript'] = array(
-      '#type'        => 'item',
-      '#description' => t("As you see this notice, javascript is not activated on your browser. Only options matching your source content and vocabulary destination needs to be set. Others won't be used. If you want specific examples and options, activate javascript or see <a href=\"!more_help_link\"> advanced help</a>.", array('!more_help_link' => url('admin/help/taxonomy_csv'))),
-    );
-    // Use this form only if no javascript or in a second step wizard.
-    $form['tab']['import_options']['existing_items'] = array(
-      '#type'          => 'radios',
-      '#options'       => array_intersect_key($list_import_option, array_flip(array(
-        TAXONOMY_CSV_EXISTING_UPDATE,
-        TAXONOMY_CSV_EXISTING_UPDATE_REPLACE,
-        TAXONOMY_CSV_EXISTING_IGNORE,
-        TAXONOMY_CSV_EXISTING_IGNORE_ALL,
-      ))),
-      '#default_value' => $list_previous_values['existing_items'],
-      // '#description' below in order to use same help with javascript.
-      '#description'   => t('This option allows to set what previous imported terms will become if a new line contains the same terms. Usually, it indicates an error or a unoptimized source, unless you allow duplicates.') . '<br />'
-    . t('This option is used too with existing terms in the target vocabulary. Recommended value is to update and merge. If you choose to ignore previous or existing terms, the vocabulary will have duplicate terms.') . '<br />'
-    . t('Some choices may be currently disabled.'),
-    );
-  }
+  $form['tab']['import_options']['update_or_ignore'] = array(
+    '#type'          => 'radios',
+    '#options'       => array(
+      TAXONOMY_CSV_EXISTING_UPDATE => t('Update it and merge fields (avoid duplicate terms, recommended)'),
+      TAXONOMY_CSV_EXISTING_IGNORE => t('Ignore it and create a new term (duplicate terms may be created)'),
+    ),
+    '#default_value' => $list_previous_values['update_or_ignore'],
+    '#description'   => t('This option allows to set what previous imported terms will become if a new line contains the same terms.') . ' ' . t('Usually, it indicates an error or a unoptimized source, unless you allow duplicates.'),
+  );
+  $form['tab']['import_options']['update_or_ignore_info_polyhierarchy'] = array(
+    '#type'        => 'item',
+    '#description' => '<strong>' . t('Note') . '</strong>: ' . t('You cannot choose to ignore existing items when you import a polyhierarchical structure.'),
+    '#states'      => array(
+      'visible' => array(
+        ':input[name=import_format]' => array('value' => TAXONOMY_CSV_FORMAT_STRUCTURE),
+        ':input[name=structure_type]' => array('value' => TAXONOMY_CSV_FORMAT_POLYHIERARCHY),
+      ),
+    ),
+  );
 
   $form['tab']['advanced_options'] = array(
     '#type'        => 'fieldset',
@@ -1055,7 +757,7 @@ function taxonomy_csv_form_import($form, &$form_state) {
 
   $form['actions'] = array('#type' => 'actions');
 
-  $form['actions']['import_submit'] = array(
+  $form['actions']['submit'] = array(
     '#type'  => 'submit',
     '#value' => t('Import'),
   );
@@ -1063,8 +765,8 @@ function taxonomy_csv_form_import($form, &$form_state) {
   $form['actions']['import_default_values'] = array(
     '#type'     => 'submit',
     '#value'    => t('Reset to defaults'),
-    '#validate' => array('_taxonomy_csv_form_import_default_values_validate'),
-    '#submit'   => array('_taxonomy_csv_form_import_default_values_submit'),
+    '#validate' => array('taxonomy_csv_import_form_default_values_validate'),
+    '#submit'   => array('taxonomy_csv_import_form_default_values_submit'),
   );
 
   return $form;
@@ -1073,9 +775,9 @@ function taxonomy_csv_form_import($form, &$form_state) {
 /**
  * Handles CSV import form validation.
  *
- * @see taxonomy_csv_form_import()
+ * @see taxonomy_csv_import_form()
  */
-function taxonomy_csv_form_import_validate($form, &$form_state) {
+function taxonomy_csv_import_form_validate($form, &$form_state) {
   // Invoke taxonomy_csv.import.api.
   $module_dir = drupal_get_path('module', 'taxonomy_csv');
   require_once("$module_dir/import/taxonomy_csv.import.api.inc");
@@ -1137,21 +839,15 @@ function taxonomy_csv_form_import_validate($form, &$form_state) {
   $options['vocabulary_language'] = $options['language'];
   $options['language'] = $options['import_language'];
 
-  // Custom format is trimmed array of import_custom_format.
-  $options['custom_format'] = (trim($options['import_custom_format'] == '')) ?
+  // Custom format is trimmed array of import_fields_format.
+  $options['fields_format'] = (trim($options['import_fields_format'] == '')) ?
     array() :
-    array_values(array_map('trim', explode(',', $options['import_custom_format'])));
+    array_values(array_map('trim', explode(',', $options['import_fields_format'])));
 
-  // Custom fields is trimmed array of import_custom_fields.
-  $options['custom_fields'] = (trim($options['import_custom_fields'] == '')) ?
+  // Custom fields is trimmed array of import_fields_custom.
+  $options['fields_custom'] = (trim($options['import_fields_custom'] == '')) ?
     array() :
-    array_values(array_map('trim', explode(',', $options['import_custom_fields'])));
-
-  // Define existing items choice.
-  if (!isset($_COOKIE['has_js']) || $_COOKIE['has_js']) {
-    $import_format = $options['import_format'];
-    $options['existing_items'] = $options["existing_items_$import_format"];
-  }
+    array_values(array_map('trim', explode(',', $options['import_fields_custom'])));
 
   // Define result preferences.
   foreach ($options['result_choices'] as $key => $value) {
@@ -1168,10 +864,10 @@ function taxonomy_csv_form_import_validate($form, &$form_state) {
 
   // Return form set errors for api errors.
   foreach (array(
-      'custom_format' => 'import_custom_format',
+      'fields_format' => 'import_fields_format',
       'delimiter'     => 'import_delimiter',
       'enclosure'     => 'import_enclosure',
-      'custom_fields' => 'import_custom_fields',
+      'fields_custom' => 'import_fields_custom',
       'language'      => 'import_language',
       'vocabulary_language' => 'language',
     ) as $key => $value) {
@@ -1223,25 +919,28 @@ function _taxonomy_csv_import_check_options(&$options) {
 
   // Custom order check.
   // @todo Use a regexp.
-  if ($options['import_format'] == TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS) {
-    if (!is_array($options['custom_format'])) {
-      $messages['custom_format'] = t('Field format is an array of machine name fields.');
+  if ($options['import_format'] == TAXONOMY_CSV_FORMAT_FIELDS) {
+    if (!is_array($options['fields_format'])) {
+      $messages['fields_format'] = t('Field format is an array of machine name fields.');
     }
-    elseif ($options['custom_format'] === array()) {
-      $messages['custom_format'] = t("Field format can't be empty.");
+    elseif ($options['fields_format'] === array()) {
+      $messages['fields_format'] = t("Field format can't be empty.");
     }
-    elseif (in_array('', $options['custom_format'])) {
-      $messages['custom_format'] = t('One of the fields is empty.');
+    elseif (in_array('', $options['fields_format'])) {
+      $messages['fields_format'] = t('One of the fields is empty.');
     }
     // Check if name is the first item.
-    elseif ($options['custom_format'][0] != 'name' && $options['custom_format'][0] != 'tid') {
-      $messages['custom_format'] = t("First field has to be 'name' or 'tid'.");
+    elseif ($options['fields_format'][0] != 'name' && $options['fields_format'][0] != 'tid') {
+      $messages['fields_format'] = t("First field has to be 'name' or 'tid'.");
     }
-    elseif (array_map('strtolower', $options['custom_format']) != $options['custom_format']) {
-      $messages['custom_format'] = t("Fields have to be in lower case.");
+    elseif (array_map('strtolower', $options['fields_format']) != $options['fields_format']) {
+      $messages['fields_format'] = t("Fields have to be in lower case.");
     }
-    elseif (str_replace(' ', '', implode(',', $options['custom_format'])) != implode(',', $options['custom_format'])) {
-      $messages['custom_format'] = t("Fields can't have spaces.");
+    elseif (str_replace(' ', '', implode(',', $options['fields_format'])) != implode(',', $options['fields_format'])) {
+      $messages['fields_format'] = t("Fields can't have spaces.");
+    }
+    elseif (in_array('weight', $options['fields_format']) && $options['keep_order']) {
+      $messages['keep_order'] = t("You can't keep order of terms when you import weights of terms.");
     }
     // Check items that must be unique.
     else {
@@ -1257,8 +956,8 @@ function _taxonomy_csv_import_check_options(&$options) {
           'guid',
           'vocabulary_machine_name',
         ) as $item) {
-        if (count(array_keys($options['custom_format'], $item)) > 1) {
-          $messages['custom_format'] = t("Fields can have only one '!item'.", array(
+        if (count(array_keys($options['fields_format'], $item)) > 1) {
+          $messages['fields_format'] = t("Fields can have only one '!item'.", array(
             '!item' => $item,
           ));
         }
@@ -1319,14 +1018,12 @@ function _taxonomy_csv_import_check_options(&$options) {
 
   if (!in_array($options['vocabulary_target'], array(
       'autocreate',
-      'duplicate',
       'existing',
     ))) {
-    $messages['vocabulary_target'] = t('Destination target should be "autocreate", "duplicate" or "existing".');
+    $messages['vocabulary_target'] = t('Destination target should be "autocreate" or "existing".');
   }
 
-  if ($options['vocabulary_target'] == 'duplicate'
-      || $options['vocabulary_target'] == 'existing') {
+  if ($options['vocabulary_target'] == 'existing') {
     $list_vocabularies = taxonomy_get_vocabularies();
     if (!isset($list_vocabularies[$options['vocabulary_id']])) {
       $messages['vocabulary_id'] = t("You choose to use an existing vocabulary, but you haven't choose it.");
@@ -1380,12 +1077,12 @@ function _taxonomy_csv_import_check_options(&$options) {
     }
 
     // Check accordance of options.
-    if ($options['import_format'] == TAXONOMY_CSV_FORMAT_TRANSLATE_TERMS) {
+    if ($options['import_format'] == TAXONOMY_CSV_FORMAT_TRANSLATE) {
       // Vocabulary should be localizable or translatable.
       if (($vocabulary->i18n_mode == I18N_MODE_NONE)
           || ($vocabulary->i18n_mode == I18N_MODE_LANGUAGE)
         ) {
-        $messages['i18n_mode'] = t('You need to create of to choose a localizable or translatable vocabulary if you want to import translations of names and descriptions.');
+        $messages['i18n_mode'] = t('You need to create or to select a <em>localizable</em> or <em>translatable</em> vocabulary if you want to import translations of names and descriptions.');
       }
 
       if (($vocabulary->i18n_mode == I18N_MODE_LOCALIZE) && ($options['filter_format'] != 'plain_text')) {
@@ -1403,28 +1100,28 @@ function _taxonomy_csv_import_check_options(&$options) {
 
   // Custom fields check.
   // @todo Use a regexp.
-  if ($options['import_format'] == TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS) {
-    if (!is_array($options['custom_fields'])) {
-      $messages['custom_fields'] = t('Custom fields are an array of machine name fields.');
+  if ($options['import_format'] == TAXONOMY_CSV_FORMAT_FIELDS) {
+    if (!is_array($options['fields_custom'])) {
+      $messages['fields_custom'] = t('Custom fields are an array of machine name fields.');
     }
-    elseif ($options['custom_fields'] == array()) {
+    elseif ($options['fields_custom'] == array()) {
       // Good
     }
-    elseif (in_array('', $options['custom_fields'])) {
-      $messages['custom_fields'] = t('One of the custom fields is empty.');
+    elseif (in_array('', $options['fields_custom'])) {
+      $messages['fields_custom'] = t('One of the custom fields is empty.');
     }
     // Name need to be unique..
-    elseif (count(array_unique($options['custom_fields'])) != count($options['custom_fields'])) {
-      $messages['custom_fields'] = t("Each custom fields sould have a unique machine name.");
+    elseif (count(array_unique($options['fields_custom'])) != count($options['fields_custom'])) {
+      $messages['fields_custom'] = t("Each custom fields sould have a unique machine name.");
     }
-    elseif (array_map('strtolower', $options['custom_fields']) != $options['custom_fields']) {
-      $messages['custom_fields'] = t("Custom fields have to be in lower case.");
+    elseif (array_map('strtolower', $options['fields_custom']) != $options['fields_custom']) {
+      $messages['fields_custom'] = t("Custom fields have to be in lower case.");
     }
-    elseif (str_replace(' ', '', implode(',', $options['custom_fields'])) != implode(',', $options['custom_fields'])) {
-      $messages['custom_fields'] = t("Custom fields can't have spaces.");
+    elseif (str_replace(' ', '', implode(',', $options['fields_custom'])) != implode(',', $options['fields_custom'])) {
+      $messages['fields_custom'] = t("Custom fields can't have spaces.");
     }
     else {
-      foreach ($options['custom_fields'] as $key => $value) {
+      foreach ($options['fields_custom'] as $key => $value) {
         $field_name = (strpos($value, '|') === FALSE) ?
             $value :
             drupal_substr($value, 0, strpos($value, '|'));
@@ -1444,34 +1141,21 @@ function _taxonomy_csv_import_check_options(&$options) {
             'guid',
             'parent',
           ))) {
-          $messages['custom_fields'] = t("Default term fields don't need to be defined.");
+          $messages['fields_custom'] = t("Default term fields don't need to be defined.");
         }
       }
     }
   }
 
-  $list_import_format = _taxonomy_csv_values('import_format');
-  $list_import_option = _taxonomy_csv_values('import_option');
-  $list_import_allowed = _taxonomy_csv_values('import_allowed');
-  if (!array_key_exists($options['import_format'], $list_import_format)) {
-    $messages['import_format'] = t('Source content "!import_format" is not managed.', array(
-      '!import_format' => $list_import_format[$options['import_format']]
-    ));
+  if (!$options['update_or_ignore']) {
+    $messages['update_or_ignore'] = t('Please set what will become existing terms.');
   }
-  elseif (!in_array($options['existing_items'], $list_import_allowed[$options['import_format']])) {
-    $messages['existing_items'] = t('Import option "%existing_items" cannot be used with source content "!import_format".', array(
-      '%existing_items' => $list_import_option[$options['existing_items']],
-      '!import_format'  => $list_import_format[$options['import_format']],
-    ));
-  }
-
-  if (!$options['existing_items']) {
-    $messages['existing_items'] = t('Please set what will become existing terms.');
-  }
-  elseif (!array_key_exists($options['existing_items'], $list_import_option)) {
-    $messages['existing_items'] = t('Import option "!existing_items" is not managed.', array(
-      '!existing_items' => $list_import_option[$options['existing_items']]
-    ));
+  elseif ($options['update_or_ignore'] == TAXONOMY_CSV_EXISTING_IGNORE
+      && ($options['import_format'] == TAXONOMY_CSV_FORMAT_POLYHIERARCHY
+        || ($options['import_format'] == TAXONOMY_CSV_FORMAT_STRUCTURE && $options['structure_type'] == TAXONOMY_CSV_FORMAT_POLYHIERARCHY)
+        )
+    ) {
+    $messages['update_or_ignore'] = t('You cannot choose to ignore existing items when you import a polyhierarchical structure.');
   }
 
   if ($options['check_hierarchy']
@@ -1485,13 +1169,14 @@ function _taxonomy_csv_import_check_options(&$options) {
 /**
  * Handles CSV import form submission and launch batch set.
  *
- * @see taxonomy_csv_form_import()
+ * @see taxonomy_csv_import_form()
  */
-function taxonomy_csv_form_import_submit($form, &$form_state) {
+function taxonomy_csv_import_form_submit($form, &$form_state) {
   // Remember last preferences and prepare only options to be sent to Api.
   foreach (array(
       'import_format',
-      'import_custom_format',
+      'structure_type',
+      'import_fields_format',
       'translate_by',
       'keep_order',
       'source_choice',
@@ -1510,14 +1195,11 @@ function taxonomy_csv_form_import_submit($form, &$form_state) {
       'vocabulary_id',
       'i18n_mode',
       'language',
-      'import_custom_fields',
+      'import_fields_custom',
       'delete_terms',
       'check_hierarchy',
       'set_hierarchy',
-      'existing_items',
-      // Specific to relations import.
-      'relations_create_subrelations',
-      'relations_all_vocabularies',
+      'update_or_ignore',
       // General options.
       'result_stats',
       'result_terms',
@@ -1542,16 +1224,21 @@ function taxonomy_csv_form_import_submit($form, &$form_state) {
   $options['delimiter'] = $form_state['values']['delimiter'];
   $options['enclosure'] = $form_state['values']['enclosure'];
 
-  unset($options['import_custom_format']);
-  unset($options['import_custom_fields']);
-  if ($options['import_format'] == TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS) {
-    $options['custom_format'] = $form_state['values']['custom_format'];
-    $options['custom_fields'] = $form_state['values']['custom_fields'];
+  unset($options['import_fields_format']);
+  unset($options['import_fields_custom']);
+  if ($options['import_format'] == TAXONOMY_CSV_FORMAT_FIELDS) {
+    $options['fields_format'] = $form_state['values']['fields_format'];
+    $options['fields_custom'] = $form_state['values']['fields_custom'];
   }
   else {
-    unset($options['custom_format']);
-    unset($options['custom_fields']);
+    unset($options['fields_format']);
+    unset($options['fields_custom']);
   }
+
+  if ($options['import_format'] == TAXONOMY_CSV_FORMAT_STRUCTURE) {
+    $options['import_format'] = $options['structure_type'];
+  }
+  unset($options['structure_type']);
 
   // Warning: in API, 'language' is option for terms.
   $options['vocabulary_language'] = $form_state['values']['language'];
@@ -1570,14 +1257,18 @@ function taxonomy_csv_form_import_submit($form, &$form_state) {
 
 /**
  * Restore recommended default values in the import form. Empty validate hook.
+ *
+ * @see taxonomy_csv_import_form()
  */
-function _taxonomy_csv_form_import_default_values_validate($form, &$form_state) {
+function taxonomy_csv_import_form_default_values_validate($form, &$form_state) {
 }
 
 /**
  * Restore recommended default values in the import form.
+ *
+ * @see taxonomy_csv_import_form()
  */
-function _taxonomy_csv_form_import_default_values_submit($form, &$form_state) {
+function taxonomy_csv_import_form_default_values_submit($form, &$form_state) {
   foreach (_taxonomy_csv_values('import_default_ui') as $option => $value) {
     variable_set("taxonomy_csv_$option", $value);
   }

@@ -1,5 +1,5 @@
 name = "Taxonomy CSV import/export"
-description = "Export and import complete taxonomies, hierarchical structure or simple lists of terms and properties to or from a CSV file, url or text."
+description = "Export and import complete taxonomies, hierarchical structure or simple lists of terms and fields to or from a CSV file, url or text."
 core = 7.x
 dependencies[] = taxonomy
 package = 'Taxonomy'
@@ -13,7 +13,6 @@ files[] = taxonomy_csv.term.api.inc
 files[] = taxonomy_csv.result.inc
 files[] = import/taxonomy_csv.import.admin.inc
 files[] = import/taxonomy_csv.import.api.inc
-files[] = import/taxonomy_csv.import.parser.api.inc
 files[] = import/taxonomy_csv.import.line.api.inc
 files[] = import/taxonomy_csv.import.result.inc
 files[] = export/taxonomy_csv.export.admin.inc

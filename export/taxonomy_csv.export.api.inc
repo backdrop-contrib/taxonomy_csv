@@ -20,16 +20,13 @@ require_once($module_dir . '/taxonomy_csv.vocabulary.api.inc');
  *
  * @param $options
  *   An associative array of options:
- *   - export_format : see _taxonomy_csv_values('export_format')
+ *   - export_format : see format of the csv line (see taxonomy.api.inc)
  *   - vocabulary_id : vid or machine_name (or array of them) of the vocabulary
  *                     to export (default: 0, which means all)
  *   - delimiter     : one character csv delimiter (default: ',')
  *   - enclosure     : zero or one character csv enclosure (default: '"')
  *   - line_ending   : 'Unix' (default), 'Mac' or 'MS-DOS'
  *   - order         : order of terms: 'name' (default), 'tid' or 'weight'
- *   // Specific to def_links:
- *   - def_links_terms_ids : 'name_if_needed' (default), 'name' or 'tid'
- *   - def_links_vocabularies_ids : 'none' (default), 'name' or 'vid'
  *   // Level of result process infos:
  *   - check_options : boolean. check or not (default) this array of options
  *   - result_display: boolean. display or not (default). Only used with UI
@@ -85,7 +82,7 @@ function _taxonomy_csv_export_output_presave(&$options) {
     'public://' . 'taxocsv.csv',
     'FILE_EXISTS_RENAME');
   if (!$filename) {
-    $messages['file'] = t('Check access rights to temp directory : export needs permission to write and to read in it. Export failed.');
+    $messages['file'] = t('Check access rights to temp directory: export needs permission to write and to read in it. Export failed.');
   }
   else {
     $options['file'] = (object) array(
@@ -135,23 +132,52 @@ function taxonomy_csv_vocabulary_export($options) {
   $options['total_terms'] = taxonomy_csv_vocabulary_count_terms($options['vocabulary_id']);
 
   // Get infos about fields of vocabulary.
-  if ($options['export_format'] == TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS) {
-    $options['vocabulary'] = array();
-    foreach ($options['vocabulary_id'] as $vocabulary_id) {
-      $options['vocabulary'][$vocabulary_id] = taxonomy_vocabulary_load($vocabulary_id);
-      $vocabulary = &$options['vocabulary'][$vocabulary_id];
-      $vocabulary->instances = field_info_instances('taxonomy_term', $vocabulary->machine_name);
-      $vocabulary->fields = array();
-      $vocabulary->fields_unlimited = array();
-      if (is_array($vocabulary->instances)) {
-        foreach ($vocabulary->instances as $field_name => $value) {
-          $vocabulary->fields[$field_name] = field_info_field($field_name);
-          // Get the list of fields with an unlimited number of values to avoid
-          // the loop of check (used with custom fields export).
-          // The minimum is set to one to avoid zero value.
-          if ($vocabulary->fields[$field_name]['cardinality'] == -1) {
-            $vocabulary->fields_unlimited[$field_name] = 1;
-          }
+  $options['vocabulary'] = array();
+  foreach ($options['vocabulary_id'] as $vocabulary_id) {
+    $options['vocabulary'][$vocabulary_id] = taxonomy_vocabulary_load($vocabulary_id);
+    $vocabulary = &$options['vocabulary'][$vocabulary_id];
+    $vocabulary->instances = field_info_instances('taxonomy_term', $vocabulary->machine_name);
+
+    // Prepare list of fields to be exported.
+    $vocabulary->fields = array();
+    // Not included, because referenced terms are exported by name.
+    // $vocabulary->fields['tid'] = array('cardinality' => 1);
+    $vocabulary->fields['name'] = array('cardinality' => 1);
+    // Not included, because there is already 'vocabulary_machine_name'.
+    // $vocabulary->fields['vid'] = array('cardinality' => 1);
+    $vocabulary->fields['vocabulary_machine_name'] = array('cardinality' => 1);
+    $vocabulary->fields['description'] = array('cardinality' => 1);
+    $vocabulary->fields['format'] = array('cardinality' => 1);
+    $vocabulary->fields['weight'] = array('cardinality' => 1);
+    $vocabulary->fields['parent'] = array('cardinality' => -1);
+    if (module_exists('i18n_taxonomy')) {
+      switch ($vocabulary->i18n_mode) {
+        case I18N_MODE_LANGUAGE:
+        case I18N_MODE_LOCALIZE:
+          $vocabulary->fields['language'] = array('cardinality' => 1);
+          break;
+
+        case I18N_MODE_TRANSLATE:
+        case I18N_MODE_MULTIPLE:
+          $vocabulary->fields['language'] = array('cardinality' => 1);
+          $vocabulary->fields['i18n_tsid'] = array('cardinality' => 1);
+          break;
+      }
+    }
+    // @todo
+    // $vocabulary->fields['guid'] = array('cardinality' => 1);
+
+    // Prepare list of unlimited fields to be exported.
+    $vocabulary->fields_unlimited = array();
+    $vocabulary->fields_unlimited['parent'] = 1;
+    if (is_array($vocabulary->instances)) {
+      foreach ($vocabulary->instances as $field_name => $value) {
+        $vocabulary->fields[$field_name] = field_info_field($field_name);
+        // Get the list of fields with an unlimited number of values to avoid
+        // the loop of check (used with custom fields export).
+        // The minimum is set to one to avoid zero value.
+        if ($vocabulary->fields[$field_name]['cardinality'] == -1) {
+          $vocabulary->fields_unlimited[$field_name] = 1;
         }
       }
     }
@@ -211,7 +237,8 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
     // Fetch terms to be exported and order them (by tree or by specific order).
     // Prepare a hierarchical tree of terms.
     if (in_array($options['export_format'], array(
-        TAXONOMY_CSV_FORMAT_TREE_STRUCTURE,
+        TAXONOMY_CSV_FORMAT_STRUCTURE,
+        TAXONOMY_CSV_FORMAT_TREE,
         TAXONOMY_CSV_FORMAT_POLYHIERARCHY,
       ))) {
       $context['sandbox']['terms'] = array();
@@ -226,6 +253,7 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
       else {
         $vocabularies = taxonomy_vocabulary_get_names();
       }
+
       foreach ($vocabularies as $vocabulary) {
         $context['sandbox']['terms'] = array_merge($context['sandbox']['terms'], taxonomy_get_tree($vocabulary->vid));
       }
@@ -248,11 +276,11 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
         $terms['taxonomy_term'] = array();
       }
 
-      $context['sandbox']['terms'] = array_values(taxonomy_term_load_multiple(array_keys($terms['taxonomy_term'])));
+      $context['sandbox']['terms'] = taxonomy_term_load_multiple(array_keys($terms['taxonomy_term']));
     }
 
     // Get max number of values for fields with a undefined number of values.
-    if ($options['export_format'] == TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS) {
+    if ($options['export_format'] == TAXONOMY_CSV_FORMAT_FIELDS) {
       // Currently, manage only undefined language.
       $language = 'und';
 
@@ -261,14 +289,19 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
           if (isset($term->{$field_name})) {
             // Remember the number of items if this term field has got more
             // items than previous one.
-            if (count($term->{$field_name}[$language]) > $options['vocabulary'][$term->vid]->fields_unlimited[$field_name]) {
+            if ($field_name == 'parent'
+                && (count($term->parent) > $options['vocabulary'][$term->vid]->fields_unlimited['parent'])
+              ) {
+              $options['vocabulary'][$term->vid]->fields_unlimited['parent'] = count($term->parent);
+            }
+            elseif (count($term->{$field_name}[$language]) > $options['vocabulary'][$term->vid]->fields_unlimited[$field_name]) {
               $options['vocabulary'][$term->vid]->fields_unlimited[$field_name] = count($term->{$field_name}[$language]);
             }
           }
         }
       }
 
-      // Keep list of vocabulary with undefined fields.
+      // Keep updated the list of vocabulary with undefined fields.
       $context['results'][0]['vocabulary'] = $options['vocabulary'];
       $context['sandbox']['vocabulary'] = $options['vocabulary'];
     }
@@ -290,16 +323,8 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
       unset($terms);
     }
 
-    // Prepare list of duplicate terms if needed.
+    // Duplicate names will be searched after export process.
     $context['results'][0]['duplicate_terms'] = array();
-    if (in_array($options['export_format'], array(
-        TAXONOMY_CSV_FORMAT_DEFINITION_LINKS,
-      ))) {
-      $context['results'][0]['duplicate_terms'] = array();
-      foreach ($options['vocabulary_id'] as $item) {
-        $context['results'][0]['duplicate_terms'] += taxonomy_csv_term_find_duplicate($item);
-      }
-    }
   }
   elseif (!is_resource($context['results'][0]['handle'])) {
     // Reopen file in case of memory out.
@@ -308,7 +333,7 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
 
   // Get list of unlimited multivalued fields.
   // @todo Currently, these fields are not saved in batch.
-  if ($options['export_format'] == TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS) {
+  if ($options['export_format'] == TAXONOMY_CSV_FORMAT_FIELDS) {
     $options['vocabulary'] = $context['sandbox']['vocabulary'];
   }
 
@@ -324,9 +349,7 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
   $terms_list      = &$context['sandbox']['terms'];
 
   // Process one term until end of vocabulary.
-  if ($term_number < count($context['sandbox']['terms'])) {
-    $term = $terms_list[$term_number];
-
+  foreach ($terms_list as $term) {
     $term_number++;
 
     // Remember current name/tid in case of error.
@@ -482,16 +505,12 @@ function taxonomy_csv_line_export($line, $options, &$handle, $result = array()) 
  *   Full term object to export.
  * @param $options
  *   An associative array of export options:
- *   - export_format : see _taxonomy_csv_values('export_format')
- *   // Specific to def_links:
- *   - def_links_terms_ids : 'name_if_needed' (default), 'name' or 'tid'
- *   - def_links_vocabularies_ids : 'none' (default), 'name' or 'vid'
+ *   - export_format : format of the csv line (see taxonomy.api.inc)
  * @param $terms_list
  *   (Optional) Array of all term objects to export, used to avoid to repeat
- *   fetch of terms. Currently needed only with tree_structure export.
+ *   fetch of terms.
  * @param $duplicate_terms
  *   (Optional) Array of duplicate terms names indexed by tid.
- *   Duplicate terms are managed only with def_links.
  *
  * @return
  *   Result array with:
@@ -508,37 +527,83 @@ function taxonomy_csv_term_export($term, $options, &$terms_list = array(), $dupl
   // Only count check because term and options are already checked.
   if (count($term)) {
     switch ($options['export_format']) {
-      case TAXONOMY_CSV_FORMAT_ALONE_TERMS:
+      case TAXONOMY_CSV_FORMAT_FLAT:
         $result['line'] = array(
           $term->name,
         );
         break;
 
-      case TAXONOMY_CSV_FORMAT_TID_NAME:
-        $result['line'] = array(
-          $term->tid,
-          $term->name,
-        );
+      case TAXONOMY_CSV_FORMAT_STRUCTURE:
+      case TAXONOMY_CSV_FORMAT_TREE:
+        $terms = taxonomy_csv_term_get_first_path($term, $terms_list);
+        foreach ($terms as $parent) {
+          $result['line'][] = $parent->name;
+        }
+        $result['line'][] = $term->name;
         break;
 
-      case TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS:
+      case TAXONOMY_CSV_FORMAT_POLYHIERARCHY:
+        // @todo
+        // Warning : taxonomy_csv_term_get_first_path() returns only first path.
+        break;
+
+      case TAXONOMY_CSV_FORMAT_FIELDS:
         // Currently, manage only undefined language.
         $language = 'und';
 
-        $result['line'] = array(
-          $term->name,
-        );
         // Use of field_get_items is slower.
         foreach ($options['vocabulary'][$term->vid]->fields as $field_name => $field) {
           $count = 0;
-          if (!empty($term->{$field_name})) {
-            // Key is generally 'value', but it can be 'tid' or something else.
-            reset($field['columns']);
+
+          // Item is a Field.
+          if (isset($field['type'])) {
             if (isset($term->{$field_name}[$language])) {
-              foreach ($term->{$field_name}[$language] as &$item) {
-                $result['line'][] = $item[key($field['columns'])];
+              // For taxonomy term reference, use name instead of value.
+              if ($field['type'] == 'taxonomy_term_reference') {
+                foreach ($term->{$field_name}[$language] as &$item) {
+                  $result['line'][] = isset($terms_list[$item['tid']]) ?
+                    $terms_list[$item['tid']]->name :
+                    taxonomy_term_load($item['tid'])->name;
+                }
+              }
+              // For long text, need to escape the value.
+              elseif ($field['type'] == 'text_long'
+                  || $field['type'] == 'text_with_summary'
+                ) {
+                foreach ($term->{$field_name}[$language] as &$item) {
+                  $result['line'][] = _taxonomy_csv_escape_line_break($item['value']);
+                }
+              }
+              else {
+                // Key is generally 'value' but it can be something else.
+                reset($field['columns']);
+                foreach ($term->{$field_name}[$language] as &$item) {
+                  $result['line'][] = $item[key($field['columns'])];
+                }
               }
               $count = count($term->{$field_name}[$language]);
+            }
+          }
+          // Item is a database term field (name, tid, language...).
+          else {
+            // For taxonomy term parent, use name instead of value.
+            if ($field_name == 'parent') {
+              if (isset($term->parent)) {
+                foreach ($term->parent as $tid) {
+                  $result['line'][] = isset($terms_list[$tid]) ?
+                    $terms_list[$tid]->name :
+                    taxonomy_term_load($tid)->name;
+                }
+                $count = count($term->parent);
+              }
+            }
+            elseif ($field_name == 'description') {
+              $result['line'][] = _taxonomy_csv_escape_line_break($term->description);
+              $count = 1;
+            }
+            else {
+              $result['line'][] = $term->{$field_name};
+              $count = 1;
             }
           }
 
@@ -548,206 +613,14 @@ function taxonomy_csv_term_export($term, $options, &$terms_list = array(), $dupl
               $result['line'] = array_merge($result['line'], array_fill(0, $options['vocabulary'][$term->vid]->fields_unlimited[$field_name] - $count, ''));
             }
           }
-          else {
-            if ($count < $field['cardinality']) {
-              $result['line'] = array_merge($result['line'], array_fill(0, $field['cardinality'] - $count, ''));
-            }
+          elseif ($count < $field['cardinality']) {
+            $result['line'] = array_merge($result['line'], array_fill(0, $field['cardinality'] - $count, ''));
           }
         }
-        break;
-
-      case TAXONOMY_CSV_FORMAT_CUSTOM_FIELDS_FIRST:
-        // Currently, manage only undefined language.
-        $language = 'und';
-
-        $result['line'] = array(
-          $term->name,
-        );
-        // Use of field_get_items is slower.
-        foreach ($options['vocabulary'][$term->vid]->fields as $field_name => $field) {
-          if (!empty($term->{$field_name}) && isset($term->{$field_name}[$language][0])) {
-            // Key is generally 'value', but it can be 'tid' or something else.
-            $result['line'][] = $term->{$field_name}[$language][0][key($field['columns'])];
-          }
-          // Add an empty csv value.
-          else {
-            $result['line'][] = '';
-          }
-        }
-        break;
-
-      case TAXONOMY_CSV_FORMAT_DEFINITION_LINKS:
-        // Prepare identifiants of main term and links.
-        // Check if each term is a duplicate, because identifiants are names,
-        // except for duplicate terms. For them, tid is appended to name.
-        $terms = array(
-          'main'      => array($term),
-          'parents'   => taxonomy_get_parents($term->tid),
-          'children'  => taxonomy_get_children($term->tid),
-          'relations' => taxonomy_csv_term_get_relations($term->tid),
-        );
-        foreach (array(
-            'main',
-            'parents',
-            'children',
-            'relations',
-          ) as $link) {
-          $ids[$link] = array();
-          foreach ($terms[$link] as $item) {
-            // Option is to use term id.
-            if ($options['def_links_terms_ids'] == 'tid') {
-              $ids[$link][] = $item->tid;
-            }
-            // If another option, identifiant depends on duplicate names.
-            // Term name is a duplicate, so append tid to name.
-            elseif (isset($duplicate_terms[$item->tid])) {
-              $ids[$link][] = $item->name . ' ' . $item->tid;
-            }
-            // Not duplicate, so use name or eventually nothing for main term.
-            else {
-              $ids[$link][] = $item->name;
-            }
-          }
-        }
-
-        // Prepare synonyms.
-        $synonyms = taxonomy_csv_term_get_synonyms($term->tid);
-
-        // Prepare main term vocabulary identifiant.
-        // Vocabulary identifiant depends on def_links_vocabularies_ids.
-        $vocabulary = taxonomy_vocabulary_load($term->vid);
-        $vid = ($options['def_links_vocabularies_ids'] == 'none') ?
-            // Don't set vocabulary.
-            '' :
-            // Use name or vid.
-            $vocabulary->{$options['def_links_vocabularies_ids']};
-        // Prepare vocabularies identifiants of related terms.
-        $relations_vocs = array();
-        // Option 'none' is impossible with multiple vocabularies, so use name.
-        $vocabulary_option = ($options['def_links_vocabularies_ids'] == 'none') ?
-            'name' :
-            $options['def_links_vocabularies_ids'];
-        foreach ($terms['relations'] as $item) {
-          // Check if related term vocabulary is main term vocabulary.
-          $vocabulary = taxonomy_vocabulary_load($item->vid);
-          $relations_vocs[] = ($item->vid == $term->vid) ?
-              // Same vocabularies, so use same identifiant.
-              $vid :
-              // Different vocabularies, so use name or vid.
-              $vocabulary->{$vocabulary_option};
-        }
-
-        $result['line'] = array_merge(
-          array(
-            $term->name,
-            // Main term identifiant: use tid, name or nothing.
-            (($options['def_links_terms_ids'] == 'name_if_needed') && ($term->name == $ids['main'][0])) ?
-                // Choice is name_if_needed and name is not a duplicate.
-                '' :
-                // Previously set identifiant.
-                $ids['main'][0],
-            $vid,
-            _taxonomy_csv_escape_line_break($term->description),
-            $term->weight,
-            count($synonyms),
-            count($ids['parents']),
-            count($ids['children']),
-            count($ids['relations']),
-          ),
-          $synonyms,
-          $ids['parents'],
-          $ids['children'],
-          $ids['relations'],
-          $relations_vocs
-        );
-        break;
-
-      case TAXONOMY_CSV_FORMAT_TREE_STRUCTURE:
-        $terms = taxonomy_csv_term_get_first_path($term, $terms_list);
-        foreach ($terms as $parent) {
-          $result['line'][] = $parent->name;
-        }
-        $result['line'][] = $term->name;
-        break;
-
-      case TAXONOMY_CSV_FORMAT_POLYHIERARCHY:
-        // Warning : taxonomy_csv_term_get_first_path() returns only first path.
-        break;
-
-      case TAXONOMY_CSV_FORMAT_PARENTS:
-        $result['line'] = array_merge(
-          array(
-            $term->name,
-          ),
-          taxonomy_csv_term_get_parents_names($term->tid)
-        );
-        break;
-
-      case TAXONOMY_CSV_FORMAT_CHILDREN:
-        $result['line'] = array_merge(
-          array(
-            $term->name,
-          ),
-          taxonomy_csv_term_get_children_names($term->tid)
-        );
-        break;
-
-      case TAXONOMY_CSV_FORMAT_RELATIONS:
-        $result['line'] = array_merge(
-          array(
-            $term->name,
-          ),
-          taxonomy_csv_term_get_relations_names($term->tid)
-        );
-        break;
-
-      case TAXONOMY_CSV_FORMAT_SYNONYMS:
-        $result['line'] = array_merge(
-          array(
-            $term->name,
-          ),
-          taxonomy_csv_term_get_synonyms($term->tid)
-        );
-        break;
-
-      case TAXONOMY_CSV_FORMAT_DEFINITIONS:
-        $result['line'] = array_merge(
-          array(
-            $term->name,
-            $term->weight,
-            _taxonomy_csv_escape_line_break($term->description),
-          ),
-          taxonomy_csv_term_get_synonyms($term->tid)
-        );
-        break;
-
-      case TAXONOMY_CSV_FORMAT_DESCRIPTIONS:
-        $result['line'] = array(
-          $term->name,
-          _taxonomy_csv_escape_line_break($term->description),
-        );
-        break;
-
-      case TAXONOMY_CSV_FORMAT_WEIGHTS:
-        $result['line'] = array(
-          $term->name,
-          $term->weight,
-        );
-        break;
-
-      case TAXONOMY_CSV_FORMAT_FIELDS:
-        // @todo Extra fields.
         break;
 
       default:
-        // Check external formats. Use it only if it works.
-        $funcname = "taxonomy_csv_term_export_{$options['export_format']}";
-        if (taxonomy_csv_format_check($options['export_format'], $funcname)) {
-          $result = $funcname($term, $options, $duplicate_terms);
-        }
-        else {
-          $result['msg'][] = 307; // Error unknown export format.
-        }
+        $result['msg'][] = 307; // Error unknown export format.
     }
   }
   else {

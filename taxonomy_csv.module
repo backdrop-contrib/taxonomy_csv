@@ -26,10 +26,9 @@
  * Quick export and import of taxonomies, structure or lists of terms to or from
  * a csv local or distant file or a text area.
  *
- * Automatically exports or imports a list of terms, structure, children,
- * related, synonyms, descriptions and/or weights from or into a vocabulary with
- * a simple csv file.  General infos can be found in README.txt. Technical
- * infos can be found in TECHINFO.txt.
+ * Automatically exports or imports a list or structure of terms from or into a
+ * vocabulary with a simple csv file.  General infos can be found in README.txt.
+ * Technical infos can be found in TECHINFO.txt.
  *
  * taxonomy_csv.module manage general hooks of module.
  */
@@ -84,8 +83,6 @@ function taxonomy_csv_permission() {
 
 /**
  * Implements hook_menu().
- *
- * @note See hook_menu for a description of return values.
  */
 function taxonomy_csv_menu() {
   $items = array();
@@ -93,42 +90,24 @@ function taxonomy_csv_menu() {
   $items['admin/structure/taxonomy/csv_import'] = array(
     'title'            => 'CSV import',
     'description'      => 'Import taxonomies, hierarchical structure or simple lists of terms and properties with CSV file or text.',
-    'page callback'    => 'taxonomy_csv_form_import_prepare',
+    'page callback'    => 'drupal_get_form',
+    'page arguments'   => array('taxonomy_csv_import_form'),
     'access arguments' => array('import taxonomy by csv'),
     'weight'           => 12,
     'type'             => MENU_LOCAL_TASK,
+    'file'             => 'import/taxonomy_csv.import.admin.inc',
   );
 
   $items['admin/structure/taxonomy/csv_export'] = array(
     'title'            => 'CSV export',
     'description'      => 'Export terms and properties to a CSV file.',
-    'page callback'    => 'taxonomy_csv_form_export_prepare',
+    'page callback'    => 'drupal_get_form',
+    'page arguments'   => array('taxonomy_csv_export_form'),
     'access arguments' => array('export taxonomy by csv'),
     'weight'           => 13,
     'type'             => MENU_LOCAL_TASK,
+    'file'             => 'export/taxonomy_csv.export.admin.inc',
   );
 
   return $items;
-}
-
-/**
- * Menu callback of the main import form.
- */
-function taxonomy_csv_form_import_prepare() {
-  // Invoke taxonomy_csv api (defines and functions).
-  $module_dir = drupal_get_path('module', 'taxonomy_csv');
-  require_once("$module_dir/import/taxonomy_csv.import.admin.inc");
-
-  return drupal_get_form('taxonomy_csv_form_import');
-}
-
-/**
- * Menu callback of the main export form.
- */
-function taxonomy_csv_form_export_prepare() {
-  // Invoke taxonomy_csv api (defines and functions).
-  $module_dir = drupal_get_path('module', 'taxonomy_csv');
-  require_once("$module_dir/export/taxonomy_csv.export.admin.inc");
-
-  return drupal_get_form('taxonomy_csv_form_export');
 }

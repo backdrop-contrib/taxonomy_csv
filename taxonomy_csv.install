@@ -16,7 +16,7 @@ function taxonomy_csv_install() {
     '!link_import' => url('admin/structure/taxonomy/csv_import'),
     '!link_export' => url('admin/structure/taxonomy/csv_export'),
     '!link_help'   => url('admin/help/taxonomy_csv'),
-    '!link_module' => url('http://drupal.org/project/taxonomy_csv'),
+    '!link_module' => url('https://drupal.org/project/taxonomy_csv'),
   ))));
 }
 
@@ -24,94 +24,18 @@ function taxonomy_csv_install() {
  * Implements hook_uninstall().
  */
 function taxonomy_csv_uninstall() {
-  // Remove user preferences.
-  foreach (array(
-      // Import variables.
-      'import_format',
-      'import_custom_format',
-      'translate_by',
-      'keep_order',
-      'source_choice',
-      'import_delimiter',
-      'import_delimiter_soft_tab_width',
-      'import_delimiter_custom',
-      'import_enclosure',
-      'import_enclosure_custom',
-      'filter_format',
-      'filter_format_custom',
-      'import_language',
-      'check_line',
-      'check_utf8',
-      'locale_custom',
-      'vocabulary_target',
-      'vocabulary_id',
-      'i18n_mode',
-      'language',
-      'import_custom_fields',
-      'delete_terms',
-      'check_hierarchy',
-      'set_hierarchy',
-      'existing_items',
-      'relations_create_subrelations',
-      'relations_all_vocabularies',
-      'result_stats',
-      'result_terms',
-      'result_level',
-      'result_type',
-      // Export variables.
-      'export_format',
-      'export_custom_format',
-      'export_vocabulary_id',
-      'export_delimiter',
-      'export_delimiter_custom',
-      'export_enclosure',
-      'export_enclosure_custom',
-      'export_line_ending',
-      'export_order',
-      'def_links_terms_ids',
-      'def_links_vocabularies_ids',
-      'result_duplicates',
-
-      // Remove variables from previous releases.
-      // < 6.x.4.0.
-      'import_create_subrelations',
-      'import_all_vocabularies',
-      'source_delimiter_custom_field',
-      // < 6.x.4.1.
-      // < 7.x.4.1.
-      'source_disable_convert_to_utf8',
-      // < 6.x.4.2.
-      // < 7.x.4.2.
-      'source_convert_to_utf8',
-      'autodivide_import',
-      'autodivide_lines',
-      'result_display_level',
-      'result_display_type',
-      // < 6.x.4.7.
-      // < 7.x.4.7.
-      'source_content',
-      'source_delimiter',
-      'source_delimiter_custom',
-      'source_enclosure',
-      'source_enclosure_custom',
-      'destination_target',
-      'destination_vocabulary_id',
-      'import_existing_items',
-      // < 6.x.5.0.
-      // < 7.x.5.0.
-      'disable_internal_cache',
-      'disable_hierarchy_check',
-      'disable_line_checks',
-      'disable_utf8_check',
-      'fields_links_terms_ids',
-      'fields_links_vocabularies_ids',
-    ) as $option) {
-    variable_del("taxonomy_csv_$option");
+  // Simple DB query to get the names of the variables of the module.
+  $results = db_select('variable', 'v')
+    ->fields('v', array('name'))
+    ->condition('name', 'taxonomy_csv_%', 'LIKE')
+    ->execute();
+  foreach ($results as $result) {
+    variable_del($result->name);
   }
 
   drupal_set_message(st('Taxonomy csv import/export: All user preferences have been removed. Thanks for using this module!<br />
     Your comments are welcomed on <a href="!link">Taxonomy CSV import/export</a> module page.', array(
-      '!link' => url('http://drupal.org/project/taxonomy_csv'),
+      '!link' => url('https://drupal.org/project/taxonomy_csv'),
   )));
 }
 
