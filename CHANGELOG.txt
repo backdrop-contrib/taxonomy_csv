@@ -13,6 +13,7 @@ Taxonomy csv import/export 7.x-5.10-dev, 2012-02-20
 By Daniel Berthereau: Updated documentation and checked code with Coder.
 By Daniel Berthereau: Simplified import UI: only three generic import formats.
 By Daniel Berthereau: Removed old code from 6.x in order to use only Field API.
+By Daniel Berthereau: Clarified import of translations.
 
 Taxonomy csv import/export 6.x-5.10-dev, 2012-02-20
 -----------------------------------------------

@@ -105,15 +105,17 @@ function _taxonomy_csv_info_chosen_options($options) {
   )) . '<br />';
 
   // Internationalization.
-  $message .= t('Language of terms: "!language".', array(
-    '!language' => $options['language'],
-  )) . '<br />';
+  if ($options['import_format'] != TAXONOMY_CSV_FORMAT_TRANSLATE) {
+    $message .= t('Language of terms: "!language".', array(
+      '!language' => $options['language'],
+    )) . '<br />';
+  }
 
   // Custom locale.
   if ($options['locale_custom']) {
     $message .= t('Custom locale "!locale" has been used.', array(
       '!locale' => $options['locale_custom'],
-    ));
+    )) . '<br />';
   }
 
   return $message;

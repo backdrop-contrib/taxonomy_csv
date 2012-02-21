@@ -27,7 +27,8 @@ require_once($module_dir . '/taxonomy_csv.term.api.inc');
  *   - path           : path to local csv file
  *   - import_format  : see _taxonomy_csv_values (default: 'flat')
  *   - fields_format  : array. list of machinename fields (default: 0 => 'name')
- *   - translate_by   : string. name (default) or tid.
+ *   - translate_by   : string. name (default) or tid
+ *   - translate_languages: array. List of languages for i18n (default: empty)
  *   - keep_order     : boolean. keep order of imported terms or not (default)
  *   - delimiter      : 1 character csv delimiter (default: ',')
  *   - enclosure      : 0 or 1 character csv enclosure (default: none or '"')
@@ -927,7 +928,7 @@ function _taxonomy_csv_line_import_check($line, $options, $previous_items = arra
         $messages[] = 484; // Warning no first/second column.
         break;
       }
-      if ((count($line) < 2) || empty($line[1])) {
+      if (count($line) < 2) {
         $messages[] = 484; // Warning no first/second column.
         break;
       }

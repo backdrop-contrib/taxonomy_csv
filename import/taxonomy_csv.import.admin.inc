@@ -97,8 +97,8 @@ function taxonomy_csv_import_form($form, &$form_state) {
     'und' => t('Language neutral'),
   );
   if (module_exists('locale')) {
-    $list_import_language += locale_language_list('name', TRUE);
-    foreach (locale_language_list('native', TRUE) as $key => $value) {
+    $list_import_language += locale_language_list('name');
+    foreach (locale_language_list('native') as $key => $value) {
       $list_import_language[$key] .= ' [' . $value . ']';
     }
   }
@@ -121,7 +121,8 @@ function taxonomy_csv_import_form($form, &$form_state) {
     '#title'       => t('1. What do you want to import?'),
     '#collapsible' => TRUE,
     '#collapsed'   => FALSE,
-    '#description' => t('Choose the type of import. Help for each type is displayed below when format is selected.'),
+    '#description' => t('Choose the type of import. Help for each type is displayed below when format is selected.') . '<br />'
+    . '<strong>' . t('Important') . '</strong>: ' . t('If you have a tree structure, you should import it before fields or translations, for each translation.'),
   );
 
   $form['tab']['format']['import_format'] = array(
@@ -204,16 +205,18 @@ function taxonomy_csv_import_form($form, &$form_state) {
 
   $form['tab']['format'][TAXONOMY_CSV_FORMAT_TRANSLATE]['#description'] = t('Allow to import name and descriptions and their translation.')
     . $line_format
-      . t('term name/id, translation of term name, description, description of term name')
+      .  '<em>' . t('Vocabulary with Translate mode:') . '</em> '. t('term name/id, first translated term name, second translated term name...') . '<br />'
+      .  '<em>' . t('Vocabulary with Localize mode:') . '</em> '. t('term name/id, first translation of term name... , description, first translation of description...')
     . $example
-      . t('foo, bar, description of foo, description of bar') . $li
-      . t('"United Kingdom", "Royaume-Uni"') . $li
-      . t('"Germany", "Allemagne", "A European country", "Un pays européen"')
+      . t('foo, bar') . $li
+      . t('"United Kingdom", "Royaume-Uni", "Vereinigte Königreich"') . $li
+      . t('"Germany", "Allemagne", "A European country", "Un pays européen"') . '<em> ' . t('[vocabulary with Localize mode only]') . '</em> '
     . $description_long
-      . t('The term is in the first column followed by its translation and their description. Names are required, but descriptions are optional.') . ' ' . t('Language of first term will be "Language neutral" and the language of the second item can be set in the third tab.') . '<br />'
+      . t('The term is in the first column followed by its translations. If the i18n mode is Localize, then description and translated descriptions can be added.') . '<br />'
       . '<strong>' . t('Note') . '</strong>:' . '<br />'
       . '<ul>'
-        . '<li>' . t('With a vocabulary in Full translation mode, a term with an undefined language cannot be translated, so do not forget to choose a language when original terms are first imported.') . '</li>'
+        . '<li>' . t('With a vocabulary in Translate mode, a term with an undefined language cannot be translated, so do not forget to choose a language when you import original terms.') . '</li>'
+        . '<li>' . t('With a vocabulary in Localize mode, only terms with a undefined language can be translated, so do not set a language when you import original terms.') . '</li>'
       . '</ul>';
   if (!module_exists('i18n_taxonomy')) {
     $form['tab']['format']['import_format']['#options'][TAXONOMY_CSV_FORMAT_TRANSLATE] .= ' [' . t('Unavailable') . ']';
@@ -283,6 +286,26 @@ function taxonomy_csv_import_form($form, &$form_state) {
       '#description'   => t('Choose how to identify the source term.') . ' ' . t("If the source term doesn't exist, it will be created.") . '<ul>'
         . '<li>' . t('To use name is simpler, but cannot be used if vocabulary has duplicate names.') . '</li>'
         . '<li>' . t('To use term id is quicker, but you need to export your vocabulary to get tids.') . '</li>'
+      . '</ul>',
+    '#states'        => array(
+      'visible' => array(
+        ':input[name=import_format]' => array('value' => TAXONOMY_CSV_FORMAT_TRANSLATE),
+      ),
+    ),
+  );
+  $form['tab']['format']['specific'][TAXONOMY_CSV_FORMAT_TRANSLATE]['translate_languages'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('List of languages'),
+    '#default_value' => $list_previous_values['translate_languages'],
+    '#size'          => 60,
+    '#maxlength'     => 1024,
+    '#description'   => t('Set the list of languages of terms, for example "<code>en, fr, de</code>".') . '<br />'
+      . '<strong>' . ('Notes:') . '</strong>'
+      . '<ul>'
+        . '<li>' . t('All languages should have been enabled in <a href="!link">Regional and language settings</a> before import.', array('!link' => url('admin/config/regional/language/overview'))) . '</li>'
+        . '<li>' . '<strong>' . t('Important') . '</strong>: ' . t('If your taxonomy is structured, you should import the structure <em>before</em>. Furthermore, if the i18n mode is Translate, you should import the structure for each translation before. The translate process only creates translation sets for terms, but does not recreate any structure.') . '</li>'
+        . '<li>' . t('With Translate mode, terms with an undefined language (<code>"und"</code>) cannot be translated.') . '</li>'
+        . '<li>' . t('With Localize mode, only terms with an undefined language can be translated, so the first language should be "und" and the default language of the site cannot be used.') . '</li>'
       . '</ul>',
     '#states'        => array(
       'visible' => array(
@@ -442,9 +465,12 @@ function taxonomy_csv_import_form($form, &$form_state) {
     '#options'       => $list_filter_format,
     '#default_value' => $list_previous_values['filter_format'],
     '#description'   => t('Choose the default format used for the description. This parameter is set in your imported term even if there is no description.') . '<br />'
-      . t('Note') . ': ' . t('You can select only formats you can use.') . '<br >'
-      . t('Note') . ': ' . t('Check is made by Drupal only when description is displayed.') . '<br />'
-      . t('Note') . ': ' . t('If your vocabulary is localizable and you want to translate description, you should use "plain text" format or change the translation mode of the vocabulary.'),
+      . '<strong>' . t('Notes') . '</strong>:'
+      . '<ul>'
+        . '<li>' . t('You can select only formats you can use.') . '</li>'
+        . '<li>' . t('Check is made by Drupal only when description is displayed.') . '</li>'
+        . '<li>' . t('If your vocabulary is localizable and you want to translate description, you should use "plain text" format or change the translation mode of the vocabulary.') . '</li>'
+      . '</ul>',
   );
 
   $form['tab']['csv_format']['filter_format_custom'] = array(
@@ -453,8 +479,11 @@ function taxonomy_csv_import_form($form, &$form_state) {
     '#options'       => $list_filter_format_custom,
     '#default_value' => $list_previous_values['filter_format_custom'],
     '#description'   => t('Choose the default format used for custom fields.') . '<br />'
-      . t('Note') . ': ' . t('You can select only formats you can use. It can be changed later.') . '<br />'
-      . t('Note') . ': ' . t('Sanitization is made during import.'),
+      . '<strong>' . t('Notes') . '</strong>:'
+      . '<ul>'
+        . '<li>' . t('You can select only formats you can use. It can be changed later.') . '</li>'
+        . '<li>' . t('Sanitization is made during import.') . '</li>'
+      . '</ul>',
   );
 
   $form['tab']['csv_format']['import_language'] = array(
@@ -465,6 +494,11 @@ function taxonomy_csv_import_form($form, &$form_state) {
     '#description'   => t('Choose the default language of terms.') . '<br />'
       . t('Note') . ': ' . t('For the format "Name and description translation", this option will be used for the translated item.') . '<br />'
       . '<strong>' . t('Warning') . '</strong>: ' . t('You need to check your regional and multilingual settings if you want to see terms in another language than the default one of the vocabulary.'),
+    '#states'        => array(
+      'invisible' => array(
+        ':input[name=import_format]' => array('value' => TAXONOMY_CSV_FORMAT_TRANSLATE),
+      ),
+    ),
   );
   if (!module_exists('i18n_taxonomy')) {
     $form['tab']['csv_format']['import_language']['#default_value'] = $list_recommended_values['import_language'];
@@ -780,7 +814,7 @@ function taxonomy_csv_import_form($form, &$form_state) {
 function taxonomy_csv_import_form_validate($form, &$form_state) {
   // Invoke taxonomy_csv.import.api.
   $module_dir = drupal_get_path('module', 'taxonomy_csv');
-  require_once("$module_dir/import/taxonomy_csv.import.api.inc");
+  require_once($module_dir . '/import/taxonomy_csv.import.api.inc');
 
   $options = &$form_state['values'];
 
@@ -839,6 +873,11 @@ function taxonomy_csv_import_form_validate($form, &$form_state) {
   $options['vocabulary_language'] = $options['language'];
   $options['language'] = $options['import_language'];
 
+  // Translate languages is trimmed array of translate_languages.
+  $options['translate_languages'] = (trim($options['translate_languages'] == '')) ?
+    array() :
+    array_values(array_map('trim', explode(',', drupal_strtolower($options['translate_languages']))));
+
   // Custom format is trimmed array of import_fields_format.
   $options['fields_format'] = (trim($options['import_fields_format'] == '')) ?
     array() :
@@ -861,6 +900,9 @@ function taxonomy_csv_import_form_validate($form, &$form_state) {
   $options['import_language'] = $options['language'];
   $options['language'] = $options['vocabulary_language'];
   unset($options['vocabulary_language']);
+
+  // In UI, translate_languages is a string and not an array.
+  $options['translate_languages'] = implode(', ', $options['translate_languages']);
 
   // Return form set errors for api errors.
   foreach (array(
@@ -1035,29 +1077,24 @@ function _taxonomy_csv_import_check_options(&$options) {
     'und' => t('Language neutral'),
   );
   if (module_exists('locale')) {
-    $list_language += locale_language_list('name', TRUE);
-    foreach (locale_language_list('native', TRUE) as $key => $value) {
+    $list_language += locale_language_list('name');
+    foreach (locale_language_list('native') as $key => $value) {
       $list_language[$key] .= ' [' . $value . ']';
     }
   }
   if (!isset($list_language[$options['language']])) {
-    $messages['language'] = t('The chosen language for terms is not installed.') . ' ' . t('Add it before import in <a href="!link">locale settings</a>.', array(
+    $messages['language'] = t('The chosen language for terms is not enabled.') . ' ' . t('Add it before import in <a href="!link">locale settings</a>.', array(
       '!link' => url('admin/config/regional/language/overview'),
     ));
   }
   if (!isset($list_language[$options['vocabulary_language']])) {
-    $messages['vocabulary_language'] = t('The chosen language for vocabulary is not installed.') . ' ' . t('Add it before import in <a href="!link">locale settings</a>.', array(
+    $messages['vocabulary_language'] = t('The chosen language for vocabulary is not enabled.') . ' ' . t('Add it before import in <a href="!link">locale settings</a>.', array(
       '!link' => url('admin/config/regional/language/overview'),
     ));
   }
 
   // Check i18n mode.
-  if (!module_exists('i18n_taxonomy')) {
-    if ($options['i18n_mode'] != 0) {
-      $messages['i18n_mode'] = t('"Taxonomy i18n" module need to be enabled to set an internationalization option.');
-    }
-  }
-  else {
+  if (module_exists('i18n_taxonomy')) {
     if ($options['vocabulary_target'] != 'autocreate') {
       $vocabulary = taxonomy_vocabulary_load($options['vocabulary_id']);
     }
@@ -1085,17 +1122,33 @@ function _taxonomy_csv_import_check_options(&$options) {
         $messages['i18n_mode'] = t('You need to create or to select a <em>localizable</em> or <em>translatable</em> vocabulary if you want to import translations of names and descriptions.');
       }
 
+      $languages_unset = array_diff($options['translate_languages'], array_flip($list_language));
+      if (($vocabulary->i18n_mode == I18N_MODE_LOCALIZE || $vocabulary->i18n_mode == I18N_MODE_TRANSLATE)
+          && $languages_unset
+        ) {
+        $messages['translate_languages'] = t('You can use only existing and enabled languages and not "!languages".', array(
+          '!languages' => implode('", "', $languages_unset),
+        ));
+      }
+      if ($vocabulary->i18n_mode == I18N_MODE_TRANSLATE && in_array('und', $options['translate_languages'])) {
+        $messages['translate_languages'] = t('You cannot use undefined language ("und") with "Translate" i18n mode.');
+      }
+      if ($vocabulary->i18n_mode == I18N_MODE_LOCALIZE && $options['translate_languages'][0] != 'und') {
+        $messages['translate_languages'] = t('First language should be undefined ("und") with "Localize" i18n mode.');
+      }
+      if ($vocabulary->i18n_mode == I18N_MODE_LOCALIZE && in_array(language_default('language'), $options['translate_languages'])) {
+        $messages['translate_languages'] = t('With "Localize" mode, you cannot translate a term into the default language ("!language"). Term in that language will be the first one on each csv line.', array(
+          '!language' => language_default('language') . ' = ' . language_default('name'),
+        ));
+      }
       if (($vocabulary->i18n_mode == I18N_MODE_LOCALIZE) && ($options['filter_format'] != 'plain_text')) {
         // i18n module requires that the description be plain text to translate it.
         $messages['filter_format'] = t('With a localized vocabulary, you need to choose a plain text description. Choose or create a translatable vocabulary to use html descriptions.');
       }
-      if ($options['language'] == 'und') {
-        $messages['language'] = t('You need to choose the language in which to translate names and descriptions.');
-      }
-      if ($options['language'] == language_default('language')) {
-        $messages['language'] = t('You need to choose another language for translation of terms: it cannot be the default one.');
-      }
     }
+  }
+  elseif ($options['i18n_mode'] != 0) {
+    $messages['i18n_mode'] = t('"Taxonomy i18n" module need to be enabled to set an internationalization option.');
   }
 
   // Custom fields check.
@@ -1178,6 +1231,7 @@ function taxonomy_csv_import_form_submit($form, &$form_state) {
       'structure_type',
       'import_fields_format',
       'translate_by',
+      'translate_languages',
       'keep_order',
       'source_choice',
       'import_delimiter',
@@ -1215,6 +1269,11 @@ function taxonomy_csv_import_form_submit($form, &$form_state) {
     $options['text'] = &$form_state['values']['text'];
     unset($form_state['values']['text']);
   }
+
+  // Translate languages is trimmed array of translate_languages.
+  $options['translate_languages'] = (trim($options['translate_languages'] == '')) ?
+    array() :
+    array_values(array_map('trim', explode(',', drupal_strtolower($options['translate_languages']))));
 
   unset($options['import_delimiter']);
   unset($options['import_delimiter_soft_tab_width']);

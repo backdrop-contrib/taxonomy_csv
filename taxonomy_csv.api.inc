@@ -78,8 +78,7 @@ function _taxonomy_csv_values($list) {
         TAXONOMY_CSV_FORMAT_FLAT      => t('Term names'),
         TAXONOMY_CSV_FORMAT_TREE      => t('Hierarchical tree structure'),
         TAXONOMY_CSV_FORMAT_FIELDS    => t('Fields'),
-        // @todo
-        // TAXONOMY_CSV_FORMAT_TRANSLATE => t('Translation'),
+        TAXONOMY_CSV_FORMAT_TRANSLATE => t('Translation'),
       );
 
     case 'import_default_ui':
@@ -88,6 +87,7 @@ function _taxonomy_csv_values($list) {
         'structure_type'                => TAXONOMY_CSV_FORMAT_FLAT,
         'import_fields_format'          => 'name',
         'translate_by'                  => 'name',
+        'translate_languages'           => '',
         'keep_order'                    => FALSE,
         'source_choice'                 => 'text',
         'import_delimiter'              => 'comma',
@@ -122,6 +122,7 @@ function _taxonomy_csv_values($list) {
         'import_format'                 => TAXONOMY_CSV_FORMAT_FLAT,
         'fields_format'                 => array(0 => 'name'),
         'translate_by'                  => 'name',
+        'translate_languages'           => '',
         'keep_order'                    => FALSE,
         'delimiter'                     => ',',
         'enclosure'                     => '',
