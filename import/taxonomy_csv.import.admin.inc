@@ -17,9 +17,8 @@ require_once($module_dir . '/taxonomy_csv.api.inc');
  * Form contain six fieldsets:
  * - 1. What to import ?
  *   - 1. Content of the source
- *   - 2. Custom fields order
- *   - 3. Translate by tid or by name
- *   - 4. Keep order of terms by adding a weight
+ *   - 2. Specific options of structure/fields/translation
+ *   - 3. Keep order of terms by adding a weight
  * - 2. Where are items to import ?
  *   - 1. Source select
  *   - 2. Source file or text area
@@ -122,7 +121,7 @@ function taxonomy_csv_import_form($form, &$form_state) {
     '#collapsible' => TRUE,
     '#collapsed'   => FALSE,
     '#description' => t('Choose the type of import. Help for each type is displayed below when format is selected.') . '<br />'
-    . '<strong>' . t('Important') . '</strong>: ' . t('If you have a tree structure, you should import it before fields or translations, for each translation.'),
+    . '<strong>' . t('Important') . '</strong>: ' . t('If you have a tree structure, you should import it before fields or translations, and for each translation if you use a full Translate mode.'),
   );
 
   $form['tab']['format']['import_format'] = array(
@@ -205,8 +204,8 @@ function taxonomy_csv_import_form($form, &$form_state) {
 
   $form['tab']['format'][TAXONOMY_CSV_FORMAT_TRANSLATE]['#description'] = t('Allow to import name and descriptions and their translation.')
     . $line_format
-      .  '<em>' . t('Vocabulary with Translate mode:') . '</em> '. t('term name/id, first translated term name, second translated term name...') . '<br />'
-      .  '<em>' . t('Vocabulary with Localize mode:') . '</em> '. t('term name/id, first translation of term name... , description, first translation of description...')
+      . '<em>' . t('Vocabulary with Translate mode:') . '</em> ' . t('term name/id, first translated term name, second translated term name...') . '<br />'
+      . '<em>' . t('Vocabulary with Localize mode:') . '</em> ' . t('term name/id, first translation of term name... , description, first translation of description...')
     . $example
       . t('foo, bar') . $li
       . t('"United Kingdom", "Royaume-Uni", "Vereinigte Königreich"') . $li
@@ -1098,7 +1097,7 @@ function _taxonomy_csv_import_check_options(&$options) {
     if ($options['vocabulary_target'] != 'autocreate') {
       $vocabulary = taxonomy_vocabulary_load($options['vocabulary_id']);
     }
-    // Create a virtual vocabulary to simplify the check of options.
+    // Create a pseudo vocabulary to simplify the check of options.
     else {
       $vocabulary = (object) array(
         'i18n_mode' => $options['i18n_mode'],
@@ -1111,6 +1110,9 @@ function _taxonomy_csv_import_check_options(&$options) {
     }
     if (($vocabulary->i18n_mode == I18N_MODE_LANGUAGE) && ($options['language'] != $vocabulary->language)) {
       $messages['language'] = t('With a fixed language vocabulary, terms should have the same language than the vocabulary.');
+    }
+    if (($vocabulary->i18n_mode == I18N_MODE_LOCALIZE) && ($options['language'] != 'und')) {
+      $messages['language'] = t('With a localizable vocabulary, terms should have a undefined language.');
     }
 
     // Check accordance of options.

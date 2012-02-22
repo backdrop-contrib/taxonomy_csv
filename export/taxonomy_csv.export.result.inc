@@ -78,10 +78,19 @@ function _taxonomy_csv_export_result($options, $worst_level, $summary, $results)
     }
     $messages[] = array($watchdog_level => $message);
 
-    // Info on field format.
-    switch ($options['export_format']) {
-      case TAXONOMY_CSV_FORMAT_FIELDS:
-        foreach ($options['vocabulary'] as $vocabulary) {
+    // Info on specific format.
+    foreach ($options['vocabulary'] as $vocabulary) {
+      switch ($options['export_format']) {
+        case TAXONOMY_CSV_FORMAT_TREE:
+          if ($vocabulary->hierarchy == 2) {
+            $message = t('Vocabulary "@vocabulary" is polyhierarchical. With the selected format (tree), only the first parent of each term was exported.', array(
+              '@vocabulary' => $vocabulary->name,
+            ));
+            $messages[] = array(WATCHDOG_NOTICE => $message);
+          }
+          break;
+
+        case TAXONOMY_CSV_FORMAT_FIELDS:
           $format = array();
           foreach ($vocabulary->fields as $field_name => &$field) {
             if (isset($vocabulary->fields_unlimited[$field_name])) {
@@ -96,20 +105,42 @@ function _taxonomy_csv_export_result($options, $worst_level, $summary, $results)
             '@vocabulary' => $vocabulary->name,
           ));
           $message .= '<br /><pre>' . implode(', ', $format) . '</pre>';
-          $messages[] = array($watchdog_level => $message);
-        }
-        break;
+          $messages[] = array(WATCHDOG_INFO => $message);
+          break;
 
-      case TAXONOMY_CSV_FORMAT_TREE:
-        foreach ($options['vocabulary'] as $vocabulary) {
-          if ($vocabulary->hierarchy == 2) {
-            $message = t('Vocabulary "@vocabulary" is polyhierarchical. With the selected format (tree), only the first parent of each term was exported.', array(
-              '@vocabulary' => $vocabulary->name,
-            ));
-            $messages[] = array(WATCHDOG_NOTICE => $message);
+        case TAXONOMY_CSV_FORMAT_TRANSLATE:
+          $format = array();
+          switch ($vocabulary->i18n_mode) {
+            case I18N_MODE_NONE:
+              $format[] = 'und';
+              break;
+
+            case I18N_MODE_LANGUAGE:
+              $format[] = $vocabulary->language;
+              break;
+
+            case I18N_MODE_LOCALIZE:
+              $format = locale_language_list('name');
+              unset($format[language_default('language')]);
+              $format = array_flip($format);
+              array_unshift($format, language_default('language'));
+              break;
+
+            case I18N_MODE_TRANSLATE:
+            case I18N_MODE_MULTIPLE:
+              $format = locale_language_list('name');
+              $format = array_flip($format);
+              array_unshift($format, 'und');
+              break;
           }
-        }
-        break;
+
+          $message = t('CSV format of vocabulary "@vocabulary" is:', array(
+            '@vocabulary' => $vocabulary->name,
+          ));
+          $message .= '<br /><pre>' . implode(', ', $format) . '</pre>';
+          $messages[] = array(WATCHDOG_INFO => $message);
+          break;
+      }
     }
   }
 

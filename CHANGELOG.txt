@@ -7,15 +7,20 @@
 == CHANGELOG ==
   ===========
 
-Taxonomy csv import/export 7.x-5.10-dev, 2012-02-20
+Taxonomy csv import/export 7.x-5.10, 2012-02-22
 -----------------------------------------------
 #1410784 by Daniel Berthereau: Added import/export of multivalued fields.
-By Daniel Berthereau: Updated documentation and checked code with Coder.
 By Daniel Berthereau: Simplified import UI: only three generic import formats.
 By Daniel Berthereau: Removed old code from 6.x in order to use only Field API.
 By Daniel Berthereau: Clarified import of translations.
+By Daniel Berthereau: Added export of translations.
 
-Taxonomy csv import/export 6.x-5.10-dev, 2012-02-20
+Taxonomy csv import/export 7.x-5.10, 2012-02-22
+Taxonomy csv import/export 6.x-5.10, 2012-02-22
+-----------------------------------------------
+By Daniel Berthereau: Updated documentation and checked code with Coder.
+
+Taxonomy csv import/export 6.x-5.10, 2012-02-22
 -----------------------------------------------
 By Daniel Berthereau: Added a full export format compatible with Taxonomy CSV 7.
 

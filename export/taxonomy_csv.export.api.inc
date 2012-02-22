@@ -347,10 +347,12 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
   $term_number     = &$context['results'][0]['current_term'];
   $current_name    = &$context['results'][0]['current_name'];
   $terms_list      = &$context['sandbox']['terms'];
+  $terms_list_ids  = array_keys($terms_list);
 
   // Process one term until end of vocabulary.
-  foreach ($terms_list as $term) {
-    $term_number++;
+  if ($term_number < count($context['sandbox']['terms'])) {
+    $term = $terms_list[$terms_list_ids[$term_number]];
+    ++$term_number;
 
     // Remember current name/tid in case of error.
     $current_name = $term->name;
@@ -358,6 +360,8 @@ function _taxonomy_csv_vocabulary_export_process($options, &$context) {
 
     // Process export of current term.
     $result = taxonomy_csv_term_export($term, $options, $terms_list, $duplicate_terms);
+    // If result is empty, there is nothing to export (with Translation export,
+    // terms can be skipped and exported with another term).
     $result['msg'] = taxonomy_csv_line_export($result['line'], $options, $handle, $result['msg']);
 
     // Remember worst message of exported terms.
@@ -475,6 +479,10 @@ function _taxonomy_csv_vocabulary_export_finished($success, $results, $operation
  *   Result array of messages.
  */
 function taxonomy_csv_line_export($line, $options, &$handle, $result = array()) {
+  if (!$line) {
+    return $result;
+  }
+
   // Check if separator, enclosure or line ending exist in line.
   $check_line = implode('', $line);
   if ((strpos($check_line, $options['separator']) !== FALSE)
@@ -528,9 +536,7 @@ function taxonomy_csv_term_export($term, $options, &$terms_list = array(), $dupl
   if (count($term)) {
     switch ($options['export_format']) {
       case TAXONOMY_CSV_FORMAT_FLAT:
-        $result['line'] = array(
-          $term->name,
-        );
+        $result['line'][] = $term->name;
         break;
 
       case TAXONOMY_CSV_FORMAT_STRUCTURE:
@@ -616,6 +622,70 @@ function taxonomy_csv_term_export($term, $options, &$terms_list = array(), $dupl
           elseif ($count < $field['cardinality']) {
             $result['line'] = array_merge($result['line'], array_fill(0, $field['cardinality'] - $count, ''));
           }
+        }
+        break;
+
+      case TAXONOMY_CSV_FORMAT_TRANSLATE:
+        if (!module_exists('i18n_taxonomy')) {
+          $result['msg'][] = 360; // Translation error.
+          break;
+        }
+
+        switch ($options['vocabulary'][$term->vid]->i18n_mode) {
+          case I18N_MODE_NONE:
+          case I18N_MODE_LANGUAGE:
+            $result['line'][] = $term->name;
+            break;
+
+          case I18N_MODE_LOCALIZE:
+            $result['line'][] = $term->name;
+
+            $languages = locale_language_list('name');
+            unset($languages[language_default('language')]);
+
+            foreach ($languages as $language => $value) {
+              $translation = i18n_string_translate(
+                array('taxonomy', 'term', $term->tid, 'name'),
+                $term->name,
+                array('langcode' => $language)
+              );
+              $result['line'][] = $translation ?
+                $translation :
+                '';
+            }
+            break;
+
+          case I18N_MODE_TRANSLATE:
+          case I18N_MODE_MULTIPLE:
+            $languages = array(
+              'und' => t('Language neutral'),
+            );
+            $languages += locale_language_list('name');
+            $languages = array_flip(array_keys($languages));
+
+            $result['line'] = array_fill(0, count($languages), '');
+            if ($term->i18n_tsid == 0) {
+              $result['line'][$languages[$term->language]] = $term->name;
+            }
+            else {
+              $translation_set = i18n_translation_set_load($term->i18n_tsid);
+              $translations = $translation_set->get_translations();
+              $language_min = $languages[$term->language];
+              foreach ($translations as $language => $translated_term) {
+                $result['line'][$languages[$language]] = $translated_term->name;
+                // Check if this term is already exported (when there is a term
+                // with a language before the current one).
+                if ($languages[$language] < $language_min) {
+                  $language_min = $languages[$language];
+                }
+              }
+              // This term is already exported or will be exported with another
+              // term.
+              if ($language_min < $languages[$term->language]) {
+                $result['line'] = array();
+              }
+            }
+            break;
         }
         break;
 

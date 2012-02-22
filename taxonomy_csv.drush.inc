@@ -26,6 +26,7 @@ function taxonomy_csv_drush_command() {
     'options' => array(
       'fields_format' => "List of comma separated fields (default: 'name')",
       'translate_by'  => "First item ('name' or 'tid') of a translation import (default: 'name')",
+      'translate_languages' => "List of comma separated languages of terms (default: '')",
       'keep_order'    => 'Keep order of imported terms',
       'delimiter'     => 'CSV delimiter (default: ",")',
       'enclosure'     => "CSV enclosure (default: none or '\"')",
@@ -152,6 +153,7 @@ function drush_taxonomy_csv_import($file_path, $import_format = 'alone_terms') {
 
   // Set array options.
   foreach (array(
+      'translate_languages',
       'fields_format',
       'fields_custom',
     ) as $value) {

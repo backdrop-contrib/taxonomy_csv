@@ -267,20 +267,32 @@
       <code>field_file|file, related_term|taxonomy_term_reference</code>
     </div>
   <h4 id="translate"><a href="#contents">3. Term translation</a></h4>
-    <p>The term is in the first column followed by its translation and their description. Names are required, but descriptions are optional. Example:</p>
+    <p>Translation is available only if <a href="https://drupal.org/project/i18n">i18n</a> is installed and the submodule i18n Taxonomy is enabled. Furthermore, the i18n mode of the vocabulary should be "Translate" or "Localize".</p>
+    <p><strong>Warning</strong>: If you have a tree structure, you should import it before fields or translations, and for each translation if you use a full Translate mode.</p>
+    <p>Format: The term is in the first column followed by its translations. If the i18n mode is Localize, then description and translated descriptions can be added.</p>
+    <p>For vocabulary with Translate mode:</p>
+    <div class="codeblock">
+      <code>term name/id, first translated term name, second translated term name...</code>
+    </div>
+    <p>For vocabulary with Localize mode:</p>
+    <div class="codeblock">
+      <code>term name/id, first translation of term name... , description, first translation of description...</code>
+    </div>
+    <p>Examples:</p>
       <div class="codeblock"><ul>
-        <li><code>foo, bar, description of foo, description of bar</code></li>
-        <li><code>"United Kingdom", "Royaume-Uni"</code></li>
-        <li><code>"Germany", "Allemagne", "A European country", "Un pays européen"</code></li>
+        <li><code>foo, bar</code></li>
+        <li><code>"United Kingdom", "Royaume-Uni", "Vereinigte Königreich"</code></li>
+        <li><code>"Germany", "Allemagne", "A European country", "Un pays européen"</code> <em>[vocabulary with Localize mode only]</em></li>
       </ul></div>
-    <p>The language of first term will be "Language neutral" and the language of the second item can be set in the third tab.</p>
-    <p>This format is available only if the sub-module "i18n Taxonomy" of the module <a href="https://drupal.org/project/i18n">Internationalization</a> is enabled.</p>
     <p><strong>Notes</strong></p>
     <ul>
-      <li>With "Translate" mode, only terms with a specific language (not undefined or neutral) can be translated.</li>
-      <li>Choose languages in the third and fifth tabs.</li>
+      <li>With a vocabulary in Translate mode, a term with an undefined language cannot be translated, so do not forget to choose a language when you import original terms.</li>
+      <li>With a vocabulary in Localize mode, only terms with a undefined language can be translated, so do not set a language when you import original terms.</li>
+      <li>All languages should have been enabled in Regional and language settings before import.</li>
+      <li><strong>Important</strong>: If your taxonomy is structured, you should import the structure <em>before</em>. Furthermore, if the i18n mode is Translate, you should import the structure for each translation before. The translate process only creates translation sets for terms, but does not recreate any structure.</li>
+      <li>With Translate mode, terms with an undefined language (<code>"und"</code>) cannot be translated.</li>
+      <li>With Localize mode, only terms with an undefined language can be translated, so the first language should be "und" and the default language of the site cannot be used.</li>
     </ul>
-
 
 <h3 id="import"><a href="#contents">2. Import</a></h3>
   <p>Taxonomy CSV allows to import structure and properties of terms.</p>

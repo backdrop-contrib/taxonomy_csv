@@ -330,6 +330,10 @@ function taxonomy_csv_export_form_validate($form, &$form_state) {
 function _taxonomy_csv_export_check_options(&$options) {
   $messages = array();
 
+  if ($options['export_format'] == TAXONOMY_CSV_FORMAT_TRANSLATE && !module_exists('i18n_taxonomy')) {
+    $messages['export_format'] = t('You cannot use Translations if i18n_taxonomy is not enabled.');
+  }
+
   $list_vocabularies = taxonomy_get_vocabularies();
   if (!$list_vocabularies) {
     $messages['vocabulary_id'] = t('No vocabulary to export.');
