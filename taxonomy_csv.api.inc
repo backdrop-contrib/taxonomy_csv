@@ -16,6 +16,9 @@ define('TAXONOMY_CSV_FORMAT_TREE',          'tree');
 define('TAXONOMY_CSV_FORMAT_POLYHIERARCHY', 'polyhierarchy');
 define('TAXONOMY_CSV_FORMAT_FIELDS',        'fields');
 define('TAXONOMY_CSV_FORMAT_TRANSLATE',     'translate');
+// Specific export formats.
+define('TAXONOMY_CSV_FORMAT_FLAT_TID',      'flat_tid');
+define('TAXONOMY_CSV_FORMAT_FLAT_TID_NAME', 'flat_tid_name');
 
 /**
  * Available import options.
@@ -75,10 +78,12 @@ function _taxonomy_csv_values($list) {
 
     case 'export_format':
       return array(
-        TAXONOMY_CSV_FORMAT_FLAT      => t('Term names'),
-        TAXONOMY_CSV_FORMAT_TREE      => t('Hierarchical tree structure'),
-        TAXONOMY_CSV_FORMAT_FIELDS    => t('Fields'),
-        TAXONOMY_CSV_FORMAT_TRANSLATE => t('Translation'),
+        TAXONOMY_CSV_FORMAT_FLAT          => t('Term names'),
+        TAXONOMY_CSV_FORMAT_FLAT_TID      => t('Term ids'),
+        TAXONOMY_CSV_FORMAT_FLAT_TID_NAME => t('Term ids and names'),
+        TAXONOMY_CSV_FORMAT_TREE          => t('Hierarchical tree structure'),
+        TAXONOMY_CSV_FORMAT_FIELDS        => t('Fields'),
+        TAXONOMY_CSV_FORMAT_TRANSLATE     => t('Translation'),
       );
 
     case 'import_default_ui':

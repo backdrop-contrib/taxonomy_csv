@@ -539,6 +539,15 @@ function taxonomy_csv_term_export($term, $options, &$terms_list = array(), $dupl
         $result['line'][] = $term->name;
         break;
 
+      case TAXONOMY_CSV_FORMAT_FLAT_TID:
+        $result['line'][] = $term->tid;
+        break;
+
+      case TAXONOMY_CSV_FORMAT_FLAT_TID_NAME:
+        $result['line'][] = $term->tid;
+        $result['line'][] = $term->name;
+        break;
+
       case TAXONOMY_CSV_FORMAT_STRUCTURE:
       case TAXONOMY_CSV_FORMAT_TREE:
         $terms = taxonomy_csv_term_get_first_path($term, $terms_list);
