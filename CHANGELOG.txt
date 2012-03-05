@@ -10,6 +10,11 @@
 Taxonomy csv import/export 7.x-5.11-dev, 2012-03-05
 Taxonomy csv import/export 6.x-5.11-dev, 2012-03-05
 -----------------------------------------------
+#1463902 by Guillaume Viguier-Just: Support for image fields and folder check.
+
+Taxonomy csv import/export 7.x-5.11-dev, 2012-03-05
+Taxonomy csv import/export 6.x-5.11-dev, 2012-03-05
+-----------------------------------------------
 #1465942 by dannymacom: Fixed path check for non English help of Taxonomy CSV.
 
 

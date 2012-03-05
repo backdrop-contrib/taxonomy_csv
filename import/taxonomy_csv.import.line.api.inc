@@ -724,12 +724,16 @@ function _taxonomy_csv_term_field_import($term, $update_or_ignore = TAXONOMY_CSV
           break;
 
         case 'file':
+        case 'image':
           $uri_scheme = $field['settings']['uri_scheme'];
           $file_directory = $instance['settings']['file_directory'];
           $file_extensions = $instance['settings']['file_extensions'];
 
           $source = $value;
           $destination = $uri_scheme . '://' . $file_directory;
+
+          // Try to create directory if it does not exist.
+          file_prepare_directory($destination, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
 
           // Import source if it exists.
           if (file_exists($source)) {
