@@ -612,9 +612,11 @@ function _taxonomy_csv_import_vocabulary_prepare(&$options, $check = TRUE) {
     // Set default format to items of the custom format.
     foreach ($fields_custom as $key => $value) {
       if (in_array($key, array(
-          'tid',
-          'vid',
           'name',
+          'tid',
+          'tree',
+          'p',
+          'vid',
           'description',
           'format',
           'weight',
@@ -903,14 +905,22 @@ function _taxonomy_csv_line_import_check($line, $options, $previous_items = arra
     case TAXONOMY_CSV_FORMAT_FIELDS:
       // Get number of items.
       $number_items = count($options['fields_format']);
-      if (count($line) < count($options['fields_format'])) {
-        $messages[] = 570; // Notice too little items.
+      if (in_array($options['fields_format'][0], array('tree', 'poly'))) {
+        if (count($line) < count($options['fields_format'])) {
+          $messages[] = 470; // Warning not enought items.
+          break;
+        }
       }
-      elseif (count($line) > count($options['fields_format'])) {
-        $messages[] = 564; // Notice too many items.
-      }
-      if (count(array_keys($options['fields_format'], '')) >= 1) {
-        $messages[] = 513; // Notice empty items.
+      else {
+        if (count($line) < count($options['fields_format'])) {
+          $messages[] = 570; // Notice too little items.
+        }
+        elseif (count($line) > count($options['fields_format'])) {
+          $messages[] = 564; // Notice too many items.
+        }
+        if (count(array_keys($options['fields_format'], '')) >= 1) {
+          $messages[] = 513; // Notice empty items.
+        }
       }
 
       // @todo Add format check: required or not, type of datas...

@@ -250,6 +250,25 @@ function taxonomy_csv_line_import_fields($line, $options, $terms_count = 0) {
 
   $parents = array();
 
+  // Check if a structure is imported.
+  if ($options['fields_format'][0] == 'tree' || $options['fields_format'][0] == 'poly') {
+    $line_structure = array_slice($line, 0, count($line) - count($options['fields_format']) + 1);
+    $options_structure = $options;
+    $options_structure['import_format'] = ($options['fields_format'][0] == 'tree') ?
+      TAXONOMY_CSV_FORMAT_TREE :
+      TAXONOMY_CSV_FORMAT_POLYHIERARCHY;
+    $result = taxonomy_csv_line_import($line_structure, $options_structure, $term_count);
+    if (_taxonomy_csv_worst_message($result['msg']) < TAXONOMY_CSV_PROCESS_NOTICE) {
+      return $result;
+    }
+
+    // Term name is the last term of the tree.
+    $term->name = array_pop($line_structure);
+    $line = array_slice($line, count($line) - count($options['fields_format']) + 1);
+    array_shift($options['fields_format']);
+    $terms_count--;
+  }
+
   // Import normal fields according custom format.
   foreach ($options['fields_format'] as $key => $field_name) {
     if (!isset($line[$key]) || ($line[$key] === '')) {
