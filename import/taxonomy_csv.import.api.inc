@@ -271,7 +271,7 @@ function taxonomy_csv_vocabulary_import($options) {
   // Check options and return array of messages in case of errors.
   if ($options['check_options']) {
     $module_dir = drupal_get_path('module', 'taxonomy_csv');
-    require_once("$module_dir/import/taxonomy_csv.import.admin.inc");
+    require_once($module_dir . '/import/taxonomy_csv.import.admin.inc');
     $result = _taxonomy_csv_import_check_options($options);
     if (count($result)) {
       return $result;
