@@ -123,7 +123,7 @@ function taxonomy_csv_import_form($form, &$form_state) {
     '#description' => t('Choose the type of import. Help for each type is displayed below when format is selected.') . '<br />'
     . '<strong>' . t('Important') . '</strong>: '
       . '<ul>'
-        . '<li>' . t('If you have a tree structure, you should import it before translations, and for each translation if you use a full Translate mode. ') . '</li>'
+        . '<li>' . t('If you have a tree structure, you should import it before translations, and for each translation if you use a full Translate mode.') . '</li>'
         . '<li>' . t('If you have a hierarchical vocabulary with duplicate names and fields, you should import them simultaneously.') . '</li>'
       . '</ul>',
   );
@@ -212,9 +212,19 @@ function taxonomy_csv_import_form($form, &$form_state) {
     . '<strong><em>' . t('Examples (Structure and Fields)') . '</em></strong>'
     . '<ul><li><code>'
       . t('foo, foo field 1, foo field 2') . $li
-      . t('foo, bar, bar field 1, bar field 2') . $li
+      . t(' , bar, bar field 1, bar field 2') . $li
       . t('Europe, continent, Europe is a continent, specific item') . $li
       . t('Europe, France, , France is a country, ') . $li
+      . t('Europe, France, Lyon, , Lyon is a city, ')
+    . '</code></li></ul>'
+    // Example Structure and Fields with fixed columns.
+    . '</code><br />'
+    . '<strong><em>' . t('Examples (Structure and Fields with fixed columns for Fields)') . '</em></strong>'
+    . '<ul><li><code>'
+      . t('foo, , foo field 1, foo field 2') . $li
+      . t(' , bar, bar field 1, bar field 2') . $li
+      . t('Europe, , , continent, Europe is a continent, specific item') . $li
+      . t('Europe, France, , , France is a country, ') . $li
       . t('Europe, France, Lyon, , Lyon is a city, ')
     . $description_long;
       // See below.
@@ -278,13 +288,14 @@ function taxonomy_csv_import_form($form, &$form_state) {
         . '<li>' . t('When your vocabulary has duplicate terms, it is recommended to import structure and fields at the same time, else you should import structure first.') . '</li>'
       . '</ul>'
       . '<strong>' . t('Notes when importing a structure with fields:') . '</strong>'
-      . '<ul><li>'
-        . t('First item of the format should be "tree" or "poly", depending on your choice.') . '</li><li>'
-        . t('This first item should not be repeated, unlike fields.') . '</li><li>'
-        . t('The fields are always attached to the last term of the tree.') . '</li><li>'
-        . t('You should always add empty items for empty fields (in the previous example, there are a first field and a third field only for <code>Europe</code>, neither for <code>France</code> nor <code>Lyon</code>).') . '</li>'
-        . '</ul>'
-        . t('See help under Structure format for more infos on this format.') . '<br /><br />'
+      . '<ul>'
+        . '<li>' . t('First item of the format should be "tree" or "poly", depending on your choice.') . '</li>'
+        . '<li>' . t('This first item should not be repeated, unlike fields.') . '</li>'
+        . '<li>' . t('The fields are always attached to the last term of the tree.') . '</li>'
+        . '<li>' . t('On the imported csv line, empty fields should always be marked, <em>particularly at the end of the line</em>. In the previous example, there are a first field and a third field only for <code>Europe</code>, neither for <code>France</code> nor <code>Lyon</code>), but they are marked in them with an empty content.') . '</li>'
+        . '<li>' . t('On the imported csv line, you can add empty names in order to begin the fields at the same column on each line.') . '</li>'
+      . '</ul>'
+      . t('See help under Structure format for more infos on this format.') . '<br /><br />'
       . '<strong>' . t('Examples:') . '</strong>'
       . '<ul>'
         . '<li><code>' . t('name, field_mycustomfield_1_machinename, field_mycustomfield_2_machinename') . '</code></li>'
@@ -679,6 +690,7 @@ function taxonomy_csv_import_form($form, &$form_state) {
         . '<li>' . 'list_boolean' . '</li>'
         . '<li>' . 'taxonomy_term_reference' . ' <em>' . t('[Note: if value is a number, the field will be linked to the term with that tid; if value is a string, the field will be linked to an existing or a new term with that name.]') . '</em>' . '</li>'
         . '<li>' . 'file' . '</li>'
+        . '<li>' . 'image' . '</li>'
       . '</ul>'
       . t('Other types are well imported too if their content is a "value".') . '<br />'
       . t('Be careful with "taxonomy_term_reference", because this field allows references to one vocabulary only, so referenced vocabulary is set to current one, which can be an issue if the same field is used somewhere else.') . '<br />'

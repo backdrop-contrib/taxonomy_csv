@@ -910,6 +910,14 @@ function _taxonomy_csv_line_import_check($line, $options, $previous_items = arra
           $messages[] = 470; // Warning not enought items.
           break;
         }
+
+        $line_structure = array_slice($line, 0, count($line) - count($options['fields_format']) + 1);
+        // Check if there is at least one name. It can be anywhere.
+        $to_check = array_diff(array_unique($line_structure), array());
+        if (empty($to_check) || ($to_check == array(''))) {
+          $messages[] = 464; // Warning no name.
+          break;
+        }
       }
       else {
         if (count($line) < count($options['fields_format'])) {
@@ -921,14 +929,14 @@ function _taxonomy_csv_line_import_check($line, $options, $previous_items = arra
         if (count(array_keys($options['fields_format'], '')) >= 1) {
           $messages[] = 513; // Notice empty items.
         }
-      }
 
-      // @todo Add format check: required or not, type of datas...
+        // @todo Add format check: required or not, type of datas...
 
-      // Currently, check only if the first field is empty or not.
-      if (empty($line[0])) {
-        $messages[] = 464; // Warning no name.
-        break;
+        // Currently, check only if the first field is empty or not.
+        if (empty($line[0])) {
+          $messages[] = 464; // Warning no name.
+          break;
+        }
       }
       $checked_items = $line;
       break;

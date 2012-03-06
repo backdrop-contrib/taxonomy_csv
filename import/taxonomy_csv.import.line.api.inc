@@ -63,7 +63,7 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array(), $t
         break;
 
       case TAXONOMY_CSV_FORMAT_FIELDS:
-        $result = taxonomy_csv_line_import_fields($line, $options, $terms_count);
+        $result = taxonomy_csv_line_import_fields($line, $options, $previous_items, $terms_count);
         break;
 
       case TAXONOMY_CSV_FORMAT_TRANSLATE:
@@ -181,6 +181,12 @@ function taxonomy_csv_line_import_structure($line, $options, $previous_items = a
 
   // 3. Import each new term then store and check result.
   for ($c = $first; $c < count($line); $c++) {
+    // Don't import empty terms. Needed with import of 'Structure and Fields',
+    // if user chooses to keep fields on the same columns.
+    if ($line[$c] === '') {
+      continue;
+    }
+
     $term = new stdClass;
     $term->name = $line[$c];
     $term->vid = $options['vocabulary']->vid;
@@ -227,7 +233,7 @@ function taxonomy_csv_line_import_structure($line, $options, $previous_items = a
  *
  * @see taxonomy_csv_line_import()
  */
-function taxonomy_csv_line_import_fields($line, $options, $terms_count = 0) {
+function taxonomy_csv_line_import_fields($line, $options, $previous_items = array(), $terms_count = 0) {
   // Define default values.
   $result = array(
     'name' => array(),
@@ -257,13 +263,14 @@ function taxonomy_csv_line_import_fields($line, $options, $terms_count = 0) {
     $options_structure['import_format'] = ($options['fields_format'][0] == 'tree') ?
       TAXONOMY_CSV_FORMAT_TREE :
       TAXONOMY_CSV_FORMAT_POLYHIERARCHY;
-    $result = taxonomy_csv_line_import($line_structure, $options_structure, $term_count);
+    $result = taxonomy_csv_line_import($line_structure, $options_structure, $previous_items, $term_count);
     if (_taxonomy_csv_worst_message($result['msg']) < TAXONOMY_CSV_PROCESS_NOTICE) {
       return $result;
     }
 
-    // Term name is the last term of the tree.
-    $term->name = array_pop($line_structure);
+    // Fields will be attached to the last defined term on the line.
+    $term->name = $result['name'][count($result['name']) - 1];
+    $term->tid = $result['tid'][count($result['tid']) - 1];
     $line = array_slice($line, count($line) - count($options['fields_format']) + 1);
     array_shift($options['fields_format']);
     $terms_count--;
