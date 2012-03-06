@@ -212,20 +212,20 @@ function taxonomy_csv_import_form($form, &$form_state) {
     . '<strong><em>' . t('Examples (Structure and Fields)') . '</em></strong>'
     . '<ul><li><code>'
       . t('foo, foo field 1, foo field 2') . $li
-      . t(' , bar, bar field 1, bar field 2') . $li
+      . t(', bar, bar field 1, bar field 2') . $li
       . t('Europe, continent, Europe is a continent, specific item') . $li
-      . t('Europe, France, , France is a country, ') . $li
-      . t('Europe, France, Lyon, , Lyon is a city, ')
+      . t('Europe, France, , France is a country,') . $li
+      . t('Europe, France, Lyon, , Lyon is a city,')
     . '</code></li></ul>'
     // Example Structure and Fields with fixed columns.
     . '</code><br />'
     . '<strong><em>' . t('Examples (Structure and Fields with fixed columns for Fields)') . '</em></strong>'
     . '<ul><li><code>'
       . t('foo, , foo field 1, foo field 2') . $li
-      . t(' , bar, bar field 1, bar field 2') . $li
+      . t(', bar, bar field 1, bar field 2') . $li
       . t('Europe, , , continent, Europe is a continent, specific item') . $li
-      . t('Europe, France, , , France is a country, ') . $li
-      . t('Europe, France, Lyon, , Lyon is a city, ')
+      . t('Europe, France, , , France is a country,') . $li
+      . t('Europe, France, Lyon, , Lyon is a city,')
     . $description_long;
       // See below.
 

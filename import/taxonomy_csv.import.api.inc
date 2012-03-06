@@ -48,7 +48,7 @@ require_once($module_dir . '/taxonomy_csv.term.api.inc');
  *   - delete_terms   : delete all terms before import (default: FALSE)
  *   - check_hierarchy: boolean. check (default) or not vocabulary hierarchy
  *   - set_hierarchy  : if hierarchy isn't checked, set it (0, 1 or 2 (default))
- *   - update_or_ignore : depends on import_format: 'update' (default) or 'ignore'
+ *   - update_or_ignore : depends on import_format: update (default) or ignore
  *   - check_options  : boolean. check or not (default) this array of options
  *   - result_display : boolean. display or not (default)
  *   - result_stats   : boolean. display or not (default) stats

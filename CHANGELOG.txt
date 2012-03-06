@@ -13,6 +13,7 @@ Taxonomy csv import/export 7.x-5.11-dev, 2012-03-05
 #1386904 by Daniel Berthereau: Added support to export list of tids and names.
 #1386904 by Daniel Berthereau: Added simultaneous import of structure and fields
 #1386904 by Daniel Berthereau: Added full support of Structure and fields.
+#1386904 by Daniel Berthereau: Added export of tree structure and fields.
 
 Taxonomy csv import/export 7.x-5.11-dev, 2012-03-05
 Taxonomy csv import/export 6.x-5.11-dev, 2012-03-05
