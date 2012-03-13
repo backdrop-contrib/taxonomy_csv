@@ -36,8 +36,8 @@ function taxonomy_csv_drush_command() {
       'check_line'    => 'Check format of lines',
       'check_utf8'    => 'Check utf8 format',
       'locale_custom' => 'Specific locale of imported file',
-      'vocabulary_target' => "'autocreate' (default), 'duplicate' or 'existing'",
-      'vocabulary_id' => 'vid or machine_name of the vocabulary to duplicate or to import into',
+      'vocabulary_target' => "'autocreate' (default) or 'existing' (default if a vocabulary_id is set)",
+      'vocabulary_id' => 'vid or machine_name of the vocabulary to import into',
       'i18n_mode'     => 'Internationalization mode of autocreated voc (default: 0 (none))',
       'vocabulary_language' => 'Language of autocreated voc (default: "und" (undefined))',
       'fields_custom' => 'Custom comma separated fields to add or create',
@@ -63,7 +63,7 @@ function taxonomy_csv_drush_command() {
     ),
     'arguments' => array(
       'vocabulary_id' => 'Required. vid or machine_name of the vocabulary to export (0 means all)',
-      'export_format' => "Optional. CSV format: 'flat' (default), 'tree', 'fields', 'fields_first'",
+      'export_format' => "Optional. CSV format: 'flat' (default), 'flat_tid', 'flat_tid_name', 'tree_fields', 'tree', 'fields', 'fields_first', 'translate'",
       'file_path'     => "Optional. Full path or filename of exported csv file (default: [current directory]/taxocsv.csv)",
     ),
     'options' => array(
@@ -136,6 +136,12 @@ function drush_taxonomy_csv_import($file_path, $import_format = 'alone_terms') {
     }
   }
 
+  // If user don't use 'vocabulary_target' but only 'vocabulary_id', this
+  // vocabulary will be used. See https://drupal.org/node/1475952.
+  if ((drush_get_option('vocabulary_target') === NULL) && (drush_get_option('vocabulary_id') !== NULL)) {
+    $options['vocabulary_target'] = 'existing';
+  };
+
   // Set boolean options.
   foreach (array(
       'keep_order',
@@ -171,11 +177,9 @@ function drush_taxonomy_csv_import($file_path, $import_format = 'alone_terms') {
   $messages = taxonomy_csv_import($options);
 
   // Last check: unknown options.
-  $other_options = array_diff(array_keys(drush_get_merged_options()), array_keys($options));
-  // Compatibility with drush 4.5. See https://drupal.org/node/1395090.
-  if (($i = array_search('drush-make-update-default-url', $other_options)) !== FALSE) {
-    unset($other_options[$i]);
-  }
+  $other_options = array_diff(array_keys(drush_get_merged_options()),
+  array_keys($options));
+  $other_options = _taxonomy_csv_uncheck_drush_options($other_options);
   if ($other_options) {
     $messages[] = 'Unknown options:' . ' ' . implode(', ', $other_options) . '.';
   }
@@ -273,10 +277,7 @@ function drush_taxonomy_csv_export($vocabulary_id, $export_format = 'alone_terms
 
   // Last check: unknown options.
   $other_options = array_diff(array_keys(drush_get_merged_options()), array_keys($options));
-  // Compatibility with drush 4.5. See https://drupal.org/node/1395090.
-  if (($i = array_search('drush-make-update-default-url', $other_options)) !== FALSE) {
-    unset($other_options[$i]);
-  }
+  $other_options = _taxonomy_csv_uncheck_drush_options($other_options);
   if ($other_options) {
     $messages[] = 'Unknown options:' . ' ' . implode(', ', $other_options) . '.';
   }
@@ -304,4 +305,30 @@ function drush_taxonomy_csv_export($vocabulary_id, $export_format = 'alone_terms
 
   // End of drush process.
   drush_print('End of drush export batch.');
+}
+
+/**
+ * Remove check of options added by Drush since Drush 4.5.
+ *
+ * @see https://drupal.org/node/1395090
+ * @see https://drupal.org/node/1475952
+ */
+function _taxonomy_csv_uncheck_drush_options($other_options) {
+  // Don't check options added by Drush.
+  foreach (array(
+      // Compatibility with Drush 4.5.
+      'drush-make-update-default-url',
+      // Compatibility with Drush 5.0.
+      'structure-tables',
+      'skip-tables',
+      'config-file',
+      'context-path',
+      'php',
+    ) as $drush_option) {
+    if (($i = array_search($drush_option, $other_options)) !== FALSE) {
+      unset($other_options[$i]);
+    }
+  }
+
+  return $other_options;
 }
