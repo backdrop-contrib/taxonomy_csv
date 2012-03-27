@@ -521,7 +521,9 @@ function _taxonomy_csv_vocabulary_import_finished($success, $results, $operation
       WATCHDOG_ERROR   => t('Errors have been reported during import process. Process failed at line !line of a total of !total_lines [!worst_msg].', $variables),
     );
     $worst_level = intval($options['worst_message'] / 100);
-    $message = $messages[$worst_level];
+    $message = isset($messages[$worst_level]) ?
+      $messages[$worst_level] :
+      $messages[WATCHDOG_DEBUG];
   }
   else {
     $message = t('Importation failed. Import process was successful until the line !line_count of a total of !total_lines. You can first check your file on this line and check file uploading.', array(
