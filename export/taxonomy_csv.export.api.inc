@@ -465,7 +465,9 @@ function _taxonomy_csv_vocabulary_export_finished($success, $results, $operation
       WATCHDOG_ERROR   => t('Errors have been reported during export process. Process failed at term !worst_count (!worst_name) of a total of !total_terms [!worst_msg].', $variables),
     );
     $worst_level = intval($options['worst_message'] / 100);
-    $message = $messages[$worst_level];
+    $message = isset($messages[$worst_level]) ?
+      $messages[$worst_level] :
+      $messages[WATCHDOG_DEBUG];
   }
   else {
     $message = t('Exportation failed. Export process was successful until the term !term_count (!term_name) of a total of !total_terms.', array(

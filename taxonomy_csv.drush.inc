@@ -98,7 +98,7 @@ function taxonomy_csv_drush_help($section) {
  * @see drush_invoke()
  * @see drush.api.php
  */
-function drush_taxonomy_csv_import($file_path, $import_format = 'alone_terms') {
+function drush_taxonomy_csv_import($file_path, $import_format = 'flat') {
   // Start process.
   drush_print('Checking options...');
 
@@ -208,7 +208,7 @@ function drush_taxonomy_csv_import($file_path, $import_format = 'alone_terms') {
  * @see drush_invoke()
  * @see drush.api.php
  */
-function drush_taxonomy_csv_export($vocabulary_id, $export_format = 'alone_terms', $file_path = '') {
+function drush_taxonomy_csv_export($vocabulary_id, $export_format = 'flat', $file_path = '') {
   // Start process.
   drush_print('Checking options...');
 
