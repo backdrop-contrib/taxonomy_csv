@@ -177,8 +177,7 @@ function drush_taxonomy_csv_import($file_path, $import_format = 'alone_terms') {
   $messages = taxonomy_csv_import($options);
 
   // Last check: unknown options.
-  $other_options = array_diff(array_keys(drush_get_merged_options()),
-  array_keys($options));
+  $other_options = array_diff(array_keys(drush_get_merged_options()), array_keys($options));
   $other_options = _taxonomy_csv_uncheck_drush_options($other_options);
   if ($other_options) {
     $messages[] = 'Unknown options:' . ' ' . implode(', ', $other_options) . '.';
@@ -324,6 +323,7 @@ function _taxonomy_csv_uncheck_drush_options($other_options) {
       'config-file',
       'context-path',
       'php',
+      'php-options',
     ) as $drush_option) {
     if (($i = array_search($drush_option, $other_options)) !== FALSE) {
       unset($other_options[$i]);
