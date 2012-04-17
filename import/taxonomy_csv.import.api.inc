@@ -418,7 +418,7 @@ function _taxonomy_csv_vocabulary_import_process($options, &$context) {
       ) {
       // Some formats use $result to save other infos, so it needs to be cleaned
       // before to be saved.
-      if (in_array($format['import_format'], array(
+      if (in_array($options['import_format'], array(
         TAXONOMY_CSV_FORMAT_STRUCTURE,
         TAXONOMY_CSV_FORMAT_TREE,
         TAXONOMY_CSV_FORMAT_POLYHIERARCHY,
