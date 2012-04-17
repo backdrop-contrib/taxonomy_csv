@@ -913,7 +913,7 @@ function taxonomy_csv_import_form_validate($form, &$form_state) {
   // Translate languages is trimmed array of translate_languages.
   $options['translate_languages'] = (trim($options['translate_languages'] == '')) ?
     array() :
-    array_values(array_map('trim', explode(',', drupal_strtolower($options['translate_languages']))));
+    array_values(array_map('trim', explode(',', $options['translate_languages'])));
 
   // Custom format is trimmed array of import_fields_format.
   $options['fields_format'] = (trim($options['import_fields_format'] == '')) ?
