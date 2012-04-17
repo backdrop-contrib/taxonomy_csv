@@ -176,13 +176,6 @@ function drush_taxonomy_csv_import($file_path, $import_format = 'flat') {
   // Prepare import.
   $messages = taxonomy_csv_import($options);
 
-  // Last check: unknown options.
-  $other_options = array_diff(array_keys(drush_get_merged_options()), array_keys($options));
-  $other_options = _taxonomy_csv_uncheck_drush_options($other_options);
-  if ($other_options) {
-    $messages[] = 'Unknown options:' . ' ' . implode(', ', $other_options) . '.';
-  }
-
   if (count($messages)) {
     foreach ($messages as $message) {
       $msg = str_replace('<br />', " \n", $message);
@@ -274,13 +267,6 @@ function drush_taxonomy_csv_export($vocabulary_id, $export_format = 'flat', $fil
     $messages = array();
   }
 
-  // Last check: unknown options.
-  $other_options = array_diff(array_keys(drush_get_merged_options()), array_keys($options));
-  $other_options = _taxonomy_csv_uncheck_drush_options($other_options);
-  if ($other_options) {
-    $messages[] = 'Unknown options:' . ' ' . implode(', ', $other_options) . '.';
-  }
-
   if (count($messages)) {
     foreach ($messages as $message) {
       $msg = str_replace('<br />', " \n", $message);
@@ -304,31 +290,4 @@ function drush_taxonomy_csv_export($vocabulary_id, $export_format = 'flat', $fil
 
   // End of drush process.
   drush_print('End of drush export batch.');
-}
-
-/**
- * Remove check of options added by Drush since Drush 4.5.
- *
- * @see https://drupal.org/node/1395090
- * @see https://drupal.org/node/1475952
- */
-function _taxonomy_csv_uncheck_drush_options($other_options) {
-  // Don't check options added by Drush.
-  foreach (array(
-      // Compatibility with Drush 4.5.
-      'drush-make-update-default-url',
-      // Compatibility with Drush 5.0.
-      'structure-tables',
-      'skip-tables',
-      'config-file',
-      'context-path',
-      'php',
-      'php-options',
-    ) as $drush_option) {
-    if (($i = array_search($drush_option, $other_options)) !== FALSE) {
-      unset($other_options[$i]);
-    }
-  }
-
-  return $other_options;
 }

@@ -22,7 +22,7 @@ Taxonomy csv import/export 6.x-5.11-dev, 2012-03-13
 #1465942 by dannymacom: Fixed path check for non English help of Taxonomy CSV.
 #1502856 by Guillaume Viguier-Just: Fixed error when using installation profile.
 #1475952 by Daniel Berthereau: Fixed compatibily with Drush 5.0-rc4.
-
+#1528432 by Daniel Berthereau: Removed extra check of options for Drush.
 
 Taxonomy csv import/export 7.x-5.10, 2012-02-22
 -----------------------------------------------
