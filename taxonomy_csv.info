@@ -1,10 +1,9 @@
-name = "Taxonomy CSV import/export"
-description = "Export and import complete taxonomies, hierarchical structure or simple lists of terms and fields to or from a CSV file, url or text."
+name = Taxonomy CSV import/export
+description = Export and import complete taxonomies, hierarchical structure or simple lists of terms and fields to or from a CSV file, url or text.
 core = 7.x
 dependencies[] = taxonomy
-package = 'Taxonomy'
-project ='taxonomy_csv'
-version = '7.x-5.x-dev'
+package = Taxonomy
+version = 7.x-5.x-dev
 files[] = taxonomy_csv.install
 files[] = taxonomy_csv.module
 files[] = taxonomy_csv.api.inc
