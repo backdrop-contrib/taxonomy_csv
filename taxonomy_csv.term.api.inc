@@ -33,7 +33,12 @@
  */
 function taxonomy_csv_term_find($term, $all_vocabularies = FALSE, $parent_tid = NULL) {
   if (isset($term->tid) && $term->tid) {
-    return taxonomy_term_load($term->tid);
+    $result = taxonomy_term_load($term->tid);
+    if ($result) {
+      return $result;
+    }
+    unset($term->tid);
+    return FALSE;
   }
 
   static $flag_i18n = NULL;
@@ -75,6 +80,7 @@ function taxonomy_csv_term_find($term, $all_vocabularies = FALSE, $parent_tid = 
   }
 
   // Not found or error.
+  unset($term->tid);
   return FALSE;
 }
 

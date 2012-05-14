@@ -125,6 +125,8 @@ function taxonomy_csv_import_form($form, &$form_state) {
       . '<ul>'
         . '<li>' . t('If you have a tree structure, you should import it before translations, and for each translation if you use a full Translate mode.') . '</li>'
         . '<li>' . t('If you have a hierarchical vocabulary with duplicate names and fields, you should import them simultaneously.') . '</li>'
+        . '<li>' . t('Import by "Term ids" uses internal identifiants ("tid") and allows to update flat or structured vocabularies. It avoids any possible problems with duplicate term names.') . '</li>'
+        . '<li>' . t('Import by "Fields" allows to import a structure too and can use terms ids ("tid") too.') . '</li>'
       . '</ul>',
   );
 
@@ -252,7 +254,17 @@ function taxonomy_csv_import_form($form, &$form_state) {
       ));
   }
 
+  $form['tab']['format'][TAXONOMY_CSV_FORMAT_TID]['#description'] = t('Allow to import or update terms of a flat or structured vocabulary by their tids.')
+    . $line_format
+      . t('term id, term name, term id 2, term name 2...')
+    . $example
+      . t('10, foo') . $li
+      . t('11, bar, 12, sub-bar')
+    . $description_long
+      . t('The second term and next ones are childs of the previous item (except if you set "flat" below).');
+
   // Specific options.
+
   // Specific options of Structure.
   $form['tab']['format']['specific'][TAXONOMY_CSV_FORMAT_STRUCTURE]['structure_type'] = array(
     '#type'          => 'radios',
@@ -281,11 +293,12 @@ function taxonomy_csv_import_form($form, &$form_state) {
     '#description'   => t('Set custom order of csv input separated by comma.') . '<br /><br />'
       . '<strong>' . t('Notes:') . '</strong>'
       . '<ul>'
-        . '<li>' . t("First field need to be 'name', 'tid', 'tree' or 'poly'.") . '</li>'
+        . '<li>' . t("First field should be 'name', 'tid', 'tree' or 'poly'.") . '</li>'
         . '<li>' . t('Items can be repeated for multivalued fields.') . '</li>'
         . '<li>' . t("If you choose to set 'vid' or 'vocabulary_machine_name', the vocabulary should exist before import.") . '</li>'
         . '<li>' . t("It's not recommended to import translations at the same time than parents and term references, unless all of them are in the same vocabulary and have the same language.") . '</li>'
         . '<li>' . t('When your vocabulary has duplicate terms, it is recommended to import structure and fields at the same time, else you should import structure first.') . '</li>'
+        . '<li>' . t("If you use 'tid', the tid item should exist or be '0' or empty, else an error can occur. You cannot create a term with a specific tid.") . '</li>'
       . '</ul>'
       . '<strong>' . t('Notes when importing a structure with fields:') . '</strong>'
       . '<ul>'
@@ -336,7 +349,7 @@ function taxonomy_csv_import_form($form, &$form_state) {
     '#size'          => 60,
     '#maxlength'     => 1024,
     '#description'   => t('Set the list of languages of terms, for example "<code>en, fr, de</code>".') . '<br />'
-      . '<strong>' . ('Notes:') . '</strong>'
+      . '<strong>' . t('Notes:') . '</strong>'
       . '<ul>'
         . '<li>' . t('All languages should have been enabled in <a href="!link">Regional and language settings</a> before import.', array('!link' => url('admin/config/regional/language/overview'))) . '</li>'
         . '<li>' . '<strong>' . t('Important') . '</strong>: ' . t('If your taxonomy is structured, you should import the structure <em>before</em>. Furthermore, if the i18n mode is Translate, you should import the structure for each translation before. The translate process only creates translation sets for terms, but does not recreate any structure.') . '</li>'
@@ -350,13 +363,35 @@ function taxonomy_csv_import_form($form, &$form_state) {
     ),
   );
 
+  // Specific options of Tid.
+  $form['tab']['format']['specific'][TAXONOMY_CSV_FORMAT_TID]['tid_structure_type'] = array(
+    '#type'          => 'radios',
+    '#title'         => t('Structure of the list of imported items'),
+    '#options'         => array(
+      TAXONOMY_CSV_FORMAT_TID_FLAT          => t('Flat'),
+      TAXONOMY_CSV_FORMAT_TID_TREE          => t('Tree'),
+      TAXONOMY_CSV_FORMAT_TID_POLYHIERARCHY => t('Polyhierarchy'),
+    ),
+    '#default_value' => $list_previous_values['tid_structure_type'],
+    '#description'   => t('Choose if terms have no parent, one parent only, or multiple parents. "Flat" can be used for any vocabulary, as it updates only the name.'),
+    '#states'        => array(
+      'visible' => array(
+        ':input[name=import_format]' => array('value' => TAXONOMY_CSV_FORMAT_TID),
+      ),
+    ),
+  );
+
   $form['tab']['format']['keep_order'] = array(
     '#type'          => 'checkbox',
     '#title'         => t('Keep order of terms'),
     '#default_value' => $list_previous_values['keep_order'],
-    '#description'   => t('If checked, a weight will be added to each term, so order of lines will be preserved. If unchecked, order will be alphabetic.') . '<br />' .
-    t('Note: With polyhierarchical vocabulary (multiple parents for a term) and duplicate terms, unpredictable results may occur, because weight of a term is incremented each time it appears and a term can only have one weight, without context.') . '<br />' .
-    t("You shouldn't use this option if your custom format has a 'weight' field."),
+    '#description'   => t('If checked, a weight will be added to each term, so order of lines will be preserved. If unchecked, order will be alphabetic.') . '<br />'
+      . '<strong>' . t('Notes:') . '</strong>'
+      . '<ul>'
+        . '<li>' . t('With polyhierarchical vocabulary (multiple parents for a term) and duplicate terms, unpredictable results may occur, because weight of a term is incremented each time it appears and a term can only have one weight, without context.') . '</li>'
+        . '<li>' . t("You shouldn't use this option if your custom format has a 'weight' field.") . '</li>'
+        . '<li>' . t("It's not recommended to use this option when you update a vocabulary partially.") . '</li>'
+      . '</ul>',
   );
 
   $form['tab']['import'] = array(
@@ -759,7 +794,8 @@ function taxonomy_csv_import_form($form, &$form_state) {
       TAXONOMY_CSV_EXISTING_IGNORE => t('Ignore it and create a new term (duplicate terms may be created)'),
     ),
     '#default_value' => $list_previous_values['update_or_ignore'],
-    '#description'   => t('This option allows to set what previous imported terms will become if a new line contains the same terms.') . ' ' . t('Usually, it indicates an error or a unoptimized source, unless you allow duplicates.'),
+    '#description'   => t('This option allows to set what previous imported terms will become if a new line contains the same terms.') . ' ' . t('Usually, it indicates an error or a unoptimized source, unless you allow duplicates.') . '<br />'
+    . t('This option is not used when a term id is set: in this case, the existing term is always updated.'),
   );
   $form['tab']['import_options']['update_or_ignore_info_polyhierarchy'] = array(
     '#type'        => 'item',
@@ -1281,6 +1317,7 @@ function taxonomy_csv_import_form_submit($form, &$form_state) {
   foreach (array(
       'import_format',
       'structure_type',
+      'tid_structure_type',
       'import_fields_format',
       'translate_by',
       'translate_languages',
@@ -1350,6 +1387,11 @@ function taxonomy_csv_import_form_submit($form, &$form_state) {
     $options['import_format'] = $options['structure_type'];
   }
   unset($options['structure_type']);
+
+  if ($options['import_format'] == TAXONOMY_CSV_FORMAT_TID) {
+    $options['import_format'] = $options['tid_structure_type'];
+  }
+  unset($options['tid_structure_type']);
 
   // Warning: in API, 'language' is option for terms.
   $options['vocabulary_language'] = $form_state['values']['language'];

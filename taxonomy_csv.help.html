@@ -78,6 +78,9 @@
           <li>
             <a href="#translate">Term translation</a>
           </li>
+          <li>
+            <a href="#tids">Term ids ("tid")</a>
+          </li>
         </ol>
       </li>
       <li>
@@ -130,7 +133,7 @@
     <li>Fields (name, weight, description, parent and what you want)</li>
     <li>Translation (if <a href="https://drupal.org/project/i18n">i18n</a> is installed)</li>
   </ul>
-  <p>That's what you can choose in the first tab.</p>
+  <p>That's what you can choose in the first tab. You can use "Term ids" format too, specially to update a vocabulary with duplicate terms.</p>
   <p>Notes:</p>
   <ul>
     <li>If you have a tree structure, you should import it before translations, and for each translation if you use a full Translate mode.</li>
@@ -326,6 +329,21 @@
       <li><strong>Important</strong>: If your taxonomy is structured, you should import the structure <em>before</em>. Furthermore, if the i18n mode is Translate, you should import the structure for each translation before. The translate process only creates translation sets for terms, but does not recreate any structure.</li>
       <li>With Translate mode, terms with an undefined language (<code>"und"</code>) cannot be translated.</li>
       <li>With Localize mode, only terms with an undefined language can be translated, so the first language should be "und" and the default language of the site cannot be used.</li>
+    </ul>
+  <h4 id="tids"><a href="#contents">4. Term ids ("tid")</a></h4>
+    <p>Import by "Term ids" uses internal identifiants ("tid") and allows to update flat or structured vocabularies.</p>
+    <p>Format:</p>
+    <div class="codeblock">
+      <code>term id, term name, term id 2, term name 2...</code>
+    </div>
+    <p>Examples:</p>
+    <div class="codeblock"><ul>
+      <li><code>10, foo</code></li>
+      <li><code>11, bar, 12, sub-bar</code></li>
+    </ul></div>
+    <p><strong>Notes</strong></p>
+    <ul>
+      <li>This format avoids any possible problems with duplicate term names.</li>
     </ul>
 
 <h3 id="import"><a href="#contents">2. Import</a></h3>

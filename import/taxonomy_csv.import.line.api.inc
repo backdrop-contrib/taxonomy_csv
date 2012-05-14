@@ -58,8 +58,26 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array(), $t
       case TAXONOMY_CSV_FORMAT_POLYHIERARCHY:
         // Internally, polyhierarchy import format doesn't support Ignore.
         $options['update_or_ignore'] = TAXONOMY_CSV_EXISTING_UPDATE;
-
         $result = taxonomy_csv_line_import_structure($line, $options, $previous_items, $terms_count);
+        break;
+
+      case TAXONOMY_CSV_FORMAT_TID:
+      case TAXONOMY_CSV_FORMAT_TID_FLAT:
+        $result = taxonomy_csv_line_import_tid($line, $options, $terms_count);
+        break;
+
+      case TAXONOMY_CSV_FORMAT_TID_TREE:
+        // Internally, tree import format use ignore_previous and not update.
+        if ($options['update_or_ignore'] == TAXONOMY_CSV_EXISTING_UPDATE) {
+          $options['update_or_ignore'] = TAXONOMY_CSV_EXISTING_IGNORE_PREVIOUS;
+        }
+        $result = taxonomy_csv_line_import_tid($line, $options, $previous_items, $terms_count);
+        break;
+
+      case TAXONOMY_CSV_FORMAT_TID_POLYHIERARCHY:
+        // Internally, polyhierarchy import format doesn't support Ignore.
+        $options['update_or_ignore'] = TAXONOMY_CSV_EXISTING_UPDATE;
+        $result = taxonomy_csv_line_import_tid($line, $options, $previous_items, $terms_count);
         break;
 
       case TAXONOMY_CSV_FORMAT_FIELDS:
@@ -219,6 +237,57 @@ function taxonomy_csv_line_import_structure($line, $options, $previous_items = a
         break;
     }
     $parent_name = $current_result['name'];
+    $parent_tid  = $current_result['tid'];
+    if (_taxonomy_csv_line_result($result, $current_result, $terms_count)) {
+      return $result;
+    }
+  }
+
+  return $result;
+}
+
+/**
+ * Import a flat or a structure line with tids and names.
+ *
+ * @see taxonomy_csv_line_import()
+ */
+function taxonomy_csv_line_import_tid($line, $options, $previous_items = array(), $terms_count = 0) {
+  // Define default values.
+  $result = array(
+    'name' => array(),
+    'tid'  => array(),
+    'msg'  => array(),
+    'terms_count' => $terms_count,
+  );
+
+  foreach ($line as $key => $term_tid) {
+    if (($key % 2) === 1) {
+      continue;
+    }
+
+    $term = new stdClass;
+    if (is_numeric($term_tid) && $term_tid != 0) {
+      $term->tid = $term_tid;
+    }
+    $term->name = $line[$key + 1];
+    $term->vid = $options['vocabulary']->vid;
+    $term->vocabulary_machine_name = $options['vocabulary']->machine_name;
+    $term->format = $options['filter_format'];
+    $term->language = $options['language'];
+
+    if (($options['import_format'] !== TAXONOMY_CSV_FORMAT_TID_FLAT) && isset($parent_tid)) {
+      $term->parent = array($parent_tid => $parent_tid);
+    }
+
+    // Weight is not set above in order to keep existing one if it exists.
+    ++$terms_count;
+    if ($options['keep_order']) {
+      $term->weight = $terms_count;
+    }
+
+    // Import term then store and check result.
+    $current_result = taxonomy_csv_term_import($term, $options['update_or_ignore']);
+    // Parent tid is not used with flat import, but to to a test is slower.
     $parent_tid  = $current_result['tid'];
     if (_taxonomy_csv_line_result($result, $current_result, $terms_count)) {
       return $result;
@@ -621,6 +690,9 @@ function taxonomy_csv_term_import($term, $update_or_ignore = TAXONOMY_CSV_EXISTI
         // not been set in new term.
         $term = (object) array_merge((array) $existing_term, (array) $term);
       }
+      else {
+        unset($term->tid);
+      }
       break;
 
     case TAXONOMY_CSV_EXISTING_IGNORE_PREVIOUS:
@@ -630,6 +702,9 @@ function taxonomy_csv_term_import($term, $update_or_ignore = TAXONOMY_CSV_EXISTI
         // All fields are replaced by new ones. Other existing fields of
         // existing term should be kept even if they are not set in new term.
         $term = (object) array_merge((array) $existing_term, (array) $term);
+      }
+      else {
+        unset($term->tid);
       }
       break;
 

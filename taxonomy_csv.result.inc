@@ -208,6 +208,8 @@ function _taxonomy_csv_message_text($message_code) {
       491 => t('No item to import.') . $warning,
       492 => t('Nothing to import.') . $warning,
       493 => t('Empty line.') . $warning,
+      495 => t('A term id or a term name is missing.') . $warning,
+      496 => t('A false term id has been identified.') . $warning,
       499 => t('Warnings have been reported on this line.'),
 
       500 => t('Notice'),

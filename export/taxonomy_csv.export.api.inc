@@ -573,7 +573,7 @@ function taxonomy_csv_term_export($term, $options, &$terms_list = array(), $dupl
         $result['line'][] = $term->tid;
         break;
 
-      case TAXONOMY_CSV_FORMAT_FLAT_TID_NAME:
+      case TAXONOMY_CSV_FORMAT_TID_FLAT:
         $result['line'][] = $term->tid;
         $result['line'][] = $term->name;
         break;
@@ -587,7 +587,23 @@ function taxonomy_csv_term_export($term, $options, &$terms_list = array(), $dupl
         $result['line'][] = $term->name;
         break;
 
+      case TAXONOMY_CSV_FORMAT_TID:
+      case TAXONOMY_CSV_FORMAT_TID_TREE:
+        $terms = taxonomy_csv_term_get_first_path($term, $terms_list);
+        foreach ($terms as $parent) {
+          $result['line'][] = $parent->tid;
+          $result['line'][] = $parent->name;
+        }
+        $result['line'][] = $term->tid;
+        $result['line'][] = $term->name;
+        break;
+
       case TAXONOMY_CSV_FORMAT_POLYHIERARCHY:
+        // @todo
+        // Warning : taxonomy_csv_term_get_first_path() returns only first path.
+        break;
+
+      case TAXONOMY_CSV_FORMAT_TID_POLYHIERARCHY:
         // @todo
         // Warning : taxonomy_csv_term_get_first_path() returns only first path.
         break;

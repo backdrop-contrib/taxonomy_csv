@@ -21,7 +21,7 @@ function taxonomy_csv_drush_command() {
     ),
     'arguments' => array(
       'file_path'     => 'Required. The full path or url to CSV file to import',
-      'import_format' => "Optional. CSV format: 'flat' (default), 'tree', 'polyhierarchy', 'fields', 'translate'",
+      'import_format' => "Optional. CSV format: 'flat' (default), 'tree', 'polyhierarchy', 'fields', 'translate', 'tid_flat', 'tid_tree', 'tid_polyhierarchy'",
     ),
     'options' => array(
       'fields_format' => "List of comma separated fields (default: 'name')",
@@ -63,7 +63,7 @@ function taxonomy_csv_drush_command() {
     ),
     'arguments' => array(
       'vocabulary_id' => 'Required. vid or machine_name of the vocabulary to export (0 means all)',
-      'export_format' => "Optional. CSV format: 'flat' (default), 'flat_tid', 'flat_tid_name', 'tree_fields', 'tree', 'fields', 'fields_first', 'translate'",
+      'export_format' => "Optional. CSV format: 'flat' (default), 'flat_tid', 'tid_flat', 'tree', 'tid_tree', 'fields', 'tree_fields', 'translate'",
       'file_path'     => "Optional. Full path or filename of exported csv file (default: [current directory]/taxocsv.csv)",
     ),
     'options' => array(

@@ -7,7 +7,7 @@
 == CHANGELOG ==
   ===========
 
-Taxonomy csv import/export 7.x-5.11-dev, 2012-05-12
+Taxonomy csv import/export 7.x-5.11-dev, 2012-05-14
 -----------------------------------------------
 #1463902 by Guillaume Viguier-Just: Support for image fields and folder check.
 #1386904 by Daniel Berthereau: Added support to export list of tids and names.
@@ -18,9 +18,11 @@ Taxonomy csv import/export 7.x-5.11-dev, 2012-05-12
 #1535942 by James McKinney: Fixed undefined variable.
 #1534572 by James McKinney: Fixed check of target language.
 #1178366 by Mariano D'Agostino: Fixed compatibility of a query with MS SQL.
+#1567472 by Daniel Berthereau: Added export of terms and structure with tids.
+#1567472 by Daniel Berthereau: Added support of import or update terms by tids.
 
-Taxonomy csv import/export 7.x-5.11-dev, 2012-03-13
-Taxonomy csv import/export 6.x-5.11-dev, 2012-03-13
+Taxonomy csv import/export 7.x-5.11-dev, 2012-04-17
+Taxonomy csv import/export 6.x-5.11-dev, 2012-04-17
 -----------------------------------------------
 #1465942 by dannymacom: Fixed path check for non English help of Taxonomy CSV.
 #1502856 by Guillaume Viguier-Just: Fixed error when using installation profile.
