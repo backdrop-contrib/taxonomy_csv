@@ -1048,12 +1048,12 @@ function _taxonomy_csv_import_check_options(&$options) {
     elseif (!in_array($options['fields_format'][0], array('name', 'tid', 'tree', 'poly'))) {
       $messages['fields_format'] = t("First field has to be 'name', 'tid', 'tree' or 'poly'.");
     }
-    elseif (($options['fields_format'][0] == 'name' && array_intersect(array('tid', 'tree', 'poly'), $options['fields_format']))
-        || ($options['fields_format'][0] == 'tid' && array_intersect(array('name', 'tree', 'poly'), $options['fields_format']))
+    elseif (($options['fields_format'][0] == 'name' && array_intersect(array('tree', 'poly'), $options['fields_format']))
+        || ($options['fields_format'][0] == 'tid' && array_intersect(array('tree', 'poly'), $options['fields_format']))
         || ($options['fields_format'][0] == 'tree' && array_intersect(array('name', 'tid', 'poly', 'parent'), $options['fields_format']))
         || ($options['fields_format'][0] == 'poly' && array_intersect(array('name', 'tid', 'tree', 'parent'), $options['fields_format']))
       ) {
-      $messages['fields_format'] = t("You can't import name, tid, tree and poly at the same time. You can't import tree or poly and parent at the same time.'");
+      $messages['fields_format'] = t("You can't import name or tid and tree or poly at the same time. You can't import tree or poly and parent at the same time.");
     }
     elseif (array_map('strtolower', $options['fields_format']) != $options['fields_format']) {
       $messages['fields_format'] = t("Fields have to be in lower case.");

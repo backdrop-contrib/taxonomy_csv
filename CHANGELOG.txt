@@ -20,6 +20,7 @@ Taxonomy csv import/export 7.x-5.11-dev, 2012-05-14
 #1178366 by Mariano D'Agostino: Fixed compatibility of a query with MS SQL.
 #1567472 by Daniel Berthereau: Added export of terms and structure with tids.
 #1567472 by Daniel Berthereau: Added support of import or update terms by tids.
+#1567472 by Daniel Berthereau: Fixed import by Fields with a tid and a name.
 
 Taxonomy csv import/export 7.x-5.11-dev, 2012-04-17
 Taxonomy csv import/export 6.x-5.11-dev, 2012-04-17
