@@ -8,7 +8,7 @@
 /**
  * Invoke associated include file.
  */
-$module_dir = drupal_get_path('module', 'taxonomy_csv');
+$module_dir = backdrop_get_path('module', 'taxonomy_csv');
 require_once($module_dir . '/taxonomy_csv.result.inc');
 
 /**
@@ -52,7 +52,7 @@ function _taxonomy_csv_import_result($options, $worst_level, $summary, $results)
 
     // Display stats and eventually lists about imported terms.
     if ($options['result_stats']
-        || $options['result_terms']) {
+         || $options['result_terms']) {
       $messages[] = array(WATCHDOG_INFO => _taxonomy_csv_info_terms($options));
     }
 
@@ -80,15 +80,17 @@ function _taxonomy_csv_info_chosen_options($options) {
   switch ($options['source_choice']) {
     case 'file':
       $message = t('File "%file" uploaded.', array(
-        '%file' => $options['file']->filename));
+        '%file' => $options['file']->filename,
+      ));
       break;
     case 'text':
       $message = t('Import terms from text.');
       break;
     case 'url':
       $message = t('File "<a href="!url">%file</a>" uploaded from an url.', array(
-        '!url'  => $options['url'],
-        '%file' => basename($options['url'])));
+        '!url' => $options['url'],
+        '%file' => basename($options['url']),
+      ));
       break;
     default:
       $message = t('Import from Api.');
@@ -129,7 +131,7 @@ function _taxonomy_csv_info_vocabulary($options) {
   // General info on used or created vocabularies.
   $vocabularies = array($options['vocabulary_id']);
   $messages[] = t('%count used or created.', array(
-    '%count' => format_plural(count($vocabularies), 'A vocabulary has been', '@count vocabularies have been', array())
+    '%count' => format_plural(count($vocabularies), 'A vocabulary has been', '@count vocabularies have been', array()),
   ));
 
   foreach ($vocabularies as $vocabulary_id) {
@@ -197,10 +199,10 @@ function _taxonomy_csv_info_vocabulary_destination($vocabulary, $vocabulary_targ
     'autocreate' => t('New vocabulary "%vocabulary_name" has been created.', array(
       '%vocabulary_name' => $vocabulary->name,
     )),
-    'duplicate'  => t('Duplicate vocabulary "%vocabulary_name" has been created.', array(
+    'duplicate' => t('Duplicate vocabulary "%vocabulary_name" has been created.', array(
       '%vocabulary_name' => $vocabulary->name,
     )),
-    'existing'   => t('Terms are imported into existing vocabulary "%vocabulary_name".', array(
+    'existing' => t('Terms are imported into existing vocabulary "%vocabulary_name".', array(
       '%vocabulary_name' => $vocabulary->name,
     )),
   );
@@ -222,12 +224,12 @@ function _taxonomy_csv_info_vocabulary_result($vocabulary, $vocabulary_target, $
   );
   if ($vocabulary_target != 'autocreate') {
     $message .= t('Old hierarchy level was !level (!level_text).', array(
-      '!level'      => $vocabulary->hierarchy,
+      '!level' => $vocabulary->hierarchy,
       '!level_text' => $hierarchy_text[$vocabulary->hierarchy],
     )) . '<br />';
   }
   $message .= t('Hierarchy level is !level (!level_text).', array(
-    '!level'      => $new_hierarchy,
+    '!level' => $new_hierarchy,
     '!level_text' => $hierarchy_text[$new_hierarchy],
   )) . '<br />';
 
@@ -268,7 +270,7 @@ function _taxonomy_csv_info_terms($options) {
       foreach ($terms as $term) {
         $term_list[] = $term->name;
       }
-      $message .= '"' . implode('", "',  $term_list) . '".';
+      $message .= '"' . implode('", "',   $term_list) . '".';
     }
   }
   else {

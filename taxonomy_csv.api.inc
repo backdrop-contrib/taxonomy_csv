@@ -10,26 +10,26 @@
 /**
  * Available internal import/export formats.
  */
-define('TAXONOMY_CSV_FORMAT_STRUCTURE',     'structure');
-define('TAXONOMY_CSV_FORMAT_FLAT',          'flat');
-define('TAXONOMY_CSV_FORMAT_TREE',          'tree');
+define('TAXONOMY_CSV_FORMAT_STRUCTURE',      'structure');
+define('TAXONOMY_CSV_FORMAT_FLAT',           'flat');
+define('TAXONOMY_CSV_FORMAT_TREE',           'tree');
 define('TAXONOMY_CSV_FORMAT_POLYHIERARCHY', 'polyhierarchy');
-define('TAXONOMY_CSV_FORMAT_FIELDS',        'fields');
-define('TAXONOMY_CSV_FORMAT_TRANSLATE',     'translate');
-define('TAXONOMY_CSV_FORMAT_TID',           'tid');
-define('TAXONOMY_CSV_FORMAT_TID_FLAT',      'tid_flat');
-define('TAXONOMY_CSV_FORMAT_TID_TREE',      'tid_tree');
+define('TAXONOMY_CSV_FORMAT_FIELDS',         'fields');
+define('TAXONOMY_CSV_FORMAT_TRANSLATE',      'translate');
+define('TAXONOMY_CSV_FORMAT_TID',            'tid');
+define('TAXONOMY_CSV_FORMAT_TID_FLAT',       'tid_flat');
+define('TAXONOMY_CSV_FORMAT_TID_TREE',       'tid_tree');
 define('TAXONOMY_CSV_FORMAT_TID_POLYHIERARCHY', 'tid_polyhierarchy');
 
 // Specific export formats.
-define('TAXONOMY_CSV_FORMAT_FLAT_TID',      'flat_tid');
-define('TAXONOMY_CSV_FORMAT_TREE_FIELDS',   'tree_fields');
+define('TAXONOMY_CSV_FORMAT_FLAT_TID',       'flat_tid');
+define('TAXONOMY_CSV_FORMAT_TREE_FIELDS',    'tree_fields');
 
 /**
  * Available import options.
  */
-define('TAXONOMY_CSV_EXISTING_UPDATE',          'update');
-define('TAXONOMY_CSV_EXISTING_IGNORE',          'ignore');
+define('TAXONOMY_CSV_EXISTING_UPDATE',           'update');
+define('TAXONOMY_CSV_EXISTING_IGNORE',           'ignore');
 // Internal use only.
 define('TAXONOMY_CSV_EXISTING_IGNORE_PREVIOUS', 'ignore_previous');
 
@@ -38,24 +38,24 @@ define('TAXONOMY_CSV_EXISTING_IGNORE_PREVIOUS', 'ignore_previous');
  *
  * See _taxonomy_csv_message_watchdog_type and _taxonomy_csv_message_text.
  */
-define('TAXONOMY_CSV_PROCESS_ERROR',   300); // Stop import process.
+define('TAXONOMY_CSV_PROCESS_ERROR',    300); // Stop import process.
 define('TAXONOMY_CSV_PROCESS_WARNING', 400); // Stop line process and go next.
-define('TAXONOMY_CSV_PROCESS_NOTICE',  500); // Continue current line process.
-define('TAXONOMY_CSV_PROCESS_INFO',    600); // Successfully processed.
-define('TAXONOMY_CSV_PROCESS_DEBUG',   700); // Internal use only.
+define('TAXONOMY_CSV_PROCESS_NOTICE',   500); // Continue current line process.
+define('TAXONOMY_CSV_PROCESS_INFO',     600); // Successfully processed.
+define('TAXONOMY_CSV_PROCESS_DEBUG',    700); // Internal use only.
 
 /**
  * Information about import process.
  *
- * Use too default Drupal constants:
+ * Use too default Backdrop constants:
  * - SAVED_NEW     = 1
  * - SAVED_UPDATED = 2
  * Possibly use of:
  * - SAVED_DELETED = 3
  */
-define('TAXONOMY_CSV_ERROR',       0);
+define('TAXONOMY_CSV_ERROR',        0);
 define('TAXONOMY_CSV_NEW_UPDATED', 4);
-define('TAXONOMY_CSV_UNCHANGED',   5);
+define('TAXONOMY_CSV_UNCHANGED',    5);
 
 /**
  * Helper to remember some items and to describe features.
@@ -77,128 +77,128 @@ function _taxonomy_csv_values($list) {
     case 'import_format':
       return array(
         TAXONOMY_CSV_FORMAT_STRUCTURE => t('Structure'),
-        TAXONOMY_CSV_FORMAT_FIELDS    => t('Fields'),
+        TAXONOMY_CSV_FORMAT_FIELDS => t('Fields'),
         TAXONOMY_CSV_FORMAT_TRANSLATE => t('Translation'),
-        TAXONOMY_CSV_FORMAT_TID       => t('Term ids (tid)'),
+        TAXONOMY_CSV_FORMAT_TID => t('Term ids (tid)'),
       );
 
     case 'export_format':
       return array(
-        TAXONOMY_CSV_FORMAT_FLAT          => t('Term names'),
-        TAXONOMY_CSV_FORMAT_FLAT_TID      => t('Term ids'),
-        TAXONOMY_CSV_FORMAT_TID_FLAT      => t('Term ids and names'),
-        TAXONOMY_CSV_FORMAT_TREE          => t('Hierarchical tree structure'),
-        TAXONOMY_CSV_FORMAT_TID_TREE      => t('Hierarchical tree structure with term ids and names'),
-        TAXONOMY_CSV_FORMAT_FIELDS        => t('Fields'),
-        TAXONOMY_CSV_FORMAT_TREE_FIELDS   => t('Hierarchical tree structure and Fields'),
-        TAXONOMY_CSV_FORMAT_TRANSLATE     => t('Translations'),
+        TAXONOMY_CSV_FORMAT_FLAT => t('Term names'),
+        TAXONOMY_CSV_FORMAT_FLAT_TID => t('Term ids'),
+        TAXONOMY_CSV_FORMAT_TID_FLAT => t('Term ids and names'),
+        TAXONOMY_CSV_FORMAT_TREE => t('Hierarchical tree structure'),
+        TAXONOMY_CSV_FORMAT_TID_TREE => t('Hierarchical tree structure with term ids and names'),
+        TAXONOMY_CSV_FORMAT_FIELDS => t('Fields'),
+        TAXONOMY_CSV_FORMAT_TREE_FIELDS => t('Hierarchical tree structure and Fields'),
+        TAXONOMY_CSV_FORMAT_TRANSLATE => t('Translations'),
       );
 
     case 'import_default_ui':
       return array(
-        'import_format'                 => TAXONOMY_CSV_FORMAT_STRUCTURE,
-        'structure_type'                => TAXONOMY_CSV_FORMAT_FLAT,
-        'tid_structure_type'            => TAXONOMY_CSV_FORMAT_TID_FLAT,
-        'import_fields_format'          => 'name',
-        'translate_by'                  => 'name',
-        'translate_languages'           => '',
-        'keep_order'                    => FALSE,
-        'source_choice'                 => 'text',
-        'import_delimiter'              => 'comma',
+        'import_format' => TAXONOMY_CSV_FORMAT_STRUCTURE,
+        'structure_type' => TAXONOMY_CSV_FORMAT_FLAT,
+        'tid_structure_type' => TAXONOMY_CSV_FORMAT_TID_FLAT,
+        'import_fields_format' => 'name',
+        'translate_by' => 'name',
+        'translate_languages' => '',
+        'keep_order' => FALSE,
+        'source_choice' => 'text',
+        'import_delimiter' => 'comma',
         'import_delimiter_soft_tab_width' => '2',
-        'import_delimiter_custom'       => '',
-        'import_enclosure'              => 'none',
-        'import_enclosure_custom'       => '',
-        'filter_format'                 => 'plain_text',
-        'filter_format_custom'          => 'none',
-        'import_language'               => 'und', // Undefined.
-        'check_line'                    => TRUE,
-        'check_utf8'                    => TRUE,
-        'locale_custom'                 => '',
-        'vocabulary_target'             => 'autocreate',
-        'vocabulary_id'                 => 'choose_vocabulary',
-        'i18n_mode'                     => 0, // I18N_MODE_NONE.
-        'language'                      => 'und', // Undefined.
-        'import_fields_custom'          => '',
-        'delete_terms'                  => FALSE,
-        'check_hierarchy'               => TRUE,
-        'set_hierarchy'                 => 2, // Polyhierarchy.
-        'update_or_ignore'                => TAXONOMY_CSV_EXISTING_UPDATE,
+        'import_delimiter_custom' => '',
+        'import_enclosure' => 'none',
+        'import_enclosure_custom' => '',
+        'filter_format' => 'plain_text',
+        'filter_format_custom' => 'none',
+        'import_language' => 'und', // Undefined.
+        'check_line' => TRUE,
+        'check_utf8' => TRUE,
+        'locale_custom' => '',
+        'vocabulary_target' => 'autocreate',
+        'vocabulary_id' => 'choose_vocabulary',
+        'i18n_mode' => 0, // I18N_MODE_NONE.
+        'language' => 'und', // Undefined.
+        'import_fields_custom' => '',
+        'delete_terms' => FALSE,
+        'check_hierarchy' => TRUE,
+        'set_hierarchy' => 2, // Polyhierarchy.
+        'update_or_ignore' => TAXONOMY_CSV_EXISTING_UPDATE,
         // General options.
-        'result_stats'                  => 'result_stats',
-        'result_terms'                  => 'result_terms',
-        'result_level'                  => 'notices',
-        'result_type'                   => 'by_message',
+        'result_stats' => 'result_stats',
+        'result_terms' => 'result_terms',
+        'result_level' => 'notices',
+        'result_type' => 'by_message',
       );
 
     case 'import_default_api':
       return array(
-        'import_format'                 => TAXONOMY_CSV_FORMAT_FLAT,
-        'fields_format'                 => array(0 => 'name'),
-        'translate_by'                  => 'name',
-        'translate_languages'           => '',
-        'keep_order'                    => FALSE,
-        'delimiter'                     => ',',
-        'enclosure'                     => '',
-        'filter_format'                 => 'plain_text',
-        'filter_format_custom'          => 'none',
+        'import_format' => TAXONOMY_CSV_FORMAT_FLAT,
+        'fields_format' => array(0 => 'name'),
+        'translate_by' => 'name',
+        'translate_languages' => '',
+        'keep_order' => FALSE,
+        'delimiter' => ',',
+        'enclosure' => '',
+        'filter_format' => 'plain_text',
+        'filter_format_custom' => 'none',
         // Warning: in API, language is option for terms.
-        'language'                      => 'und', // Undefined.
-        'check_line'                    => FALSE,
-        'check_utf8'                    => FALSE,
-        'locale_custom'                 => '',
-        'vocabulary_target'             => 'autocreate',
-        'vocabulary_id'                 => 'choose_vocabulary',
-        'i18n_mode'                     => 0, // I18N_MODE_NONE.
-        'vocabulary_language'           => 'und', // Undefined.
-        'fields_custom'                 => array(),
-        'delete_terms'                  => FALSE,
-        'check_hierarchy'               => TRUE,
-        'set_hierarchy'                 => 2, // Polyhierarchy.
-        'update_or_ignore'                => TAXONOMY_CSV_EXISTING_UPDATE,
+        'language' => 'und', // Undefined.
+        'check_line' => FALSE,
+        'check_utf8' => FALSE,
+        'locale_custom' => '',
+        'vocabulary_target' => 'autocreate',
+        'vocabulary_id' => 'choose_vocabulary',
+        'i18n_mode' => 0, // I18N_MODE_NONE.
+        'vocabulary_language' => 'und', // Undefined.
+        'fields_custom' => array(),
+        'delete_terms' => FALSE,
+        'check_hierarchy' => TRUE,
+        'set_hierarchy' => 2, // Polyhierarchy.
+        'update_or_ignore' => TAXONOMY_CSV_EXISTING_UPDATE,
         // General options.
-        'check_options'                 => FALSE,
-        'result_display'                => FALSE,
-        'result_stats'                  => FALSE,
-        'result_terms'                  => FALSE,
-        'result_level'                  => 'first',
-        'result_type'                   => 'by_message',
+        'check_options' => FALSE,
+        'result_display' => FALSE,
+        'result_stats' => FALSE,
+        'result_terms' => FALSE,
+        'result_level' => 'first',
+        'result_type' => 'by_message',
       );
 
     case 'export_default_ui':
       return array(
-        'export_format'                 => TAXONOMY_CSV_FORMAT_FLAT,
-        'export_fields_format'          => 'name',
-        'export_vocabulary_id'          => 0,
-        'export_delimiter'              => 'comma',
-        'export_delimiter_custom'       => '',
-        'export_enclosure'              => 'quotation',
-        'export_enclosure_custom'       => '',
-        'export_line_ending'            => 'Unix',
+        'export_format' => TAXONOMY_CSV_FORMAT_FLAT,
+        'export_fields_format' => 'name',
+        'export_vocabulary_id' => 0,
+        'export_delimiter' => 'comma',
+        'export_delimiter_custom' => '',
+        'export_enclosure' => 'quotation',
+        'export_enclosure_custom' => '',
+        'export_line_ending' => 'Unix',
         // Default options of specific imports.
-        'def_links_terms_ids'           => 'name_if_needed',
-        'def_links_vocabularies_ids'    => 'none',
+        'def_links_terms_ids' => 'name_if_needed',
+        'def_links_vocabularies_ids' => 'none',
         // General options.
-        'export_order'                  => 'name',
-        'result_duplicates'             => TRUE,
+        'export_order' => 'name',
+        'result_duplicates' => TRUE,
       );
 
     case 'export_default_api':
       return array(
-        'export_format'                 => TAXONOMY_CSV_FORMAT_FLAT,
-        'fields_format'                 => array(0 => 'name'),
-        'vocabulary_id'                 => 0,
-        'delimiter'                     => ',',
-        'enclosure'                     => '"',
-        'line_ending'                   => 'Unix',
-        'order'                         => 'name',
+        'export_format' => TAXONOMY_CSV_FORMAT_FLAT,
+        'fields_format' => array(0 => 'name'),
+        'vocabulary_id' => 0,
+        'delimiter' => ',',
+        'enclosure' => '"',
+        'line_ending' => 'Unix',
+        'order' => 'name',
         // Default options of specific imports.
-        'def_links_terms_ids'           => 'name_if_needed',
-        'def_links_vocabularies_ids'    => 'none',
+        'def_links_terms_ids' => 'name_if_needed',
+        'def_links_vocabularies_ids' => 'none',
         // General options.
-        'result_duplicates'             => FALSE,
-        'check_options'                 => FALSE,
-        'result_display'                => FALSE,
+        'result_duplicates' => FALSE,
+        'check_options' => FALSE,
+        'result_display' => FALSE,
       );
   }
 }

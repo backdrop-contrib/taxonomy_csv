@@ -6,9 +6,9 @@
  */
 
 /**
- * Helper to determine drupal_set_message type level from Drupal watchdog level.
+ * Helper to determine backdrop_set_message type level from Backdrop watchdog level.
  *
- * As drupal_set_message uses only three types, a mapping is needing when we
+ * As backdrop_set_message uses only three types, a mapping is needing when we
  * have only a watchdog level.
  * @see bootstrap.inc
  *
@@ -16,15 +16,15 @@
  *   Integer. Watchdog level as defined in bootstrap.inc.
  *
  * @return
- *   drupal_set_message type level.
+ *   backdrop_set_message type level.
  */
 function _taxonomy_csv_message_watchdog_type($watchdog_level) {
   $mapping = array(
-    WATCHDOG_ERROR   => 'error',   // Stop import process.
-    WATCHDOG_WARNING => 'error',   // Stop line process and go next.
-    WATCHDOG_NOTICE  => 'warning', // Continue current line process.
-    WATCHDOG_INFO    => 'status',  // Successfully processed.
-    WATCHDOG_DEBUG   => 'status',  // Internal use only.
+    WATCHDOG_ERROR => 'error', // Stop import process.
+    WATCHDOG_WARNING => 'error', // Stop line process and go next.
+    WATCHDOG_NOTICE => 'warning', // Continue current line process.
+    WATCHDOG_INFO => 'status', // Successfully processed.
+    WATCHDOG_DEBUG => 'status', // Internal use only.
   );
 
   return $mapping[$watchdog_level];
@@ -59,7 +59,7 @@ function _taxonomy_csv_message_get_level($message_code) {
 function _taxonomy_csv_message_result($messages) {
   foreach ($messages as $message) {
     $type = key($message);
-    drupal_set_message($message[$type], _taxonomy_csv_message_watchdog_type($type));
+    backdrop_set_message($message[$type], _taxonomy_csv_message_watchdog_type($type));
   }
 }
 
@@ -107,7 +107,7 @@ function _taxonomy_csv_message_result_by_message($messages_set) {
 
   if (is_array($messages_set) && $messages_set) {
     // Convert [line number][message codes]
-    //      to [message codes][line number].
+//      to [message codes][line number].
     foreach ($messages_set as $line_number => $operation) {
       foreach ($operation as $message_code) {
         $list_messages[$message_code][] = $line_number;
@@ -121,7 +121,7 @@ function _taxonomy_csv_message_result_by_message($messages_set) {
         $processed_message_level = _taxonomy_csv_message_get_level($message_code);
         $processed_message_text  = _taxonomy_csv_message_text($message_code) . ' ' . t('Lines:') . '<br />' . implode(', ', $line_numbers) . '.';
 
-      $messages[] = array($processed_message_level => $processed_message_text);
+        $messages[] = array($processed_message_level => $processed_message_text);
       }
     }
   }
@@ -171,7 +171,6 @@ function _taxonomy_csv_message_text($message_code) {
       390 => t('No line to import. Please first check your file and file uploading, else reinstall module from a fresh release or submit an issue.') . $error,
       391 => t('No term to import. Please first check your file and file uploading, else reinstall module from a fresh release or submit an issue.') . $error,
       392 => t('Problem when caching imported term. Please first check your file and file uploading, else reinstall module from a fresh release or submit an issue.') . $error,
-
       400 => t('WARNING'),
       402 => t('Unable to import a field term.') . $warning,
       405 => t('Unmanaged option.') . $warning,
@@ -211,7 +210,6 @@ function _taxonomy_csv_message_text($message_code) {
       495 => t('A term id or a term name is missing.') . $warning,
       496 => t('A false term id has been identified.') . $warning,
       499 => t('Warnings have been reported on this line.'),
-
       500 => t('Notice'),
       501 => t('Too many items. Second and next columns will be ignored, as import choice is to ignore them.'),
       510 => t('Line contains empty items. They are ignored.'),
@@ -245,7 +243,6 @@ function _taxonomy_csv_message_text($message_code) {
       565 => t('Some items are empty. Previous items will be used.') . $notice,
       570 => t("Line doesn't contain all needed items.") . $notice,
       580 => t('Be careful. This line has only one term and import choice is to replace existing items. So these items will be removed.'),
-
       600 => t('Info'),
       605 => t('No error in options.'),
       610 => t('New vocabulary has been created.'),
@@ -265,7 +262,6 @@ function _taxonomy_csv_message_text($message_code) {
       697 => t('Command line.'),
       698 => t('Comment line.'),
       699 => t('Items of the line have been successfully imported.'),
-
       700 => t('Debug.'),
       799 => t('No message.'),
     );

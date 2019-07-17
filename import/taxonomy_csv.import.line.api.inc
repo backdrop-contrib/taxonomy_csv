@@ -34,8 +34,8 @@ function taxonomy_csv_line_import($line, $options, $previous_items = array(), $t
   // Define default values.
   $result = array(
     'name' => array(),
-    'tid'  => array(),
-    'msg'  => array(),
+    'tid' => array(),
+    'msg' => array(),
     'terms_count' => $terms_count,
   );
 
@@ -123,18 +123,19 @@ function taxonomy_csv_line_import_flat($line, $options, $terms_count = 0) {
   // Define default values.
   $result = array(
     'name' => array(),
-    'tid'  => array(),
-    'msg'  => array(),
+    'tid' => array(),
+    'msg' => array(),
     'terms_count' => $terms_count,
   );
 
   foreach ($line as $term_name) {
-    $term = new stdClass;
-    $term->name = $term_name;
-    $term->vid = $options['vocabulary']->vid;
-    $term->vocabulary_machine_name = $options['vocabulary']->machine_name;
-    $term->format = $options['filter_format'];
-    $term->language = $options['language'];
+    $term = entity_create('taxonomy_term', array(
+      'name' => $term_name,
+      'vocabulary' => $options['vocabulary']->machine_name,
+      'language' => $options['language'],
+      'description' => NULL,
+      'format' => $options['filter_format'],
+    ));
     // Weight is not set above in order to keep existing one if it exists.
     ++$terms_count;
     if ($options['keep_order']) {
@@ -160,8 +161,8 @@ function taxonomy_csv_line_import_structure($line, $options, $previous_items = a
   // Define default values.
   $result = array(
     'name' => array(),
-    'tid'  => array(),
-    'msg'  => array(),
+    'tid' => array(),
+    'msg' => array(),
     'terms_count' => $terms_count,
   );
 
@@ -205,12 +206,13 @@ function taxonomy_csv_line_import_structure($line, $options, $previous_items = a
       continue;
     }
 
-    $term = new stdClass;
-    $term->name = $line[$c];
-    $term->vid = $options['vocabulary']->vid;
-    $term->vocabulary_machine_name = $options['vocabulary']->machine_name;
-    $term->format = $options['filter_format'];
-    $term->language = $options['language'];
+    $term = entity_create('taxonomy_term', array(
+      'name' => $line[$c],
+      'vocabulary' => $options['vocabulary']->machine_name,
+      'language' => $options['language'],
+      'description' => NULL,
+      'format' => $options['filter_format'],
+    ));
     $term->parent = array($parent_tid => $parent_tid);
     // Weight is not set above in order to keep existing one if it exists.
     ++$terms_count;
@@ -230,7 +232,7 @@ function taxonomy_csv_line_import_structure($line, $options, $previous_items = a
         break;
 
       case TAXONOMY_CSV_FORMAT_POLYHIERARCHY:
-        // Check direct duplicates: in Drupal, a term can't be its parent.
+        // Check direct duplicates: in Backdrop, a term can't be its parent.
         $current_result = ($term->name == $parent_name) ?
           taxonomy_csv_term_import($term, $options['update_or_ignore'], $parent_tid) :
           taxonomy_csv_term_import($term, $options['update_or_ignore'], NULL);
@@ -255,8 +257,8 @@ function taxonomy_csv_line_import_tid($line, $options, $previous_items = array()
   // Define default values.
   $result = array(
     'name' => array(),
-    'tid'  => array(),
-    'msg'  => array(),
+    'tid' => array(),
+    'msg' => array(),
     'terms_count' => $terms_count,
   );
 
@@ -265,16 +267,16 @@ function taxonomy_csv_line_import_tid($line, $options, $previous_items = array()
       continue;
     }
 
-    $term = new stdClass;
+    $term = entity_create('taxonomy_term', array(
+      'name' => $line[$key + 1],
+      'vocabulary' => $options['vocabulary']->machine_name,
+      'language' => $options['language'],
+      'description' => NULL,
+      'format' => $options['filter_format'],
+    ));
     if (is_numeric($term_tid) && $term_tid != 0) {
       $term->tid = $term_tid;
     }
-    $term->name = $line[$key + 1];
-    $term->vid = $options['vocabulary']->vid;
-    $term->vocabulary_machine_name = $options['vocabulary']->machine_name;
-    $term->format = $options['filter_format'];
-    $term->language = $options['language'];
-
     if (($options['import_format'] !== TAXONOMY_CSV_FORMAT_TID_FLAT) && isset($parent_tid)) {
       $term->parent = array($parent_tid => $parent_tid);
     }
@@ -306,17 +308,18 @@ function taxonomy_csv_line_import_fields($line, $options, $previous_items = arra
   // Define default values.
   $result = array(
     'name' => array(),
-    'tid'  => array(),
-    'msg'  => array(),
+    'tid' => array(),
+    'msg' => array(),
     'terms_count' => $terms_count,
   );
 
   // Define a default term.
-  $term = new stdClass;
-  $term->vid = $options['vocabulary']->vid;
-  $term->vocabulary_machine_name = $options['vocabulary']->machine_name;
-  $term->format = $options['filter_format'];
-  $term->language = $options['language'];
+  $term = entity_create('taxonomy_term', array(
+    'vocabulary' => $options['vocabulary']->machine_name,
+    'language' => $options['language'],
+    'description' => NULL,
+    'format' => $options['filter_format'],
+  ));
   // Weight is not set above in order to keep existing one if it exists.
   ++$terms_count;
   if ($options['keep_order']) {
@@ -352,23 +355,19 @@ function taxonomy_csv_line_import_fields($line, $options, $previous_items = arra
     }
 
     if (in_array($field_name, array(
-        'tid',
-        'name',
-        'format',
-        'weight',
-        'language',
-        'i18n_tsid',
-        'guid',
-      ))) {
+      'tid',
+      'name',
+      'format',
+      'weight',
+      'language',
+      'i18n_tsid',
+      'guid',
+    ))) {
       $term->{$field_name} = $line[$key];
     }
-    elseif ($field_name == 'vid') {
-      $term->vid = $line[$key];
-      $term->vocabulary_machine_name = taxonomy_vocabulary_load($line[$key])->machine_name;
-    }
-    elseif ($field_name == 'vocabulary_machine_name') {
-      $term->vocabulary_machine_name = $line[$key];
-      $term->vid = taxonomy_vocabulary_machine_name_load($line[$key])->vid;
+    elseif ($field_name == 'vocabulary') {
+      $term->vocabulary = $line[$key];
+      $term->vocabulary = taxonomy_vocabulary_load($line[$key])->machine_name;
     }
     elseif ($field_name == 'description') {
       $term->description = _taxonomy_csv_set_line_break($line[$key]);
@@ -406,11 +405,12 @@ function taxonomy_csv_line_import_fields($line, $options, $previous_items = arra
     }
     // Else find the parent normally.
     else {
-      $parent_term = new stdClass;
-      $parent_term->name = $value;
-      $parent_term->vid = $term->vid;
-      $parent_term->vocabulary_machine_name = $term->vocabulary_machine_name;
-      $parent_term->language = $term->language;
+      $parent_term = entity_create('taxonomy_term', array(
+        'name' => $value,
+        'vocabulary' => $term->vocabulary,
+        'language' => $term->language,
+        'description' => NULL,
+      ));
       $current_result = taxonomy_csv_term_import($parent_term, $options['update_or_ignore']);
       if (_taxonomy_csv_line_result($result, $current_result, $terms_count)) {
         return $result;
@@ -435,21 +435,20 @@ function taxonomy_csv_line_import_localize($line, $options, $terms_count = 0) {
   // Define default values.
   $result = array(
     'name' => array(),
-    'tid'  => array(),
-    'msg'  => array(),
+    'tid' => array(),
+    'msg' => array(),
     'terms_count' => $terms_count,
   );
 
   // 1. Import main term then store and check result.
-  $term = new stdClass;
+  $term = entity_create('taxonomy_term', array());
   if ($options['translate_by'] == 'name') {
     $term->name = $line[0];
   }
   else {
     $term->tid = $line[0];
   }
-  $term->vid = $options['vocabulary']->vid;
-  $term->vocabulary_machine_name = $options['vocabulary']->machine_name;
+  $term->vocabulary = $options['vocabulary']->machine_name;
   // With this i18n mode, language of main term is always undefined, whatever
   // the vocabulary language is.
   $term->language = 'und';
@@ -491,8 +490,8 @@ function taxonomy_csv_line_import_localize($line, $options, $terms_count = 0) {
     }
 
     if (isset($line[$first_description + $key])
-        && $line[$first_description]
-        && $line[$first_description + $key]
+         && $line[$first_description]
+         && $line[$first_description + $key]
       ) {
       $result_translation = i18n_string_translation_update(
         array('taxonomy', 'term', $current_result['tid'], 'description'),
@@ -519,21 +518,20 @@ function taxonomy_csv_line_import_translate($line, $options, $terms_count = 0) {
   // Define default values.
   $result = array(
     'name' => array(),
-    'tid'  => array(),
-    'msg'  => array(),
+    'tid' => array(),
+    'msg' => array(),
     'terms_count' => $terms_count,
   );
 
   // 1. Prepare main term.
-  $term = new stdClass;
+  $term = entity_create('taxonomy_term', array());
   if ($options['translate_by'] == 'name') {
     $term->name = $line[0];
   }
   else {
     $term->tid = $line[0];
   }
-  $term->vid = $options['vocabulary']->vid;
-  $term->vocabulary_machine_name = $options['vocabulary']->machine_name;
+  $term->vocabulary = $options['vocabulary']->machine_name;
   $term->format = $options['filter_format'];
   $term->language = $options['translate_languages'][0];
   // Weight is not set above in order to keep existing one if it exists.
@@ -568,7 +566,7 @@ function taxonomy_csv_line_import_translate($line, $options, $terms_count = 0) {
 
     // Don't import an empty item.
     if (isset($line[$key]) && $line[$key]) {
-      $translated_term = new stdClass;
+    $translated_term = entity_create('taxonomy_term', array());
       if (isset($existing_terms[$language])) {
         switch ($options['update_or_ignore']) {
           case TAXONOMY_CSV_EXISTING_UPDATE:
@@ -584,8 +582,7 @@ function taxonomy_csv_line_import_translate($line, $options, $terms_count = 0) {
 
       // 4. Complete or create the translated term, then import it.
       $translated_term->name = $line[$key];
-      $translated_term->vid  = $options['vocabulary']->vid;
-      $translated_term->vocabulary_machine_name = $options['vocabulary']->machine_name;
+      $translated_term->vocabulary = $options['vocabulary']->machine_name;
       $translated_term->format = $options['filter_format'];
       $translated_term->language = $language;
 
@@ -633,7 +630,7 @@ function _taxonomy_csv_line_result(&$result, $current_result, $terms_count) {
  *   - 'name'        => term name string,
  *   - 'tid'         => term id,
  *   and eventually, matching options:
- *   - 'vid'         => the vocabulary id where to import,
+ *   - 'vocabulary'         => the vocabulary id where to import,
  *   - 'description' => description string,
  *   - 'format'      => the filter format of the description,
  *   - 'language'    => the language id of the term,
@@ -657,15 +654,15 @@ function taxonomy_csv_term_import($term, $update_or_ignore = TAXONOMY_CSV_EXISTI
 
   // Basic check to avoid notices when "Check lines" option is disabled.
   if ((!isset($term->name) && !isset($term->tid))
-      || (isset($term->name) && !$term->name)
-      || (isset($term->tid) && !$term->tid)
+       || (isset($term->name) && !$term->name)
+       || (isset($term->tid) && !$term->tid)
     ) {
     $term->tid = 0;
     $messages[] = 432; // Warning line contains an empty term.
     return array(
       'name' => '',
-      'tid'  => 0,
-      'msg'  => $messages,
+      'tid' => 0,
+      'msg' => $messages,
     );
   }
 
@@ -676,7 +673,7 @@ function taxonomy_csv_term_import($term, $update_or_ignore = TAXONOMY_CSV_EXISTI
         // Update only fields that are set. Other fields are not changed.
         foreach ($term as $key => $value) {
           // Arrays: merge existing and new items.
-          // Only used for parent in standard taxonomy of Drupal 7.
+          // Only used for parent in standard taxonomy of Backdrop 7.
           if (is_array($value) && isset($existing_term->{$key})) {
             $term->{$key} = array_unique(array_merge($existing_term->{$key}, $value));
           }
@@ -729,8 +726,8 @@ function taxonomy_csv_term_import($term, $update_or_ignore = TAXONOMY_CSV_EXISTI
     if (_taxonomy_csv_worst_message($messages) < TAXONOMY_CSV_PROCESS_NOTICE) {
       return array(
         'name' => '',
-        'tid'  => 0,
-        'msg'  => $messages,
+        'tid' => 0,
+        'msg' => $messages,
       );
     }
   }
@@ -743,8 +740,8 @@ function taxonomy_csv_term_import($term, $update_or_ignore = TAXONOMY_CSV_EXISTI
 
   return array(
     'name' => $term->name,
-    'tid'  => $term->tid,
-    'msg'  => $messages,
+    'tid' => $term->tid,
+    'msg' => $messages,
   );
 }
 
@@ -771,9 +768,9 @@ function _taxonomy_csv_term_field_import($term, $update_or_ignore = TAXONOMY_CSV
         case 'taxonomy_term_reference':
           // Get machine name of referenced vocabulary.
           $referenced_vocabulary = $field['settings']['allowed_values'][0]['vocabulary'];
-          $referenced_vocabulary = taxonomy_vocabulary_machine_name_load($referenced_vocabulary);
+          $referenced_vocabulary = taxonomy_vocabulary_load($referenced_vocabulary);
 
-          $referenced_term = new stdClass;
+          $referenced_term = entity_create('taxonomy_term', array());
           // Presume that item is a tid if it's a number.
           if (is_numeric($value)) {
             if (!$value) {
@@ -786,8 +783,7 @@ function _taxonomy_csv_term_field_import($term, $update_or_ignore = TAXONOMY_CSV
           // Else find the parent normally.
           else {
             $referenced_term->name = $value;
-            $referenced_term->vid = $referenced_vocabulary->vid;
-            $referenced_term->vocabulary_machine_name = $referenced_vocabulary->machine_name;
+            $referenced_term->vocabulary = $referenced_vocabulary->machine_name;
             // @todo Use undefined language or term language?
             $referenced_term->language = $term->language;
             // @todo Increase term count.
@@ -804,11 +800,10 @@ function _taxonomy_csv_term_field_import($term, $update_or_ignore = TAXONOMY_CSV
           );
           switch ($instance['widget']['type']) {
             case 'taxonomy_autocomplete':
-              // Need tid, vid, name and vocabulary_machine_name (use cache).
+              // Need tid, name and vocabulary (use cache).
               $referenced_term = taxonomy_term_load($referenced_term->tid);
               $value['name'] = $referenced_term->name;
-              $value['vid'] = $referenced_term->vid;
-              $value['vocabulary_machine_name'] = $referenced_term->machine_name;
+              $value['vocabulary'] = $referenced_term->machine_name;
               break;
           }
 
@@ -840,7 +835,7 @@ function _taxonomy_csv_term_field_import($term, $update_or_ignore = TAXONOMY_CSV
           if (file_exists($source)) {
             $filepath = file_unmanaged_copy($source, $destination, FILE_EXISTS_RENAME);
             if ($filepath !== FALSE) {
-              $file = new stdClass();
+              $file = new File();
               $file->uid = 1;
               $file->filename = basename($filepath);
               $file->uri = $filepath;
@@ -855,8 +850,8 @@ function _taxonomy_csv_term_field_import($term, $update_or_ignore = TAXONOMY_CSV
               if (is_array($term->{$field_name}) && !empty($term->{$field_name})) {
                 foreach ($term->{$field_name} as $field_language => &$delta_array) {
                   $delta_array[] = array(
-                    'fid'         => $file->fid,
-                    'display'     => 1,
+                    'fid' => $file->fid,
+                    'display' => 1,
                     'description' => '',
                   );
                 }
@@ -864,8 +859,8 @@ function _taxonomy_csv_term_field_import($term, $update_or_ignore = TAXONOMY_CSV
               // Else complete term directly.
               else {
                 $term->{$field_name}[$language][0] = array(
-                  'fid'         => $file->fid,
-                  'display'     => 1,
+                  'fid' => $file->fid,
+                  'display' => 1,
                   'description' => '',
                 );
               }
@@ -878,18 +873,18 @@ function _taxonomy_csv_term_field_import($term, $update_or_ignore = TAXONOMY_CSV
           break;
 
         case 'list_boolean':
-          $value = (($value == '0') || (drupal_strtolower($value) == 'false')) ? 0 : 1;
+          $value = (($value == '0') || (backdrop_strtolower($value) == 'false')) ? 0 : 1;
           $term->{$field_name}[$language][0] = array('value' => $value);
           break;
 
-        // Managed by default:
-        // case 'number_decimal':
-        // case 'number_integer':
-        // case 'number_float':
-        // case 'text':
-        // case 'text_long':
-        // case 'text_with_summary': // ?
-        // Currently doesn't manage default value.
+          // Managed by default:
+          // case 'number_decimal':
+          // case 'number_integer':
+          // case 'number_float':
+          // case 'text':
+          // case 'text_long':
+          // case 'text_with_summary': // ?
+          // Currently doesn't manage default value.
         default:
           switch ($field['type']) {
             case 'number_decimal':

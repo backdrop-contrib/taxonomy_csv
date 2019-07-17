@@ -8,7 +8,7 @@
 /**
  * Invoke associated include file.
  */
-$module_dir = drupal_get_path('module', 'taxonomy_csv');
+$module_dir = backdrop_get_path('module', 'taxonomy_csv');
 require_once($module_dir . '/taxonomy_csv.api.inc');
 require_once($module_dir . '/import/taxonomy_csv.import.line.api.inc');
 require_once($module_dir . '/taxonomy_csv.vocabulary.api.inc');
@@ -39,7 +39,7 @@ require_once($module_dir . '/taxonomy_csv.term.api.inc');
  *   - check_utf8     : boolean. check or not (default) utf8 format
  *   - locale_custom  : string. specific locale of imported file
  *   - vocabulary_target: 'autocreate' (default), 'duplicate' or 'existing'
- *   - vocabulary_id  : vid or machine_name of the vocabulary to import into
+ *   - vocabulary_id  : machine_name of the vocabulary to import into
  *   - i18n_mode      : integer. internationalization mode of autocreated
  *                      vocabulary (default: 0 (I18N_MODE_NONE))
  *   - vocabulary_language: string. language code of autocreated vocabulary
@@ -110,8 +110,8 @@ function _taxonomy_csv_import_input_preload(&$options) {
       'FILE_EXISTS_RENAME');
     $options['file'] = (object) array(
       'filename' => basename($filename),
-      'filepath' => drupal_realpath($filename),
-      'filesize' => filesize($filename)
+      'filepath' => backdrop_realpath($filename),
+      'filesize' => filesize($filename),
     );
   }
   // Url import.
@@ -122,7 +122,7 @@ function _taxonomy_csv_import_input_preload(&$options) {
       'FILE_EXISTS_RENAME');
     $options['file'] = (object) array(
       'filename' => basename($filename),
-      'filepath' => drupal_realpath($filename),
+      'filepath' => backdrop_realpath($filename),
       'filesize' => filesize($filename),
     );
   }
@@ -132,7 +132,7 @@ function _taxonomy_csv_import_input_preload(&$options) {
     $file = file_save_upload($options['path'], array('file_validate_extensions' => array('csv txt')));
     // fopen and fseek need a real path.
     if (!empty($file)) {
-      $file->filepath = drupal_realpath($file->uri);
+      $file->filepath = backdrop_realpath($file->uri);
       if (!empty($file->filepath)) {
         $options['file'] = $file;
       }
@@ -145,7 +145,7 @@ function _taxonomy_csv_import_input_preload(&$options) {
 
   // Check file.
   if (!is_object($options['file'])
-      || !$options['file']->filesize) {
+       || !$options['file']->filesize) {
     $messages['file'] = t('Import failed.') . '<br />'
       . t('- Check size of your input : it cannot be null.') . '<br />'
       . t('- Check your server configuration and your rights : server needs permission to access and to read file.') . '<br />'
@@ -191,7 +191,7 @@ function _taxonomy_csv_import_clean_utf8(&$file, $check_utf8 = TRUE) {
     }
     $enc = mb_detect_encoding($content, 'UTF-8, ISO-8859-1, ISO-8859-15', TRUE);
     if ($enc != 'UTF-8') {
-      $content = drupal_convert_to_utf8($content, $enc);
+      $content = backdrop_convert_to_utf8($content, $enc);
       if (!$content) {
         $messages[] = 320; // Error convert.
         return FALSE;
@@ -214,7 +214,7 @@ function _taxonomy_csv_import_clean_utf8(&$file, $check_utf8 = TRUE) {
       'FILE_EXISTS_REPLACE');
     $file = (object) array(
       'filename' => basename($filename),
-      'filepath' => drupal_realpath($filename),
+      'filepath' => backdrop_realpath($filename),
       'filesize' => filesize($filename),
     );
   }
@@ -235,7 +235,7 @@ function _taxonomy_csv_import_clean_utf8(&$file, $check_utf8 = TRUE) {
  *   FALSE if file can't be updated with a true tab (currently not used).
  */
 function _taxonomy_csv_import_soft_tab(&$file, $delimiter) {
-  if (drupal_strlen($delimiter) > 1) {
+  if (backdrop_strlen($delimiter) > 1) {
     $content = file_get_contents($file->filepath, TRUE);
 
     // Switch soft tab delimiter with a true tab.
@@ -248,7 +248,7 @@ function _taxonomy_csv_import_soft_tab(&$file, $delimiter) {
       'FILE_EXISTS_REPLACE');
     $file = (object) array(
       'filename' => basename($filename),
-      'filepath' => drupal_realpath($filename),
+      'filepath' => backdrop_realpath($filename),
       'filesize' => filesize($filename),
     );
   }
@@ -270,7 +270,7 @@ function _taxonomy_csv_import_soft_tab(&$file, $delimiter) {
 function taxonomy_csv_vocabulary_import($options) {
   // Check options and return array of messages in case of errors.
   if ($options['check_options']) {
-    $module_dir = drupal_get_path('module', 'taxonomy_csv');
+    $module_dir = backdrop_get_path('module', 'taxonomy_csv');
     require_once($module_dir . '/import/taxonomy_csv.import.admin.inc');
     $result = _taxonomy_csv_import_check_options($options);
     if (count($result)) {
@@ -280,7 +280,7 @@ function taxonomy_csv_vocabulary_import($options) {
 
   // Complete $options.
   // Switch soft tab delimiter with a true one if needed.
-  if (drupal_strlen($options['delimiter']) > 1) {
+  if (backdrop_strlen($options['delimiter']) > 1) {
     $result = _taxonomy_csv_import_soft_tab($options['file'], $options['delimiter']);
     $options['delimiter'] = "\t";
   }
@@ -312,20 +312,22 @@ function taxonomy_csv_vocabulary_import($options) {
   // Prepare import batch.
   // Use a one step batch in order to avoid memory crash in case of big import.
   $batch = array(
-    'title'            => ($options['source_choice'] == 'text') ?
+    'title' => ($options['source_choice'] == 'text') ?
         t('Importing !total_lines lines from text...', array(
-          '!total_lines' => $options['total_lines'])) :
+      '!total_lines' => $options['total_lines'],
+    )) :
         t('Importing !total_lines lines from CSV file "%filename"...', array(
-          '%filename'    => $options['vocabulary']->name,
-          '!total_lines' => $options['total_lines'])),
-    'init_message'     => t('Starting uploading of datas...') . '<br />'
+      '%filename' => $options['vocabulary']->name,
+      '!total_lines' => $options['total_lines'],
+    )),
+    'init_message' => t('Starting uploading of datas...') . '<br />'
       . t('Wait some seconds for pre-processing...'),
     'progress_message' => '',
-    'error_message'    => t('An error occurred during the import.'),
-    'finished'         => '_taxonomy_csv_vocabulary_import_finished',
-    'file'             => drupal_get_path('module', 'taxonomy_csv') . '/import/taxonomy_csv.import.api.inc',
-    'progressive'      => TRUE,
-    'operations'       => array(
+    'error_message' => t('An error occurred during the import.'),
+    'finished' => '_taxonomy_csv_vocabulary_import_finished',
+    'file' => backdrop_get_path('module', 'taxonomy_csv') . '/import/taxonomy_csv.import.api.inc',
+    'progressive' => TRUE,
+    'operations' => array(
       0 => array('_taxonomy_csv_vocabulary_import_process', array($options)),
     ),
   );
@@ -366,7 +368,7 @@ function _taxonomy_csv_vocabulary_import_process($options, &$context) {
     $context['sandbox']['handle_pointer'] = 0;
     $context['sandbox']['previous_items'] = array(
       'name' => array(),
-      'tid'  => array(),
+      'tid' => array(),
     );
   }
   elseif (!is_resource($context['results'][0]['handle'])) {
@@ -410,19 +412,19 @@ function _taxonomy_csv_vocabulary_import_process($options, &$context) {
     if ($worst_message > $worst_message_new) {
       $worst_message = $worst_message_new;
       $worst_line    = $line_number;
-    };
+    }
 
     // Remember only wanted messages.
     if (($options['result_stats'] || $options['result_terms'])
-        && $result['tid']
+         && $result['tid']
       ) {
       // Some formats use $result to save other infos, so it needs to be cleaned
       // before to be saved.
       if (in_array($options['import_format'], array(
-          TAXONOMY_CSV_FORMAT_STRUCTURE,
-          TAXONOMY_CSV_FORMAT_TREE,
-          TAXONOMY_CSV_FORMAT_POLYHIERARCHY,
-        ))) {
+        TAXONOMY_CSV_FORMAT_STRUCTURE,
+        TAXONOMY_CSV_FORMAT_TREE,
+        TAXONOMY_CSV_FORMAT_POLYHIERARCHY,
+      ))) {
         // Don't remember previous previous items.
         $context['results'][0]['imported_terms'][0] = array_values($result['tid']);
       }
@@ -434,7 +436,7 @@ function _taxonomy_csv_vocabulary_import_process($options, &$context) {
       $list_messages = array();
       switch ($options['result_level']) {
         // case 'first':
-        //   break;
+//   break;
         case 'warnings':
           foreach ($result['msg'] as $msg) {
             if ($msg < TAXONOMY_CSV_PROCESS_NOTICE) {
@@ -462,12 +464,12 @@ function _taxonomy_csv_vocabulary_import_process($options, &$context) {
     $context['message'] = t('Line !line_number of !total_lines processed: !line', array(
       '!line_number' => $line_number,
       '!total_lines' => $options['total_lines'],
-      '!line'        => '"' . implode('", "', $line) . '"',
+      '!line' => '"' . implode('", "', $line) . '"',
     ));
 
     // Check worst message of imported lines and update progress.
     if ($worst_message >= TAXONOMY_CSV_PROCESS_WARNING) {
-      // Count should be <= 0.99 to avoid batch stop before end (Drupal 7 bug).
+      // Count should be <= 0.99 to avoid batch stop before end (Backdrop 7 bug).
       $context['finished'] = floor($line_number / $options['total_lines'] * 100) / 100;
     }
     else {
@@ -500,25 +502,25 @@ function _taxonomy_csv_vocabulary_import_finished($success, $results, $operation
 
   // Invoke import stats file if user wants to display texts for result.
   if ($options['result_display']) {
-    $module_dir = drupal_get_path('module', 'taxonomy_csv');
+    $module_dir = backdrop_get_path('module', 'taxonomy_csv');
     require_once("$module_dir/import/taxonomy_csv.import.result.inc");
   }
 
   // Short summary information is different if batch succeeded or not.
   if ($success) {
     $variables = array(
-      '!line'        => $options['worst_line'],
+      '!line' => $options['worst_line'],
       '!total_lines' => $options['total_lines'],
-      '!worst_msg'   => $options['result_display'] ?
+      '!worst_msg' => $options['result_display'] ?
           _taxonomy_csv_message_text($options['worst_message']) :
           t('Message code') . ' = ' . $options['worst_message'],
     );
     $messages = array(
-      WATCHDOG_DEBUG   => t('No error, warnings or notices have been reported during import process of !total_lines lines.', $variables),
-      WATCHDOG_INFO    => t('No error, warnings or notices have been reported during import process of !total_lines lines.', $variables),
-      WATCHDOG_NOTICE  => t('Notices have been reported during import process (bad formatted or empty lines). !total_lines lines processed. First notice occurred on line !line [!worst_msg].', $variables),
+      WATCHDOG_DEBUG => t('No error, warnings or notices have been reported during import process of !total_lines lines.', $variables),
+      WATCHDOG_INFO => t('No error, warnings or notices have been reported during import process of !total_lines lines.', $variables),
+      WATCHDOG_NOTICE => t('Notices have been reported during import process (bad formatted or empty lines). !total_lines lines processed. First notice occurred on line !line [!worst_msg].', $variables),
       WATCHDOG_WARNING => t('Warnings have been reported during import process (bad formatted lines). !total_lines lines processed. First line skipped is line !line [!worst_msg].', $variables),
-      WATCHDOG_ERROR   => t('Errors have been reported during import process. Process failed at line !line of a total of !total_lines [!worst_msg].', $variables),
+      WATCHDOG_ERROR => t('Errors have been reported during import process. Process failed at line !line of a total of !total_lines [!worst_msg].', $variables),
     );
     $worst_level = intval($options['worst_message'] / 100);
     $message = isset($messages[$worst_level]) ?
@@ -527,12 +529,12 @@ function _taxonomy_csv_vocabulary_import_finished($success, $results, $operation
   }
   else {
     $message = t('Importation failed. Import process was successful until the line !line_count of a total of !total_lines. You can first check your file on this line and check file uploading.', array(
-        '!line_count'  => $options['current_line'],
-        '!total_lines' => $options['total_lines'],
-      )) . '<br />'
+      '!line_count' => $options['current_line'],
+      '!total_lines' => $options['total_lines'],
+    )) . '<br />'
       . t('This issue is related to import process or to size import and probably not to content. You can disable hierarchy check and reduce log level. You can divide your import file into lighter files. You can increase php and sql memory. If problem does not disappear, you can reinstall module from a fresh release or submit an issue on <a href="!link">Taxonomy CSV import/export module</a>.', array(
-        '!link' => url('http://drupal.org/project/issues/taxonomy_csv/'),
-      ));
+      '!link' => url('http://drupal.org/project/issues/taxonomy_csv/'),
+    ));
     $worst_level = WATCHDOG_ERROR;
   }
 
@@ -578,7 +580,7 @@ function _taxonomy_csv_import_vocabulary_prepare(&$options, $check = TRUE) {
   switch ($options['vocabulary_target']) {
     case 'autocreate':
       $vocabulary = taxonomy_csv_vocabulary_create($name);
-      $options['vocabulary_id'] = $vocabulary->vid;
+      $options['vocabulary_id'] = $vocabulary->machine_name;
 
       // Update vocabulary with language options.
       if (module_exists('i18n_taxonomy')) {
@@ -592,7 +594,7 @@ function _taxonomy_csv_import_vocabulary_prepare(&$options, $check = TRUE) {
       $vocabulary = taxonomy_vocabulary_load($options['vocabulary_id']);
       // Optional deletion of terms.
       if ($options['delete_terms']) {
-        $tids = taxonomy_csv_vocabulary_get_tids($vocabulary->vid);
+        $tids = taxonomy_csv_vocabulary_get_tids($vocabulary->machine_name);
         $result = taxonomy_csv_term_delete_multiple($tids);
       }
       break;
@@ -614,20 +616,20 @@ function _taxonomy_csv_import_vocabulary_prepare(&$options, $check = TRUE) {
     // Set default format to items of the custom format.
     foreach ($fields_custom as $key => $value) {
       if (in_array($key, array(
-          'name',
-          'tid',
-          'tree',
-          'p',
-          'vid',
-          'description',
-          'format',
-          'weight',
-          'language',
-          'i18n_tsid',
-          'guid',
-          'vocabulary_machine_name',
-          'parent',
-        ))) {
+        'name',
+        'tid',
+        'tree',
+        'p',
+        'machine_name',
+        'description',
+        'format',
+        'weight',
+        'language',
+        'i18n_tsid',
+        'guid',
+        'vocabulary',
+        'parent',
+      ))) {
         unset($fields_custom[$key]);
       }
       else {
@@ -639,10 +641,10 @@ function _taxonomy_csv_import_vocabulary_prepare(&$options, $check = TRUE) {
     foreach ($options['fields_custom'] as $key => $value) {
       $field_name = (strpos($value, '|') === FALSE) ?
           $value :
-          trim(drupal_substr($value, 0, strpos($value, '|')));
+          trim(backdrop_substr($value, 0, strpos($value, '|')));
       $field_type = (strpos($value, '|') === FALSE) ?
           'text' :
-          trim(drupal_substr($value, strpos($value, '|') + 1));
+          trim(backdrop_substr($value, strpos($value, '|') + 1));
       $fields_custom[$field_name] = $field_type;
     }
 
@@ -650,28 +652,30 @@ function _taxonomy_csv_import_vocabulary_prepare(&$options, $check = TRUE) {
     foreach ($fields_custom as $field_name => $field_type) {
       // Set default field type.
       $field = array(
-        'field_name'   => $field_name,
-        'label'        => $field_name,
-        'description'  => '',
-        'type'         => $field_type,
-        'cardinality'  => FIELD_CARDINALITY_UNLIMITED,
-          // Currently, translatable term reference fields are not supported.
+        'field_name' => $field_name,
+        'label' => $field_name,
+        'description' => '',
+        'type' => $field_type,
+        'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+        // Currently, translatable term reference fields are not supported.
         'translatable' => FALSE,
       );
       switch ($field_type) {
         case 'taxonomy_term_reference':
           $field += array(
-            'settings'     => array('allowed_values' => array(0 => array(
-                'vocabulary' => $vocabulary->machine_name,
-                'parent'     => 0,
-          ))));
+            'settings' => array('allowed_values' => array(0 => array(
+                  'vocabulary' => $vocabulary->machine_name,
+                  'parent' => 0,
+                ))),
+          );
           break;
         case 'list_boolean':
           $field += array(
-            'settings'     => array('allowed_values' => array(
+            'settings' => array('allowed_values' => array(
                 '0' => 'FALSE',
                 '1' => 'TRUE',
-          )));
+              )),
+          );
           break;
       }
       $result = taxonomy_csv_vocabulary_field_attach($vocabulary->machine_name, $field);
@@ -716,8 +720,8 @@ function taxonomy_csv_line_import_process($line, $options, $previous_items = arr
   $items_messages = array();
   $result = array(
     'name' => array(),
-    'tid'  => array(),
-    'msg'  => array(),
+    'tid' => array(),
+    'msg' => array(),
     'terms_count' => $terms_count,
   );
 
@@ -729,7 +733,7 @@ function taxonomy_csv_line_import_process($line, $options, $previous_items = arr
 
     // 2. Check items of line if no error occurs and if line is not empty.
     if ((_taxonomy_csv_worst_message($line_messages) >= TAXONOMY_CSV_PROCESS_NOTICE)
-        && ((count($line_messages) == 0) || ($line_messages[0] != 696))) {
+         && ((count($line_messages) == 0) || ($line_messages[0] != 696))) {
       $line = _taxonomy_csv_line_import_check(
         $line,
         $options,
@@ -795,14 +799,14 @@ function _taxonomy_csv_line_import_clean($line, &$messages = array()) {
   }
   // Example: " " or unrecognized line.
   elseif ((count($line) == 0)
-      || empty($line)
-      || ((count($line) == 1) && (trim($line[0]) == ''))) {
+       || empty($line)
+       || ((count($line) == 1) && (trim($line[0]) == ''))) {
     $messages[] = 696; // Info empty line.
   }
   else {
     $cleaned_line = $line;
 
-    if (!drupal_validate_utf8(implode(',', $line))) {
+    if (!backdrop_validate_utf8(implode(',', $line))) {
       $messages[] = 321; // Error validate.
     }
 
@@ -859,7 +863,7 @@ function _taxonomy_csv_line_import_check($line, $options, $previous_items = arra
         $messages[] = 531; // Notice duplicates, which are removed.
       }
       foreach ($checked_items as $name) {
-        if (drupal_strlen($name) > 255) {
+        if (backdrop_strlen($name) > 255) {
           $messages[] = 454; // Warning too long.
           break;
         }
@@ -897,7 +901,7 @@ function _taxonomy_csv_line_import_check($line, $options, $previous_items = arra
         $checked_items = array_merge(array_fill(0, $first_non_empty, ''), $imported_items);
       }
       foreach ($checked_items as $name) {
-        if (drupal_strlen($name) > 255) {
+        if (backdrop_strlen($name) > 255) {
           $messages[] = 454; // Warning too long.
           break;
         }
@@ -918,7 +922,7 @@ function _taxonomy_csv_line_import_check($line, $options, $previous_items = arra
       }
       $checked_items = $line;
       foreach ($checked_items as $name) {
-        if (drupal_strlen($name) > 255) {
+        if (backdrop_strlen($name) > 255) {
           $messages[] = 454; // Warning too long.
           break;
         }

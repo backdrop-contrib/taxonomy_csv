@@ -14,15 +14,15 @@
  * Need to maintain a specific function and a direct query, because
  * taxonomy_term_load_multiple doesn't manage parents and duplicates.
  * db_query() is prefered, because it's four times faster than db_select(),
- * EntityFieldQuery and taxonomy_get_term_by_name() (these last two don't manage
+ * EntityFieldQuery and taxonomy_term_load_multiple_by_name() (these last two don't manage
  * parents'). Anyway terms are loaded to get all fields, specialy parents.
  *
  * @param $term
  *   The term object to find. It's not necessarily a standard term object. It's
- *   an object which needs only a name and eventually a vid, a parent id and a
+ *   an object which needs only a name and eventually a vocabulary, a parent id and a
  *   language. Of course, if tid is set, the found term is the existing one.
  * @param $all_vocabularies
- *   (Optional) Boolean. Search in all vocabularies or only in $term->vid
+ *   (Optional) Boolean. Search in all vocabularies or only in $term->vocabulary
  *   vocabulary (default), which need to be set.
  * @param $parent_tid
  *   (Optional) The direct parent term id where to restrict search.
@@ -47,7 +47,7 @@ function taxonomy_csv_term_find($term, $all_vocabularies = FALSE, $parent_tid = 
   }
 
   if (isset($term->name)) {
-    $name = drupal_strtolower(trim($term->name));
+    $name = backdrop_strtolower(trim($term->name));
 
     // Only term id is selected, because taxonomy_term_load is used next in
     // order to take advantage of taxonomy cache.
@@ -56,10 +56,10 @@ function taxonomy_csv_term_find($term, $all_vocabularies = FALSE, $parent_tid = 
     $query->innerJoin('taxonomy_term_hierarchy', 'h', 't.tid = h.tid');
     $query->where('LOWER(t.name) = :name', array(':name' => $name));
 
-    if (isset($term->vid)
-        && $term->vid
-        && !$all_vocabularies) {
-      $query->condition('t.vid', $term->vid);
+    if (isset($term->vocabulary)
+         && $term->vocabulary
+         && !$all_vocabularies) {
+      $query->condition('t.vocabulary', $term->vocabulary);
     }
 
     if ($flag_i18n && isset($term->language)) {
@@ -88,15 +88,15 @@ function taxonomy_csv_term_find($term, $all_vocabularies = FALSE, $parent_tid = 
  * Find duplicate terms in a vocabulary or in all vocabularies.
  *
  * @todo
- * Use taxonomy_term_load_multiple or regular Drupal 7 query.
+ * Use taxonomy_term_load_multiple or regular Backdrop 7 query.
  *
- * @param $vid
+ * @param $vocabulary
  *  (Optional) Vocabulary to check in.
  *
  * @return
  *  An array of term names, indexed by tid.
  */
-function taxonomy_csv_term_find_duplicate($vid = 0) {
+function taxonomy_csv_term_find_duplicate($vocabulary = 0) {
   $terms = array();
 
   $sql = '
@@ -108,9 +108,9 @@ function taxonomy_csv_term_find_duplicate($vid = 0) {
 
   $args = array();
 
-  if ($vid) {
-    $sql .= ' AND t1.vid = :vid AND t2.vid = :vid ';
-    $args[':vid'] = $vid;
+  if ($vocabulary) {
+    $sql .= ' AND t1.vocabulary = :vocabulary AND t2.vocabulary = :vocabulary ';
+    $args[':vocabulary'] = $vocabulary;
   }
 
   $sql .= ' ORDER BY t1.tid ASC ';
@@ -124,7 +124,7 @@ function taxonomy_csv_term_find_duplicate($vid = 0) {
  * Return the first path to the root of a term.
  *
  * @note
- *   Drupal and taxonomy_csv use 'parent' property, but taxonomy_get_tree() uses
+ *   Backdrop and taxonomy_csv use 'parent' property, but taxonomy_get_tree() uses
  *   'parents'.
  *
  * @param $term
@@ -153,9 +153,9 @@ function taxonomy_csv_term_get_first_path($term, &$tree) {
   $i = 0;
   while ($i < 100
       // A term root has no parent.
-      && isset($term->parent)
-      && !empty($term->parent)
-      && $term->parent[0] <> 0
+       && isset($term->parent)
+       && !empty($term->parent)
+       && $term->parent[0] <> 0
     ) {
     $tid = $term->parent[0];
     if ($tid === 0) {

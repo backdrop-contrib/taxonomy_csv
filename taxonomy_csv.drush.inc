@@ -17,31 +17,31 @@ function taxonomy_csv_drush_command() {
     'description' => 'Import taxonomies and hierarchical structures with CSV file.',
     'examples' => array(
       'drush taxocsv-import my_file flat' => 'Import my_file using the default settings.',
-      'drush taxocsv-import my_file tree --keep_order --delimiter=";" --check_line --vocabulary_target=existing --vocabulary_id=3 --update_or_ignore=update --result_terms' => 'Import my_file as a tree structure into vocabulary with vid 2, a semicolon for delimiter and default settings for other options, and display imported terms after process.',
+      'drush taxocsv-import my_file tree --keep_order --delimiter=";" --check_line --vocabulary_target=existing --vocabulary_id=3 --update_or_ignore=update --result_terms' => 'Import my_file as a tree structure into vocabulary with machine_name 2, a semicolon for delimiter and default settings for other options, and display imported terms after process.',
     ),
     'arguments' => array(
-      'file_path'     => 'Required. The full path or url to CSV file to import',
+      'file_path' => 'Required. The full path or url to CSV file to import',
       'import_format' => "Optional. CSV format: 'flat' (default), 'tree', 'polyhierarchy', 'fields', 'translate', 'tid_flat', 'tid_tree', 'tid_polyhierarchy'",
     ),
     'options' => array(
       'fields_format' => "List of comma separated fields (default: 'name')",
-      'translate_by'  => "First item ('name' or 'tid') of a translation import (default: 'name')",
+      'translate_by' => "First item ('name' or 'tid') of a translation import (default: 'name')",
       'translate_languages' => "List of comma separated languages of terms (default: '')",
-      'keep_order'    => 'Keep order of imported terms',
-      'delimiter'     => 'CSV delimiter (default: ",")',
-      'enclosure'     => "CSV enclosure (default: none or '\"')",
+      'keep_order' => 'Keep order of imported terms',
+      'delimiter' => 'CSV delimiter (default: ",")',
+      'enclosure' => "CSV enclosure (default: none or '\"')",
       'filter_format' => 'Default format of the description (default: "plain_text")',
       'filter_format_custom' => 'Default format of custom fields (default: "none", as fixed plain text)',
-      'language'      => 'Default language of terms (default: "und" (undefined))',
-      'check_line'    => 'Check format of lines',
-      'check_utf8'    => 'Check utf8 format',
+      'language' => 'Default language of terms (default: "und" (undefined))',
+      'check_line' => 'Check format of lines',
+      'check_utf8' => 'Check utf8 format',
       'locale_custom' => 'Specific locale of imported file',
       'vocabulary_target' => "'autocreate' (default) or 'existing' (default if a vocabulary_id is set)",
-      'vocabulary_id' => 'vid or machine_name of the vocabulary to import into',
-      'i18n_mode'     => 'Internationalization mode of autocreated voc (default: 0 (none))',
+      'vocabulary_id' => 'machine_name of the vocabulary to import into',
+      'i18n_mode' => 'Internationalization mode of autocreated voc (default: 0 (none))',
       'vocabulary_language' => 'Language of autocreated voc (default: "und" (undefined))',
       'fields_custom' => 'Custom comma separated fields to add or create',
-      'delete_terms'  => 'Delete all terms before import',
+      'delete_terms' => 'Delete all terms before import',
       'check_hierarchy' => 'Check vocabulary hierarchy',
       'set_hierarchy' => "If hierarchy isn't checked, set it (0, 1 or 2 (default))",
       'update_or_ignore' => "What to do with existing items: 'update' (default) or 'ignore'",
@@ -49,7 +49,7 @@ function taxonomy_csv_drush_command() {
       'result_stats' => 'Display import stats',
       'result_terms' => 'Display list of imported terms',
       'result_level' => "Level of displayed messages: 'first' (default), 'warnings', 'notices' or 'infos'",
-      'result_type'  => "Group infos 'by_message' (default) or 'by_line'",
+      'result_type' => "Group infos 'by_message' (default) or 'by_line'",
     ),
   );
 
@@ -58,20 +58,20 @@ function taxonomy_csv_drush_command() {
     'callback' => 'drush_taxonomy_csv_export',
     'description' => 'Export terms and properties to a CSV file.',
     'examples' => array(
-      'drush taxocsv-export 2 flat' => "Export all terms names of the vocabulary with vid 2, using the default settings.",
-      'drush taxocsv-export 2 tree --delimiter=";" --order=name' => 'Export vocabulary with vid 2 as a CSV tree structure ordered by name, with a semicolon for delimiter, and default settings for other options.',
+      'drush taxocsv-export 2 flat' => "Export all terms names of the vocabulary with machine_name 2, using the default settings.",
+      'drush taxocsv-export 2 tree --delimiter=";" --order=name' => 'Export vocabulary with machine_name 2 as a CSV tree structure ordered by name, with a semicolon for delimiter, and default settings for other options.',
     ),
     'arguments' => array(
-      'vocabulary_id' => 'Required. vid or machine_name of the vocabulary to export (0 means all)',
+      'vocabulary_id' => 'Required. machine_name of the vocabulary to export (0 means all)',
       'export_format' => "Optional. CSV format: 'flat' (default), 'flat_tid', 'tid_flat', 'tree', 'tid_tree', 'fields', 'tree_fields', 'translate'",
-      'file_path'     => "Optional. Full path or filename of exported csv file (default: [current directory]/taxocsv.csv)",
+      'file_path' => "Optional. Full path or filename of exported csv file (default: [current directory]/taxocsv.csv)",
     ),
     'options' => array(
       'fields_format' => "List of comma separated fields (default: 'name')",
-      'delimiter'     => 'One character csv delimiter (default: ",")',
-      'enclosure'     => "Zero or one character csv enclosure (default: '\"')",
-      'line_ending'   => "'Unix' (default), 'Mac' or 'MS-DOS'",
-      'order'         => "Order of terms: 'name' (default), 'tid' or 'weight'",
+      'delimiter' => 'One character csv delimiter (default: ",")',
+      'enclosure' => "Zero or one character csv enclosure (default: '\"')",
+      'line_ending' => "'Unix' (default), 'Mac' or 'MS-DOS'",
+      'order' => "Order of terms: 'name' (default), 'tid' or 'weight'",
       // Level of result process infos.
       'result_duplicates' => "Display duplicate terms",
     ),
@@ -107,7 +107,7 @@ function drush_taxonomy_csv_import($file_path, $import_format = 'flat') {
     return;
   }
 
-  require_once(drupal_get_path('module', 'taxonomy_csv') . '/import/taxonomy_csv.import.api.inc');
+  require_once(backdrop_get_path('module', 'taxonomy_csv') . '/import/taxonomy_csv.import.api.inc');
 
   // Set arguments.
   $options = array();
@@ -119,17 +119,17 @@ function drush_taxonomy_csv_import($file_path, $import_format = 'flat') {
 
   // Set simple options.
   foreach (array(
-      'delimiter',
-      'enclosure',
-      'locale_custom',
-      'vocabulary_target',
-      'vocabulary_id',
-      'set_hierarchy',
-      'update_or_ignore',
-      // Level of result process infos.
-      'result_level',
-      'result_type',
-    ) as $value) {
+    'delimiter',
+    'enclosure',
+    'locale_custom',
+    'vocabulary_target',
+    'vocabulary_id',
+    'set_hierarchy',
+    'update_or_ignore',
+    // Level of result process infos.
+    'result_level',
+    'result_type',
+  ) as $value) {
     $option = drush_get_option($value);
     if ($option !== NULL) {
       $options[$value] = $option;
@@ -140,29 +140,29 @@ function drush_taxonomy_csv_import($file_path, $import_format = 'flat') {
   // vocabulary will be used. See https://drupal.org/node/1475952.
   if ((drush_get_option('vocabulary_target') === NULL) && (drush_get_option('vocabulary_id') !== NULL)) {
     $options['vocabulary_target'] = 'existing';
-  };
+  }
 
   // Set boolean options.
   foreach (array(
-      'keep_order',
-      'check_line',
-      'check_utf8',
-      'delete_terms',
-      'check_hierarchy',
-      'set_hierarchy',
-      // Level of result process infos.
-      'result_stats',
-      'result_terms',
-    ) as $value) {
+    'keep_order',
+    'check_line',
+    'check_utf8',
+    'delete_terms',
+    'check_hierarchy',
+    'set_hierarchy',
+    // Level of result process infos.
+    'result_stats',
+    'result_terms',
+  ) as $value) {
     $options[$value] = (drush_get_option($value) === NULL) ? FALSE : TRUE;
   }
 
   // Set array options.
   foreach (array(
-      'translate_languages',
-      'fields_format',
-      'fields_custom',
-    ) as $value) {
+    'translate_languages',
+    'fields_format',
+    'fields_custom',
+  ) as $value) {
     $option = drush_get_option_list($value);
     if ($option !== array()) {
       $options[$value] = $option;
@@ -187,7 +187,7 @@ function drush_taxonomy_csv_import($file_path, $import_format = 'flat') {
   // Process the batch.
   drush_log('Options are good.', 'status');
   drush_print('Launch import process. Please wait...');
-  $batch =& batch_get();
+  $batch = &batch_get();
   $batch['progressive'] = FALSE;
   drush_backend_batch_process();
 
@@ -215,7 +215,7 @@ function drush_taxonomy_csv_export($vocabulary_id, $export_format = 'flat', $fil
     $file_path = getcwd() . '/taxocsv.csv';
   }
 
-  require_once(drupal_get_path('module', 'taxonomy_csv') . '/export/taxonomy_csv.export.api.inc');
+  require_once(backdrop_get_path('module', 'taxonomy_csv') . '/export/taxonomy_csv.export.api.inc');
 
   // Set arguments.
   $options = array();
@@ -227,12 +227,12 @@ function drush_taxonomy_csv_export($vocabulary_id, $export_format = 'flat', $fil
 
   // Set simple options.
   foreach (array(
-      'delimiter',
-      'enclosure',
-      'line_ending',
-      'order',
-      // Level of result process infos.
-    ) as $value) {
+    'delimiter',
+    'enclosure',
+    'line_ending',
+    'order',
+    // Level of result process infos.
+  ) as $value) {
     $option = drush_get_option($value);
     if ($option !== NULL) {
       $options[$value] = $option;
@@ -241,14 +241,14 @@ function drush_taxonomy_csv_export($vocabulary_id, $export_format = 'flat', $fil
 
   // Set boolean options.
   foreach (array(
-      'result_duplicates',
-    ) as $value) {
+    'result_duplicates',
+  ) as $value) {
     $options[$value] = (drush_get_option($value) === NULL) ? FALSE : TRUE;
   }
 
   // Set array options.
   foreach (array(
-    ) as $value) {
+  ) as $value) {
     $option = drush_get_option_list($value);
     if ($option !== array()) {
       $options[$value] = $option;
@@ -278,7 +278,7 @@ function drush_taxonomy_csv_export($vocabulary_id, $export_format = 'flat', $fil
   // Process the batch.
   drush_log('Options are good.', 'status');
   drush_print('Launch export process. Please wait...');
-  $batch =& batch_get();
+  $batch = &batch_get();
   $batch['progressive'] = FALSE;
   drush_backend_batch_process();
 
