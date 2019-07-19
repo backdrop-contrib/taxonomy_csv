@@ -162,8 +162,8 @@ function taxonomy_csv_vocabulary_count_terms($vocabulary_id = 0) {
 
   $args = array();
   if (($vocabulary_id != array(0)) && ($vocabulary_id != array('0'))) {
-    $sql .= ' WHERE machine_name IN (:machine_name) ';
-    $args[':machine_name'] = $vocabulary_id;
+    $sql .= ' WHERE vocabulary IN (:vocabulary) ';
+    $args[':vocabulary'] = $vocabulary_id;
   }
 
   $result = db_query($sql, $args)->fetchField();
